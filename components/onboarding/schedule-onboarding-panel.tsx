@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+const SCHEDULE_ONBOARDING_SEEN_KEY = "schedule-onboarding-seen";
+
 export function ScheduleOnboardingPanel({ items }: { items: string[] }) {
   const [hidden, setHidden] = useState(true);
   useEffect(() => {
-    const seen = window.localStorage.getItem("mvp2-onboarding-seen");
+    const seen =
+      window.localStorage.getItem(SCHEDULE_ONBOARDING_SEEN_KEY) ??
+      window.localStorage.getItem("mvp2-onboarding-seen");
     setHidden(seen === "1");
   }, []);
   if (hidden) return null;
@@ -20,7 +24,8 @@ export function ScheduleOnboardingPanel({ items }: { items: string[] }) {
       <button
         className="mt-3 text-xs underline"
         onClick={() => {
-          window.localStorage.setItem("mvp2-onboarding-seen", "1");
+          window.localStorage.setItem(SCHEDULE_ONBOARDING_SEEN_KEY, "1");
+          window.localStorage.removeItem("mvp2-onboarding-seen");
           setHidden(true);
         }}
       >

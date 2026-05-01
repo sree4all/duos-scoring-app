@@ -1,6 +1,6 @@
-# Althara IPL Prediction Portal
+# Kin Score App
 
-Next.js + Supabase web app for IPL match predictions (GMT/UTC lock rules, leaderboard, CSV seeding).
+Next.js + Supabase app for generalized contests, scoring, and leaderboards.
 
 ## Architecture
 
@@ -10,27 +10,31 @@ Editable diagram (diagrams.net / draw.io): [`docs/app-architecture.drawio`](docs
 
 ## Docs
 
-- Feature spec & setup: [`specs/001-ipl-prediction-portal/quickstart.md`](specs/001-ipl-prediction-portal/quickstart.md)
-- MVP2 setup and verification: [`specs/002-ipl-prediction-mvp2/quickstart.md`](specs/002-ipl-prediction-mvp2/quickstart.md)
-- Implementation plan: [`specs/001-ipl-prediction-portal/plan.md`](specs/001-ipl-prediction-portal/plan.md)
-- Tasks: [`specs/001-ipl-prediction-portal/tasks.md`](specs/001-ipl-prediction-portal/tasks.md)
+Current implementation artifacts:
 
-## Quick start
+- Specification: [`specs/004-generalized-scoring-platform/spec.md`](specs/004-generalized-scoring-platform/spec.md)
+- Quickstart: [`specs/004-generalized-scoring-platform/quickstart.md`](specs/004-generalized-scoring-platform/quickstart.md)
+- Plan: [`specs/004-generalized-scoring-platform/plan.md`](specs/004-generalized-scoring-platform/plan.md)
+- Tasks: [`specs/004-generalized-scoring-platform/tasks.md`](specs/004-generalized-scoring-platform/tasks.md)
+- Rollout flags: [`docs/rollout/generalized-scoring.md`](docs/rollout/generalized-scoring.md)
 
-1. Copy `.env.local.example` to `.env.local` and add Supabase URL + anon key (and service role for `pnpm seed` only).
-2. Apply SQL in `supabase/migrations/` via Supabase SQL editor (or Supabase CLI).
-3. Enable **Google** and **Email** providers in Supabase Auth; set redirect URL to `http://localhost:3000/auth/callback` (and production URL on deploy).
-4. `npm install` / `pnpm install`
-5. `pnpm dev` → [http://localhost:3000](http://localhost:3000)
+## Fresh setup (new database)
+
+1. Copy `.env.local.example` to `.env.local`.
+2. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and server secrets needed for scripts.
+3. Apply SQL migrations in `supabase/migrations/` in filename order.
+4. Enable auth providers (Google and/or Email) and set callback URL to `http://localhost:3000/auth/callback`.
+5. Run `npm install`.
+6. Run `npm run dev`.
 
 ## Scripts
 
-See [`scripts/README.md`](scripts/README.md) (includes **`npm run seed:demo`** for empty DB smoke data and **Google Sheet → CSV** onboarding).
+See [`scripts/README.md`](scripts/README.md) for seed/import commands.
 
-## MVP2 routes
+## Main routes
 
-- Participant: `/matches`, `/history`, `/match/[id]`
-- Admin: `/admin`
+- Participant: `/contests`, `/contests/[contestId]/events/[eventId]`, `/contests/[contestId]/leaderboard`, `/history`
+- Admin: `/admin`, `/admin/contests/new`, `/admin/scoring`, `/admin/game-types`
 
 ## License
 

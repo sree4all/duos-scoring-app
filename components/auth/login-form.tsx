@@ -19,7 +19,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth/callback?next=/matches`,
+        redirectTo: `${origin}/auth/callback?next=/contests`,
       },
     });
     setLoading(false);
@@ -33,7 +33,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${origin}/auth/callback?next=/matches`,
+        emailRedirectTo: `${origin}/auth/callback?next=/contests`,
       },
     });
     setLoading(false);

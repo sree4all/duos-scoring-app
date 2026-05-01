@@ -1,11 +1,11 @@
-<mxfile host="app.diagrams.net" modified="2026-04-20T00:00:00.000Z" agent="Codex" version="24.7.5" etag="althara-ipl-architecture">
+<mxfile host="app.diagrams.net" modified="2026-05-01T00:00:00.000Z" agent="Codex" version="24.7.5" etag="kin-score-architecture">
   <diagram id="arch-2026" name="App Architecture">
     <mxGraphModel dx="1800" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <mxCell id="title" value="Althara IPL Prediction Portal - System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="title" value="Kin Score App - System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=22;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="20" y="10" width="760" height="30" as="geometry" />
         </mxCell>
 
@@ -49,7 +49,7 @@
         <mxCell id="svcBox" value="Domain Services / Scoring Layer" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;fontSize=14;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="380" y="550" width="820" height="220" as="geometry" />
         </mxCell>
-        <mxCell id="svcMatch" value="applyMatchScoring(matchId)&#xa;- winner + bonus evaluation&#xa;- legacy late exclusions&#xa;- remove prior match/bonus ledger rows&#xa;- batch insert new ledger rows&#xa;- net update profiles.current_points&#xa;- mark matches.scored_at" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffffff;align=left;verticalAlign=top;" vertex="1" parent="1">
+        <mxCell id="svcMatch" value="applyMatchScoring(matchId)&#xa;- winner + bonus evaluation&#xa;- deterministic adjustment rules&#xa;- remove prior match/bonus ledger rows&#xa;- batch insert new ledger rows&#xa;- net update profiles.current_points&#xa;- mark matches.scored_at" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffffff;align=left;verticalAlign=top;" vertex="1" parent="1">
           <mxGeometry x="410" y="590" width="255" height="160" as="geometry" />
         </mxCell>
         <mxCell id="svcTournament" value="applyTournamentScoring(seasonYear)&#xa;- per-slot point config&#xa;- compare tournament_answers to correct_answer&#xa;- rewrite tournament_question ledger slice&#xa;- update profiles.current_points&#xa;- mark tournament_questions.scored_at" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d79b00;fillColor=#ffffff;align=left;verticalAlign=top;" vertex="1" parent="1">
@@ -84,7 +84,7 @@
         <mxCell id="sbBonus" value="Bonus / Tournament Tables&#xa;- bonus_prompts&#xa;- prediction_bonus_answers&#xa;- tournament_config&#xa;- tournament_questions&#xa;- tournament_answers&#xa;- tournament_question_options" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2f5597;fillColor=#ffffff;align=left;verticalAlign=top;" vertex="1" parent="1">
           <mxGeometry x="1265" y="385" width="280" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="sbLegacy" value="Legacy Migration Tables&#xa;- legacy_aliases&#xa;- legacy_prediction_exclusions (optional)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2f5597;fillColor=#ffffff;align=left;verticalAlign=top;" vertex="1" parent="1">
+        <mxCell id="sbLegacy" value="Generalized Runtime Tables&#xa;- contests/events/prompts/submissions&#xa;- generalized scoring + audit records" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2f5597;fillColor=#ffffff;align=left;verticalAlign=top;" vertex="1" parent="1">
           <mxGeometry x="1265" y="570" width="280" height="95" as="geometry" />
         </mxCell>
         <mxCell id="sbIdx" value="Performance + Integrity&#xa;- unique indexes on points_ledger slices&#xa;- source_id/source_type index&#xa;- dedupe migrations" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2f5597;fillColor=#ffffff;align=left;verticalAlign=top;" vertex="1" parent="1">

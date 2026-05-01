@@ -1,0 +1,27 @@
+[
+  {
+    "caseId": "prediction-basic-001",
+    "gameMode": "prediction",
+    "inputs": {
+      "submittedWinner": "TEAM_A",
+      "actualWinner": "TEAM_A",
+      "bonusHit": true
+    },
+    "expected": {
+      "pointsDelta": 15,
+      "exactHitCount": 1
+    }
+  },
+  {
+    "caseId": "score-entry-basic-001",
+    "gameMode": "score_entry",
+    "inputs": {
+      "submittedScore": 72,
+      "actualScore": 70
+    },
+    "expected": {
+      "pointsDelta": 8,
+      "exactHitCount": 0
+    }
+  }
+]

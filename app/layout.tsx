@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Althara IPL Predictions",
-  description: "IPL prediction portal",
+  title: "Kin Score App",
+  description: "Generalized contests and scoring platform",
 };
 
 export default function RootLayout({

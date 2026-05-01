@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/auth/login-form";
-import { getProfileForUser } from "@/lib/data/profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function LoginPage({
@@ -15,11 +14,7 @@ export default async function LoginPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    const profile = await getProfileForUser(supabase, user.id);
-    if (profile?.legacy_alias_onboarding_completed === false) {
-      redirect("/login/legacy-alias");
-    }
-    redirect("/matches");
+    redirect("/contests");
   }
 
   const params = await searchParams;
@@ -27,9 +22,9 @@ export default async function LoginPage({
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Althara IPL Predictions</CardTitle>
+          <CardTitle className="text-2xl">Kin Score App</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Sign in to make and track your picks.
+            Sign in to participate in contests and view leaderboard updates.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
