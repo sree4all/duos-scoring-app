@@ -3,7 +3,7 @@
 **Feature Branch**: `004-generalized-scoring-platform`  
 **Created**: 2026-04-30  
 **Status**: Draft  
-**Input**: User description: "Transform kin-score-app into a generalized admin-managed multi-game scoring platform."
+**Input**: User description: "Transform duos-scoring-app into a generalized admin-managed multi-game scoring platform."
 
 ## Problem Statement and Product Goals
 

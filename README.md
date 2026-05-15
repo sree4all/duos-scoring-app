@@ -1,4 +1,4 @@
-# Kin Score App
+# Duos Scoring App
 
 Next.js + Supabase app for generalized contests, scoring, and leaderboards.
 

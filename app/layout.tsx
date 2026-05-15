@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kin Score App",
+  title: "Duos Scoring App",
   description: "Generalized contests and scoring platform",
 };
 

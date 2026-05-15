@@ -5,7 +5,7 @@
 
 ## Summary
 
-Deliver `kin-score-app` as an admin-managed multi-game scoring platform with generalized contest/event workflows. The implementation prioritizes additive schema evolution, clear API/UI contracts, immutable ledger-based scoring traceability, and role-safe admin/participant experiences.
+Deliver `duos-scoring-app` as an admin-managed multi-game scoring platform with generalized contest/event workflows. The implementation prioritizes additive schema evolution, clear API/UI contracts, immutable ledger-based scoring traceability, and role-safe admin/participant experiences.
 
 ## Technical Context
 

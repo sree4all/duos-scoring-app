@@ -3,7 +3,7 @@ description: Project Development Guidelines
 globs: ["**/*"]
 alwaysApply: true
 ---
-# Kin Score App Development Guidelines
+# Duos Scoring App Development Guidelines
 
 Auto-generated guidance. Canonical feature: **004-generalized-scoring-platform** (`specs/004-generalized-scoring-platform`). Last updated: 2026-05-01.
 

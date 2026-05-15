@@ -22,7 +22,7 @@ export default async function LoginPage({
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Kin Score App</CardTitle>
+          <CardTitle className="text-2xl">Duos Scoring App</CardTitle>
           <p className="text-sm text-muted-foreground">
             Sign in to participate in contests and view leaderboard updates.
           </p>

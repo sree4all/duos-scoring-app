@@ -5,7 +5,7 @@
     </marker>
   </defs>
   <rect width="100%" height="100%" fill="#fafafa"/>
-  <text x="24" y="36" font-family="system-ui,Segoe UI,sans-serif" font-size="22" font-weight="bold" fill="#111">Kin Score App - System Architecture</text>
+  <text x="24" y="36" font-family="system-ui,Segoe UI,sans-serif" font-size="22" font-weight="bold" fill="#111">Duos Scoring App - System Architecture</text>
 
   <!-- Client -->
   <rect x="20" y="60" width="220" height="200" rx="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>

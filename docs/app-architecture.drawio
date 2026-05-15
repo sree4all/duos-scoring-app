@@ -1,11 +1,11 @@
-<mxfile host="app.diagrams.net" modified="2026-05-01T00:00:00.000Z" agent="Codex" version="24.7.5" etag="kin-score-architecture">
+<mxfile host="app.diagrams.net" modified="2026-05-01T00:00:00.000Z" agent="Codex" version="24.7.5" etag="duos-scoring-architecture">
   <diagram id="arch-2026" name="App Architecture">
     <mxGraphModel dx="1800" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <mxCell id="title" value="Kin Score App - System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="title" value="Duos Scoring App - System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=22;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="20" y="10" width="760" height="30" as="geometry" />
         </mxCell>
 

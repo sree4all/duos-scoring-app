@@ -21,7 +21,7 @@ Sync Impact Report
 - Follow-up TODOs:
   - None
 -->
-# kin-score-app Constitution
+# duos-scoring-app Constitution
 
 ## Core Principles
 
