@@ -132,7 +132,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   return (
     <section className="space-y-5 pb-4">
       <header>
-        <h1 className="text-xl font-semibold sm:text-2xl">
+        <h1 className="text-title-dense">
           {worldCupCopy.nav.worldCupPredictions}
         </h1>
         <p className="text-sm text-muted-foreground">{contest.name}</p>

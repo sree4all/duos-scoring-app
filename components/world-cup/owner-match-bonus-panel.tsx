@@ -104,7 +104,7 @@ export function OwnerMatchBonusPanel({
       {prompts.length > 0 ? (
         <ul className="mt-4 space-y-3">
           {prompts.map((p) => (
-            <li key={p.id} className="rounded-md border bg-background p-3">
+            <li key={p.id} className="neon-glass-card p-3">
               <p className="font-medium">{p.promptText}</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 +{p.correctPoints} / {p.incorrectPenalty} wrong · Choices:{" "}
@@ -186,7 +186,7 @@ export function OwnerMatchBonusPanel({
         </Button>
       </div>
 
-      {message ? <p className="mt-2 text-green-700">{message}</p> : null}
+      {message ? <p className="mt-2 text-status-success">{message}</p> : null}
       {error ? <p className="mt-2 text-destructive">{error}</p> : null}
     </section>
   );

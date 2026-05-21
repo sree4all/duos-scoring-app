@@ -46,6 +46,13 @@
 
 - Theme aligned to dark shell (`theme` prop or className) so toasts are not light boxes on purple gradient.
 
+## Focus and state tokens (FR-007)
+
+- **Focus**: `focus-visible:ring-2` using mint or `neon.violetGlow`; minimum 2px offset on dark backgrounds  
+- **Disabled**: `opacity-50` + `pointer-events-none`; label still meets AA where shown  
+- **Error**: destructive/red accent plus text label (never color-only)  
+- Validated in implementation task T052
+
 ## Acceptance
 
 - FR-003, FR-007, FR-008 satisfied via variant usage in pilot screens before full rollout.

@@ -39,7 +39,7 @@ export function CreateGroupForm() {
         </label>
         <input
           id="group-name"
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          className="neon-input mt-1"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required

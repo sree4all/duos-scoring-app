@@ -41,8 +41,8 @@ export function WorldCupAppNav({
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[padding:max(0px)]:pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto flex max-w-lg items-center gap-2 px-3 py-2 sm:max-w-2xl sm:px-4 sm:py-3">
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-[#12003B]/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-lg items-center gap-2 px-safe-x py-2 sm:max-w-2xl sm:py-3">
         <nav
           className="flex min-w-0 flex-1 gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Main"
@@ -52,10 +52,10 @@ export function WorldCupAppNav({
               key={`${label}-${href}`}
               href={href}
               className={cn(
-                "shrink-0 rounded-md px-3 py-2.5 text-sm font-medium transition-colors touch-manipulation sm:py-2",
+                "shrink-0 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:py-2",
                 isNavLinkActive(pathname, href)
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ? "bg-primary/20 text-white"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-white",
               )}
             >
               {label}

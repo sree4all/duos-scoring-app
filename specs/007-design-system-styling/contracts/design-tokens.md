@@ -49,6 +49,8 @@
 
 Use `spacingSystem.scale` from design.json: base unit 4px; keys `xs` through `4xl`; section rhythm `verticalRhythm` 40px.
 
+**Section gaps (FR-009)**: Apply `verticalRhythm` (40px) or `spacing.2xl` between major page sections (hero → form → list); use `spacing.lg` (24px) between related in-card blocks. Pilot validation on login, welcome, and matches pages (task T051).
+
 ## Radii and shadows
 
 | Element | Value |

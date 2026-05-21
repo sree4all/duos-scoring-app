@@ -39,11 +39,46 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        neon: {
+          deep: "#18004F",
+          royal: "#2B0A88",
+          electric: "#11398C",
+          glow: "#5917FF",
+          cta: "#10B69B",
+          "cta-hover": "#13C5A7",
+          "cta-pressed": "#0D9D87",
+          score: {
+            green: "hsl(var(--neon-score-green))",
+            blue: "hsl(var(--neon-score-blue))",
+            red: "hsl(var(--neon-score-red))",
+          },
+          accent: {
+            orange: "#FF7044",
+            yellow: "#E4FF3B",
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        cta: "20px",
+      },
+      spacing: {
+        "safe-x": "28px",
+        "safe-y": "32px",
+        rhythm: "40px",
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        cta: "0 8px 20px rgba(0, 0, 0, 0.18)",
+        glass: "0 10px 20px rgba(0, 0, 0, 0.25)",
+      },
+      minHeight: {
+        cta: "92px",
+        "cta-compact": "44px",
       },
     },
   },

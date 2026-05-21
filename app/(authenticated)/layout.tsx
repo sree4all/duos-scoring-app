@@ -1,4 +1,5 @@
 import { AppNav } from "@/components/layout/app-nav";
+import { AppPageShell } from "@/components/layout/app-page-shell";
 import { GroupSwitcher } from "@/components/groups/group-switcher";
 import { requireUser } from "@/lib/auth/require-user";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
@@ -37,18 +38,18 @@ export default async function AuthenticatedLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <AppPageShell>
       <AppNav
         worldCupPrivateMode={isWorldCupPrivateMode()}
         homeGroupId={homeGroupId}
         defaultContestId={getDefaultContestId()}
       />
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-2">
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-safe-x py-2">
         {groupSwitcher}
       </div>
-      <main className="mx-auto w-full max-w-lg px-3 py-4 pb-8 sm:max-w-2xl sm:px-4 sm:py-6">
+      <main className="mx-auto w-full max-w-lg px-safe-x py-safe-y pb-10 sm:max-w-2xl">
         {children}
       </main>
-    </div>
+    </AppPageShell>
   );
 }

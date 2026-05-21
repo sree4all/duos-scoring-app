@@ -33,7 +33,7 @@ function MatchCard({
   const hasPrediction = Boolean(savedPick);
 
   return (
-    <li className="rounded-xl border bg-card p-4 shadow-sm">
+    <li className="neon-glass-card p-4">
       <div className="flex items-start justify-between gap-2">
         <span className="text-xs font-medium text-muted-foreground">
           Match {ev.matchNumber ?? "—"}
@@ -48,10 +48,10 @@ function MatchCard({
           className={cn(
             "inline-block rounded-md px-2 py-0.5 text-xs font-semibold",
             hasPrediction
-              ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"
+              ? "bg-neon-score-green/20 text-score-positive"
               : !locked
-                ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"
-                : "bg-muted text-muted-foreground",
+                ? "bg-neon-score-red/20 text-score-negative"
+                : "bg-white/10 text-muted-foreground",
           )}
         >
           {hasPrediction

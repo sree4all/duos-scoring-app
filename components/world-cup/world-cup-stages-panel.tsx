@@ -118,7 +118,7 @@ export function WorldCupStagesPanel({
           </div>
         </div>
       ))}
-      {message ? <p className="text-sm text-green-700">{message}</p> : null}
+      {message ? <p className="text-sm text-status-success">{message}</p> : null}
     </section>
   );
 }

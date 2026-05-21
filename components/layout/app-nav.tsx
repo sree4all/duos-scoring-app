@@ -25,18 +25,18 @@ function DefaultAppNav() {
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-[#12003B]/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-safe-x py-3">
         <nav className="flex gap-1 sm:gap-2" aria-label="Main">
           {links.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
               className={cn(
-                "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "rounded-xl px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 pathname === href
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ? "bg-primary/20 text-white"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-white",
               )}
             >
               {label}
