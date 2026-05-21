@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { GroupRepository } from "@/lib/server/groups/repository";
 import { requireGroupOwner } from "@/lib/server/groups/guards";
 import { WorldCupStagesPanel } from "@/components/world-cup/world-cup-stages-panel";
+import { resolveWorldCupContestForGroup } from "@/lib/server/world-cup/resolve-group-contest";
 
 type PageProps = {
   params: Promise<{ groupId: string }>;
@@ -12,10 +13,12 @@ type PageProps = {
 
 export default async function WorldCupStagesPage({ params, searchParams }: PageProps) {
   const { groupId } = await params;
-  const { contestId } = await searchParams;
-  if (!contestId) redirect(`/groups/${groupId}/world-cup/import`);
-
+  const { contestId: contestIdParam } = await searchParams;
   const { supabase, user } = await requireUser();
+  const contestId =
+    contestIdParam ?? (await resolveWorldCupContestForGroup(supabase, groupId))?.id;
+  if (!contestId) redirect(`/groups/${groupId}/world-cup`);
+
   const group = await new GroupRepository(supabase).getGroupById(groupId);
   if (!group) notFound();
   await requireGroupOwner(supabase, groupId, user.id);
@@ -27,9 +30,14 @@ export default async function WorldCupStagesPage({ params, searchParams }: PageP
         <p className="text-sm text-muted-foreground">Reveal rounds and set points</p>
       </header>
       <WorldCupStagesPanel groupId={groupId} contestId={contestId} />
-      <Link href={`/contests/${contestId}/matches`} className="text-sm underline">
-        View match list
-      </Link>
+      <div className="flex flex-wrap gap-3 text-sm">
+        <Link href={`/contests/${contestId}/matches`} className="underline">
+          View match list
+        </Link>
+        <Link href={`/groups/${groupId}/world-cup?contestId=${contestId}`} className="underline">
+          Organizer home
+        </Link>
+      </div>
     </section>
   );
 }

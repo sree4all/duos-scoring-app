@@ -5,6 +5,7 @@ import { GroupRepository } from "@/lib/server/groups/repository";
 import { requireGroupOwner } from "@/lib/server/groups/guards";
 import { isWorldCupImportEnabled } from "@/lib/server/world-cup/flags";
 import { WorldCupImportPanel } from "@/components/world-cup/world-cup-import-panel";
+import { resolveWorldCupContestForGroup } from "@/lib/server/world-cup/resolve-group-contest";
 
 type PageProps = {
   params: Promise<{ groupId: string }>;
@@ -22,19 +23,10 @@ export default async function WorldCupImportPage({ params, searchParams }: PageP
   if (!group) notFound();
   await requireGroupOwner(supabase, groupId, user.id);
 
-  if (!contestId) {
-    return (
-      <section className="space-y-4">
-        <h1 className="text-2xl font-semibold">Import schedule</h1>
-        <p className="text-sm text-muted-foreground">
-          Create a World Cup contest first, then open import with{" "}
-          <code>?contestId=...</code> in the URL.
-        </p>
-        <Link href={`/groups/${groupId}/contests/new`} className="font-medium underline">
-          Create contest
-        </Link>
-      </section>
-    );
+  const resolvedId =
+    contestId ?? (await resolveWorldCupContestForGroup(supabase, groupId))?.id;
+  if (!resolvedId) {
+    redirect(`/groups/${groupId}/world-cup`);
   }
 
   return (
@@ -43,8 +35,8 @@ export default async function WorldCupImportPage({ params, searchParams }: PageP
         <h1 className="text-2xl font-semibold">Import World Cup schedule</h1>
         <p className="text-sm text-muted-foreground">{group.name}</p>
       </header>
-      <WorldCupImportPanel groupId={groupId} contestId={contestId} />
-      <Link href={`/groups/${groupId}/world-cup/stages?contestId=${contestId}`} className="text-sm underline">
+      <WorldCupImportPanel groupId={groupId} contestId={resolvedId} />
+      <Link href={`/groups/${groupId}/world-cup/stages?contestId=${resolvedId}`} className="text-sm underline">
         Next: open rounds and points
       </Link>
     </section>

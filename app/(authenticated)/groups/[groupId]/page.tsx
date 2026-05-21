@@ -14,6 +14,7 @@ import {
   ContestStateBadge,
 } from "@/components/contests/contest-format-badge";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
+import { isWorldCupContest } from "@/lib/server/world-cup/resolve-group-contest";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 
 type PageProps = { params: Promise<{ groupId: string }> };
@@ -30,11 +31,7 @@ export default async function GroupDashboardPage({ params }: PageProps) {
 
   const contests = await new GroupContestService(supabase).listContests(groupId);
   const summary = summarizeContestsByFormat(contests);
-  const worldCupContests = summary.prediction.filter(
-    (c) =>
-      (c.name ?? "").toLowerCase().includes("world cup") ||
-      (c.name ?? "").toLowerCase().includes("fifa"),
-  );
+  const worldCupContests = summary.prediction.filter((c) => isWorldCupContest(c));
   const pickContests = privatePilot ? worldCupContests : summary.prediction;
 
   function ContestList({
@@ -101,8 +98,17 @@ export default async function GroupDashboardPage({ params }: PageProps) {
         ) : null}
         {membership.isOwner ? (
           <>
-            <Link href={`/groups/${groupId}/contests/new`} className="font-medium underline">
-              {privatePilot ? "Manage World Cup contest" : "New contest"}
+            <Link
+              href={
+                privatePilot
+                  ? `/groups/${groupId}/world-cup${
+                      pickContests[0] ? `?contestId=${pickContests[0]!.id}` : ""
+                    }`
+                  : `/groups/${groupId}/contests/new`
+              }
+              className="font-medium underline"
+            >
+              {privatePilot ? "World Cup organizer" : "New contest"}
             </Link>
             <Link href={`/groups/${groupId}/settings`} className="font-medium underline">
               Organizer settings

@@ -92,20 +92,12 @@ export function GroupSettingsPanel({
 
       {isOwner ? (
         <p className="flex flex-wrap gap-3 text-sm">
-          <Link href={`/groups/${groupId}/contests/new`} className="font-medium underline">
-            {worldCupPrivateMode ? "Manage World Cup contest" : "Manage contests"}
+          <Link href={`/groups/${groupId}/world-cup`} className="font-medium underline">
+            {worldCupPrivateMode ? "World Cup organizer" : "Manage contests"}
           </Link>
           <Link href={`/groups/${groupId}`} className="font-medium underline">
             Group home
           </Link>
-          {worldCupPrivateMode ? (
-            <Link
-              href={`/groups/${groupId}/world-cup/import`}
-              className="font-medium underline"
-            >
-              Import schedule
-            </Link>
-          ) : null}
         </p>
       ) : (
         <p>
