@@ -3,11 +3,6 @@
 
 begin;
 
--- Admin role for scoring policies in 0009+
-alter table public.profiles
-  add column if not exists role text not null default 'participant',
-  add column if not exists alias_onboarding_completed boolean not null default false;
-
 create table if not exists public.tournament_config (
   id uuid primary key default gen_random_uuid(),
   season_year integer not null unique,

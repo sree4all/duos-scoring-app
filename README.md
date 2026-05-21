@@ -30,6 +30,15 @@ Editable diagram (diagrams.net / draw.io): [`docs/app-architecture.drawio`](docs
 
    **Empty database:** no manual SQL needed. The chain runs `0001` → `0024` → `20260501*` → `20260519*` (groups, rummy, contest ledger).  
    If `db push` fails mid-way, reset the database in the Supabase Dashboard and run `db push` again.
+
+   **“relation profiles does not exist” but push starts at `0004`:** migration history is ahead of the actual schema (tables were deleted manually). Re-run from the beginning:
+
+   ```bash
+   npx supabase migration repair --status reverted 0001 0002 0003
+   npm run db:push
+   ```
+
+   If many versions are stuck, reset the database in the Dashboard (clears tables and migration history), then `npm run db:push` once.
 4. Enable auth providers (Google and/or Email) and set callback URL to `http://localhost:3000/auth/callback`.
 5. Set group flags (recommended for local dev):
 

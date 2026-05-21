@@ -9,6 +9,8 @@ create table public.profiles (
   imported_points numeric,
   current_points numeric not null default 0,
   rank integer,
+  role text not null default 'participant',
+  alias_onboarding_completed boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
