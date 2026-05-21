@@ -24,6 +24,8 @@ const buttonVariants = cva(
         sm: "h-9 rounded-lg px-3 text-xs",
         lg: "h-11 rounded-xl px-8 text-base",
         cta: "min-h-cta w-full rounded-cta px-7 py-6 text-button",
+        /** In-card primary on entry pages (login/join) — mint CTA without 92px hero height */
+        "cta-entry": "h-14 min-h-14 w-full rounded-cta px-6 text-lg font-semibold",
         "cta-compact": "min-h-cta-compact rounded-xl px-4 py-2 text-base font-medium",
         icon: "h-10 w-10 rounded-xl",
       },

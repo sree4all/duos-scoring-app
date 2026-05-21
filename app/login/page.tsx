@@ -61,7 +61,7 @@ export default async function LoginPage({
         <Card variant="glass" className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-hero text-left sm:text-center">
-              FIFA World Cup 2026
+              The Duos Fam World Cup Prediction Game 2026
             </CardTitle>
             <p className="text-body-lg text-left !text-base sm:text-center">
               {privatePilot

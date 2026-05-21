@@ -6,7 +6,8 @@
 
 | Variant | Size | Visual | When |
 |---------|------|--------|------|
-| `default` (remapped) | `cta` | Mint fill, radius 20px, shadow, white label | Major page CTAs on entry/light |
+| `default` (remapped) | `cta` | Mint fill, radius 20px, shadow, white label | Full-width hero CTAs on entry/light (outside cards) |
+| `default` | `cta-entry` | Same colors, h-14 (56px), text-lg | Primary action inside entry cards (login, join) |
 | `default` | `cta-compact` | Same colors, h-11 min (44px), text-base | Dense forms, table actions |
 | `outline` | * | Border subtle, transparent bg, white/muted text | Secondary on dark |
 | `ghost` | `sm` | Muted hover | Nav sign-out, tertiary |

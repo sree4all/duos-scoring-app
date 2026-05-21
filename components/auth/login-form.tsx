@@ -49,8 +49,7 @@ export function LoginForm({ redirectPath = "/contests" }: { redirectPath?: strin
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
       <Button
         type="button"
-        size="cta"
-        className="w-full"
+        size="cta-entry"
         disabled={loading}
         onClick={signInWithGoogle}
       >
