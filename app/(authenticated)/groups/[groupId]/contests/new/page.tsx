@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
 import { requireGroupOwner } from "@/lib/server/groups/guards";
 import { GroupRepository } from "@/lib/server/groups/repository";
-import { setActiveGroupIdCookie } from "@/lib/server/groups/active-context";
 import { GroupContestWizard } from "@/components/groups/contest-wizard/group-contest-wizard";
 
 type PageProps = { params: Promise<{ groupId: string }> };
@@ -20,8 +19,6 @@ export default async function GroupNewContestPage({ params }: PageProps) {
 
   const group = await new GroupRepository(supabase).getGroupById(groupId);
   if (!group) notFound();
-
-  await setActiveGroupIdCookie(groupId);
 
   return (
     <section className="space-y-4">

@@ -7,7 +7,6 @@ import {
   contestPrimaryLink,
   summarizeContestsByFormat,
 } from "@/lib/server/groups/contest-summary";
-import { setActiveGroupIdCookie } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { GroupDualFormatPanel } from "@/components/onboarding/group-dual-format-panel";
 import {
@@ -25,7 +24,6 @@ export default async function GroupDashboardPage({ params }: PageProps) {
   if (!group) notFound();
 
   const membership = await requireGroupMembership(supabase, groupId, user.id);
-  await setActiveGroupIdCookie(groupId);
 
   const contests = await new GroupContestService(supabase).listContests(groupId);
   const summary = summarizeContestsByFormat(contests);

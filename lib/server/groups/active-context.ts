@@ -1,26 +1,25 @@
 import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { GroupRepository } from "@/lib/server/groups/repository";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
 
 export const ACTIVE_GROUP_COOKIE = "active_group_id";
 
+const ACTIVE_GROUP_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  path: "/",
+};
+
+/** Set active group on a Route Handler or middleware response (not in Server Components). */
+export function applyActiveGroupIdCookie(response: NextResponse, groupId: string): void {
+  response.cookies.set(ACTIVE_GROUP_COOKIE, groupId, ACTIVE_GROUP_COOKIE_OPTIONS);
+}
+
 export async function getActiveGroupIdFromCookie(): Promise<string | null> {
   const cookieStore = await cookies();
   return cookieStore.get(ACTIVE_GROUP_COOKIE)?.value ?? null;
-}
-
-export async function setActiveGroupIdCookie(groupId: string): Promise<void> {
-  try {
-    const cookieStore = await cookies();
-    cookieStore.set(ACTIVE_GROUP_COOKIE, groupId, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-    });
-  } catch {
-    /* Next.js: cookies can only be modified in Server Actions / Route Handlers */
-  }
 }
 
 export async function resolveActiveGroupId(
@@ -40,7 +39,5 @@ export async function resolveActiveGroupId(
   const memberships = await repo.listMembershipsForUser(userId);
   if (memberships.length === 0) return null;
 
-  const fallback = memberships[0]!.groupId;
-  await setActiveGroupIdCookie(fallback);
-  return fallback;
+  return memberships[0]!.groupId;
 }
