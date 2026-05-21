@@ -5,6 +5,7 @@ import {
   applyActiveGroupIdCookie,
 } from "@/lib/server/groups/active-context";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
+import { isGroupCreationDisabled } from "@/lib/server/world-cup/flags";
 
 const GROUP_ID_PATH =
   /^\/groups\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/|$)/i;
@@ -51,6 +52,12 @@ export async function middleware(request: NextRequest) {
   );
 
   await supabase.auth.getUser();
+
+  if (isGroupCreationDisabled() && request.nextUrl.pathname === "/groups/new") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/groups/join";
+    return NextResponse.redirect(url);
+  }
 
   if (isGroupScopingEnabled()) {
     const groupMatch = request.nextUrl.pathname.match(GROUP_ID_PATH);

@@ -4,6 +4,7 @@ import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { listGroupHistoryForUser } from "@/lib/server/groups/history-query";
 import { projectLedgerLines } from "@/lib/server/generalized-scoring/scoring-projection-service";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
+import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 
 export default async function ParticipantHistoryPage() {
   const { supabase, user } = await requireUser();
@@ -23,10 +24,15 @@ export default async function ParticipantHistoryPage() {
       <main className="space-y-4 p-6">
         <h1 className="text-2xl font-semibold">History</h1>
         <p className="text-sm text-muted-foreground">
-          Join or create a group to see your scoring history.
+          {isWorldCupPrivateMode()
+            ? "Join with your invite code to see your points."
+            : "Join or create a group to see your scoring history."}
         </p>
-        <Link href="/groups" className="text-sm font-medium underline">
-          Go to groups
+        <Link
+          href={isWorldCupPrivateMode() ? "/groups/join" : "/groups"}
+          className="text-sm font-medium underline"
+        >
+          {isWorldCupPrivateMode() ? "Join with code" : "Go to groups"}
         </Link>
       </main>
     );

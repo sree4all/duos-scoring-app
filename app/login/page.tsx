@@ -2,6 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/auth/login-form";
+import {
+  getDefaultGroupId,
+  isWorldCupPrivateMode,
+} from "@/lib/server/world-cup/flags";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function LoginPage({
@@ -14,6 +18,10 @@ export default async function LoginPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
+    if (isWorldCupPrivateMode()) {
+      const gid = getDefaultGroupId();
+      redirect(gid ? `/groups/${gid}` : "/groups/join");
+    }
     redirect("/contests");
   }
 

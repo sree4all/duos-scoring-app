@@ -2,12 +2,20 @@ import { NextResponse } from "next/server";
 import { GroupService } from "@/lib/server/groups/group-service";
 import { applyActiveGroupIdCookie } from "@/lib/server/groups/active-context";
 import { getAuthenticatedSupabaseUser, groupErrorResponse } from "@/lib/server/groups/api-auth";
+import { isGroupCreationDisabled } from "@/lib/server/world-cup/flags";
 
 export async function POST(request: Request) {
   try {
     const auth = await getAuthenticatedSupabaseUser();
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (isGroupCreationDisabled()) {
+      return NextResponse.json(
+        { error: "New groups are disabled. Join with your invite code instead." },
+        { status: 403 },
+      );
     }
 
     const body = (await request.json()) as { name?: string };

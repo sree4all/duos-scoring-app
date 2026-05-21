@@ -19,6 +19,7 @@ export function GroupSettingsPanel({
   members,
   currentUserId,
   isOwner,
+  worldCupPrivateMode = false,
 }: {
   groupId: string;
   groupName: string;
@@ -26,6 +27,7 @@ export function GroupSettingsPanel({
   members: Member[];
   currentUserId: string;
   isOwner: boolean;
+  worldCupPrivateMode?: boolean;
 }) {
   const router = useRouter();
   const [code, setCode] = useState(inviteCode);
@@ -71,7 +73,9 @@ export function GroupSettingsPanel({
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold">{groupName}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Group settings</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {worldCupPrivateMode ? "Organizer settings" : "Group settings"}
+        </p>
       </header>
 
       <div className="rounded-lg border p-4">
@@ -84,67 +88,74 @@ export function GroupSettingsPanel({
         ) : null}
       </div>
 
-      <GroupDualFormatPanel isOwner={isOwner} />
+      {!worldCupPrivateMode ? <GroupDualFormatPanel isOwner={isOwner} /> : null}
 
       {isOwner ? (
-        <p>
+        <p className="flex flex-wrap gap-3 text-sm">
           <Link href={`/groups/${groupId}/contests/new`} className="font-medium underline">
-            Manage contests
+            {worldCupPrivateMode ? "Manage World Cup contest" : "Manage contests"}
           </Link>
-          {" · "}
           <Link href={`/groups/${groupId}`} className="font-medium underline">
             Group home
           </Link>
+          {worldCupPrivateMode ? (
+            <Link
+              href={`/groups/${groupId}/world-cup/import`}
+              className="font-medium underline"
+            >
+              Import schedule
+            </Link>
+          ) : null}
         </p>
       ) : (
-        <p className="flex flex-wrap gap-3">
+        <p>
           <Link href={`/groups/${groupId}`} className="font-medium underline">
-            Group home
-          </Link>
-          <Link
-            href={`/groups/${groupId}/world-cup/import`}
-            className="font-medium underline"
-          >
-            World Cup import
+            Back to home
           </Link>
         </p>
       )}
 
-      <ul className="space-y-2 rounded-lg border p-4">
-        <p className="text-sm font-medium">Members</p>
-        {members.map((m) => (
-          <li key={m.userId} className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="font-mono">{m.userId.slice(0, 8)}…</span>
-            {m.isOwner ? <span className="text-muted-foreground">owner</span> : null}
-            {m.isScorer ? <span className="text-muted-foreground">scorer</span> : null}
-            {isOwner && m.userId !== currentUserId ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={async () => {
-                  try {
-                    await patchMembers({
-                      action: "set_scorer",
-                      userId: m.userId,
-                      isScorer: !m.isScorer,
-                    });
-                    router.refresh();
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : "Failed");
-                  }
-                }}
-              >
-                {m.isScorer ? "Revoke scorer" : "Make scorer"}
-              </Button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+      {isOwner ? (
+        <ul className="space-y-2 rounded-lg border p-4">
+          <p className="text-sm font-medium">Members</p>
+          {members.map((m) => (
+            <li key={m.userId} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-mono">{m.userId.slice(0, 8)}…</span>
+              {m.isOwner ? <span className="text-muted-foreground">owner</span> : null}
+              {!worldCupPrivateMode && m.isScorer ? (
+                <span className="text-muted-foreground">scorer</span>
+              ) : null}
+              {isOwner && !worldCupPrivateMode && m.userId !== currentUserId ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={async () => {
+                    try {
+                      await patchMembers({
+                        action: "set_scorer",
+                        userId: m.userId,
+                        isScorer: !m.isScorer,
+                      });
+                      router.refresh();
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : "Failed");
+                    }
+                  }}
+                >
+                  {m.isScorer ? "Revoke scorer" : "Make scorer"}
+                </Button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
-      <Button type="button" variant="outline" onClick={leaveGroup}>
-        Leave group
-      </Button>
+      {!worldCupPrivateMode ? (
+        <Button type="button" variant="outline" onClick={leaveGroup}>
+          Leave group
+        </Button>
+      ) : null}
 
       {message ? <p className="text-sm text-green-700">{message}</p> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

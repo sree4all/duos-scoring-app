@@ -19,7 +19,8 @@ GROUP_RUMMY_ENABLED=true
 |----------|--------|---------|
 | `WORLD_CUP_IMPORT_ENABLED` | `true` / `false` | Owner CSV import UI and API |
 | `WORLD_CUP_PRIVATE_MODE` | `true` / `false` | Simplified nav; redirect root to group home |
-| `DEFAULT_GROUP_ID` | UUID (optional) | Auto-select group when user has single membership |
+| `DEFAULT_GROUP_ID` | UUID (optional) | Auto-select group; members land on group home after join |
+| `DEFAULT_CONTEST_ID` | UUID (optional) | Nav links for World Cup Picks and Standings |
 
 ## Recommended pilot `.env.local`
 
@@ -29,8 +30,14 @@ GROUP_PREDICTION_ENABLED=true
 GROUP_RUMMY_ENABLED=true
 WORLD_CUP_IMPORT_ENABLED=true
 WORLD_CUP_PRIVATE_MODE=true
-# DEFAULT_GROUP_ID=<your-group-uuid-after-create>
+DEFAULT_GROUP_ID=<your-group-uuid>
+DEFAULT_CONTEST_ID=<your-world-cup-contest-uuid>
 ```
+
+When `WORLD_CUP_PRIVATE_MODE=true`:
+
+- Rummy UI and routes are hidden; members cannot open group settings or create groups.
+- New members use **Join with code** only; API blocks `POST /api/groups` (create group).
 
 ## Operator workflow
 

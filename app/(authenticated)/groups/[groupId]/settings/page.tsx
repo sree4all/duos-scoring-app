@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
 import { GroupRepository } from "@/lib/server/groups/repository";
 import { GroupSettingsPanel } from "@/components/groups/group-settings-panel";
+import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
+
 type PageProps = { params: Promise<{ groupId: string }> };
 
 export default async function GroupSettingsPage({ params }: PageProps) {
@@ -12,6 +14,10 @@ export default async function GroupSettingsPage({ params }: PageProps) {
   const group = await repo.getGroupById(groupId);
   const membership = await repo.getMembership(groupId, user.id);
   if (!group || !membership) notFound();
+
+  if (isWorldCupPrivateMode() && !membership.isOwner) {
+    redirect(`/groups/${groupId}`);
+  }
 
   const { data: memberRows, error: membersError } = await supabase
     .from("group_memberships")
@@ -36,6 +42,7 @@ export default async function GroupSettingsPage({ params }: PageProps) {
       members={members}
       currentUserId={user.id}
       isOwner={membership.isOwner}
+      worldCupPrivateMode={isWorldCupPrivateMode()}
     />
   );
 }

@@ -26,14 +26,18 @@ export default async function ParticipantContestsPage() {
       <section className="space-y-4">
         <h1 className="text-2xl font-semibold">Active contests</h1>
         <p className="text-sm text-muted-foreground">
-          Create or join a private group to see contests for your team.
+          {isWorldCupPrivateMode()
+            ? "Join with your invite code to see World Cup picks."
+            : "Create or join a private group to see contests for your team."}
         </p>
         <div className="flex gap-3">
-          <Link href="/groups/new" className="font-medium underline">
-            Create group
-          </Link>
+          {!isWorldCupPrivateMode() ? (
+            <Link href="/groups/new" className="font-medium underline">
+              Create group
+            </Link>
+          ) : null}
           <Link href="/groups/join" className="font-medium underline">
-            Join with code
+            Join with invite code
           </Link>
         </div>
       </section>
@@ -42,6 +46,15 @@ export default async function ParticipantContestsPage() {
 
   const service = new GroupContestService(supabase);
   const contests = await service.listContests(activeGroupId);
+  const visible = isWorldCupPrivateMode()
+    ? contests.filter(
+        (c) =>
+          c.format_label !== "rummy_points" &&
+          ((c.name ?? "").toLowerCase().includes("world cup") ||
+            (c.name ?? "").toLowerCase().includes("fifa") ||
+            c.format_label === "prediction"),
+      )
+    : contests;
 
   return (
     <section className="space-y-4">
@@ -56,7 +69,7 @@ export default async function ParticipantContestsPage() {
         </Link>
       </p>
       <ul className="space-y-2">
-        {contests.map((c) => (
+        {visible.map((c) => (
           <li key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
             <Link href={contestPrimaryLink(c)} className="font-medium underline">
               {c.name}
@@ -65,7 +78,7 @@ export default async function ParticipantContestsPage() {
             <ContestStateBadge state={c.state} />
           </li>
         ))}
-        {contests.length === 0 ? (
+        {visible.length === 0 ? (
           <li className="text-sm text-muted-foreground">No contests yet for this group.</li>
         ) : null}
       </ul>

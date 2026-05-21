@@ -7,6 +7,7 @@ import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
 import {
   isWorldCupPrivateMode,
   getDefaultGroupId,
+  getDefaultContestId,
 } from "@/lib/server/world-cup/flags";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export default async function AuthenticatedLayout({
     : null;
 
   let groupSwitcher = null;
-  if (isGroupScopingEnabled() && activeGroupId) {
+  if (isGroupScopingEnabled() && activeGroupId && !isWorldCupPrivateMode()) {
     const repo = new GroupRepository(supabase);
     const groups = await repo.listActiveGroupsForUser(user.id);
     groupSwitcher = (
@@ -39,6 +40,7 @@ export default async function AuthenticatedLayout({
       <AppNav
         worldCupPrivateMode={isWorldCupPrivateMode()}
         defaultGroupId={getDefaultGroupId() ?? activeGroupId}
+        defaultContestId={getDefaultContestId()}
       />
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-2">
         {groupSwitcher}

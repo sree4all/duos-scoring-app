@@ -13,12 +13,15 @@ import {
   ContestFormatBadge,
   ContestStateBadge,
 } from "@/components/contests/contest-format-badge";
+import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
+import { worldCupCopy } from "@/lib/copy/world-cup";
 
 type PageProps = { params: Promise<{ groupId: string }> };
 
 export default async function GroupDashboardPage({ params }: PageProps) {
   const { groupId } = await params;
   const { supabase, user } = await requireUser();
+  const privatePilot = isWorldCupPrivateMode();
 
   const group = await new GroupRepository(supabase).getGroupById(groupId);
   if (!group) notFound();
@@ -27,6 +30,12 @@ export default async function GroupDashboardPage({ params }: PageProps) {
 
   const contests = await new GroupContestService(supabase).listContests(groupId);
   const summary = summarizeContestsByFormat(contests);
+  const worldCupContests = summary.prediction.filter(
+    (c) =>
+      (c.name ?? "").toLowerCase().includes("world cup") ||
+      (c.name ?? "").toLowerCase().includes("fifa"),
+  );
+  const pickContests = privatePilot ? worldCupContests : summary.prediction;
 
   function ContestList({
     title,
@@ -44,12 +53,20 @@ export default async function GroupDashboardPage({ params }: PageProps) {
               <Link href={contestPrimaryLink(c)} className="font-medium underline">
                 {c.name}
               </Link>
-              <ContestFormatBadge formatLabel={c.format_label} />
-              <ContestStateBadge state={c.state} />
+              {!privatePilot ? (
+                <>
+                  <ContestFormatBadge formatLabel={c.format_label} />
+                  <ContestStateBadge state={c.state} />
+                </>
+              ) : null}
             </li>
           ))}
           {items.length === 0 ? (
-            <li className="text-sm text-muted-foreground">None yet</li>
+            <li className="text-sm text-muted-foreground">
+              {privatePilot && membership.isOwner
+                ? "Publish your World Cup contest, then import the schedule."
+                : "Your organizer will open picks soon."}
+            </li>
           ) : null}
         </ul>
       </div>
@@ -60,28 +77,43 @@ export default async function GroupDashboardPage({ params }: PageProps) {
     <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold">{group.name}</h1>
-        <p className="text-sm text-muted-foreground">Group home</p>
+        <p className="text-sm text-muted-foreground">
+          {privatePilot ? "FIFA World Cup 2026 picks" : "Group home"}
+        </p>
       </header>
 
-      <GroupDualFormatPanel isOwner={membership.isOwner} />
+      {!privatePilot ? <GroupDualFormatPanel isOwner={membership.isOwner} /> : null}
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <ContestList title="World Cup Picks" items={summary.prediction} />
-        <ContestList title="Rummy Scores" items={summary.rummy} />
-      </div>
+      {privatePilot ? (
+        <ContestList title={worldCupCopy.nav.worldCupPicks} items={pickContests} />
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2">
+          <ContestList title="World Cup Picks" items={summary.prediction} />
+          <ContestList title="Rummy Scores" items={summary.rummy} />
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-3 text-sm">
-        <Link href="/contests" className="font-medium underline">
-          All contests
-        </Link>
-        {membership.isOwner ? (
-          <Link href={`/groups/${groupId}/contests/new`} className="font-medium underline">
-            New contest
+        {!privatePilot ? (
+          <Link href="/contests" className="font-medium underline">
+            All contests
           </Link>
         ) : null}
-        <Link href={`/groups/${groupId}/settings`} className="font-medium underline">
-          Settings
-        </Link>
+        {membership.isOwner ? (
+          <>
+            <Link href={`/groups/${groupId}/contests/new`} className="font-medium underline">
+              {privatePilot ? "Manage World Cup contest" : "New contest"}
+            </Link>
+            <Link href={`/groups/${groupId}/settings`} className="font-medium underline">
+              Organizer settings
+            </Link>
+          </>
+        ) : null}
+        {!membership.isOwner && !privatePilot ? (
+          <Link href={`/groups/${groupId}/settings`} className="font-medium underline">
+            Settings
+          </Link>
+        ) : null}
       </div>
     </section>
   );

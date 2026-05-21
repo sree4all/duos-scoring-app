@@ -13,7 +13,13 @@ import { PublishStep } from "@/components/groups/contest-wizard/publish-step";
 
 const STEPS = ["details", "events", "prompts", "scoring", "publish"] as const;
 
-export function GroupContestWizard({ groupId }: { groupId: string }) {
+export function GroupContestWizard({
+  groupId,
+  worldCupOnly = false,
+}: {
+  groupId: string;
+  worldCupOnly?: boolean;
+}) {
   const [stepIndex, setStepIndex] = useState(0);
   const [details, setDetails] = useState<ContestDetailsValues>({
     name: "World Cup 2026",
@@ -98,7 +104,11 @@ export function GroupContestWizard({ groupId }: { groupId: string }) {
   return (
     <div className="space-y-4">
       {step === "details" ? (
-        <ContestDetailsStep values={details} onChange={setDetails} />
+        <ContestDetailsStep
+          values={details}
+          onChange={setDetails}
+          worldCupOnly={worldCupOnly}
+        />
       ) : null}
       {step === "events" ? (
         <EventsStep

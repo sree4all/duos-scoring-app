@@ -8,9 +8,11 @@ export type ContestDetailsValues = {
 export function ContestDetailsStep({
   values,
   onChange,
+  worldCupOnly = false,
 }: {
   values: ContestDetailsValues;
   onChange: (values: ContestDetailsValues) => void;
+  worldCupOnly?: boolean;
 }) {
   return (
     <section className="space-y-4 rounded-lg border p-4">
@@ -31,21 +33,25 @@ export function ContestDetailsStep({
         <label htmlFor="contest-format" className="text-sm font-medium">
           Format
         </label>
-        <select
-          id="contest-format"
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          value={values.formatLabel}
-          onChange={(e) =>
-            onChange({
-              ...values,
-              formatLabel: e.target.value as ContestDetailsValues["formatLabel"],
-            })
-          }
-        >
-          <option value="world_cup_prediction">World Cup 2026 (prediction)</option>
-          <option value="prediction">Prediction league</option>
-          <option value="rummy_points">Points rummy</option>
-        </select>
+        {worldCupOnly ? (
+          <p className="text-sm text-muted-foreground">World Cup 2026 prediction</p>
+        ) : (
+          <select
+            id="contest-format"
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            value={values.formatLabel}
+            onChange={(e) =>
+              onChange({
+                ...values,
+                formatLabel: e.target.value as ContestDetailsValues["formatLabel"],
+              })
+            }
+          >
+            <option value="world_cup_prediction">World Cup 2026 (prediction)</option>
+            <option value="prediction">Prediction league</option>
+            <option value="rummy_points">Points rummy</option>
+          </select>
+        )}
       </div>
     </section>
   );

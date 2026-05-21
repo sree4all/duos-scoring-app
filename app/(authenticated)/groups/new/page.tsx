@@ -1,6 +1,14 @@
+import { redirect } from "next/navigation";
+import { isGroupCreationDisabled } from "@/lib/server/world-cup/flags";
+import { getDefaultGroupId } from "@/lib/server/world-cup/flags";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
 
 export default function NewGroupPage() {
+  if (isGroupCreationDisabled()) {
+    const gid = getDefaultGroupId();
+    redirect(gid ? `/groups/join` : "/groups/join");
+  }
+
   return (
     <section className="space-y-6">
       <header>

@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { requireGroupOwner } from "@/lib/server/groups/guards";
 import { GroupRepository } from "@/lib/server/groups/repository";
 import { GroupContestWizard } from "@/components/groups/contest-wizard/group-contest-wizard";
+import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 
 type PageProps = { params: Promise<{ groupId: string }> };
 
@@ -22,9 +23,11 @@ export default async function GroupNewContestPage({ params }: PageProps) {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">New contest</h1>
+      <h1 className="text-2xl font-semibold">
+        {isWorldCupPrivateMode() ? "World Cup contest setup" : "New contest"}
+      </h1>
       <p className="text-sm text-muted-foreground">Group: {group.name}</p>
-      <GroupContestWizard groupId={groupId} />
+      <GroupContestWizard groupId={groupId} worldCupOnly={isWorldCupPrivateMode()} />
       <p className="text-sm">
         <Link href={`/groups/${groupId}/settings`} className="underline">
           Back to group settings

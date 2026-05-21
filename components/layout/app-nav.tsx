@@ -54,12 +54,19 @@ function DefaultAppNav() {
 export function AppNav({
   worldCupPrivateMode = false,
   defaultGroupId = null,
+  defaultContestId = null,
 }: {
   worldCupPrivateMode?: boolean;
   defaultGroupId?: string | null;
+  defaultContestId?: string | null;
 }) {
   if (worldCupPrivateMode) {
-    return <WorldCupAppNav defaultGroupId={defaultGroupId} />;
+    return (
+      <WorldCupAppNav
+        defaultGroupId={defaultGroupId}
+        defaultContestId={defaultContestId}
+      />
+    );
   }
   return <DefaultAppNav />;
 }

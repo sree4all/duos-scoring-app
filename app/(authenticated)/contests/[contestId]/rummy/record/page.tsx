@@ -1,4 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
+import { getDefaultGroupId } from "@/lib/server/world-cup/flags";
 import { requireUser } from "@/lib/auth/require-user";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
@@ -8,6 +10,11 @@ import { HandEntryForm } from "@/components/rummy/hand-entry-form";
 type PageProps = { params: Promise<{ contestId: string }> };
 
 export default async function RummyRecordPage({ params }: PageProps) {
+  if (isWorldCupPrivateMode()) {
+    const gid = getDefaultGroupId();
+    redirect(gid ? `/groups/${gid}` : "/groups");
+  }
+
   const { contestId } = await params;
   const { supabase, user } = await requireUser();
   const activeGroupId = await resolveActiveGroupId(supabase, user.id);

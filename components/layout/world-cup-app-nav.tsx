@@ -7,15 +7,31 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 
-const memberLinks = (groupId: string | null) => [
-  { href: groupId ? `/groups/${groupId}` : "/groups", label: worldCupCopy.nav.groups },
-  { href: "/history", label: worldCupCopy.nav.myPoints },
-];
-
-export function WorldCupAppNav({ defaultGroupId }: { defaultGroupId?: string | null }) {
+export function WorldCupAppNav({
+  defaultGroupId,
+  defaultContestId,
+}: {
+  defaultGroupId?: string | null;
+  defaultContestId?: string | null;
+}) {
   const pathname = usePathname();
   const supabase = createClient();
-  const links = memberLinks(defaultGroupId ?? null);
+  const groupId = defaultGroupId ?? null;
+
+  const links: { href: string; label: string }[] = [
+    { href: groupId ? `/groups/${groupId}` : "/groups", label: worldCupCopy.nav.groups },
+  ];
+  if (defaultContestId) {
+    links.push({
+      href: `/contests/${defaultContestId}/matches`,
+      label: worldCupCopy.nav.worldCupPicks,
+    });
+    links.push({
+      href: `/contests/${defaultContestId}/leaderboard`,
+      label: worldCupCopy.nav.standings,
+    });
+  }
+  links.push({ href: "/history", label: worldCupCopy.nav.myPoints });
 
   async function signOut() {
     await supabase.auth.signOut();
