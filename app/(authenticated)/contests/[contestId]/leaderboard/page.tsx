@@ -19,7 +19,7 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
   const contest = await contests.assertContestInGroup(contestId, activeGroupId);
 
   const { data: ledger } = await supabase
-    .from("points_ledger")
+    .from("contest_points_ledger")
     .select("participant_id, action_type, points_delta, reason_text")
     .eq("contest_id", contestId);
 

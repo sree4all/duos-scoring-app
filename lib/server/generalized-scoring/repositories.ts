@@ -34,7 +34,7 @@ export class GeneralizedScoringRepositories {
     let query = this.client()
       .from("contests")
       .select(
-        "id, game_type_id, name, state, visibility, group_id, format_label, legacy_tournament_scope_id, default_lock_policy, created_at, updated_at",
+        "id, game_type_id, name, state, visibility, group_id, format_label, tournament_scope_id, default_lock_policy, created_at, updated_at",
       )
       .eq("id", contestId);
 

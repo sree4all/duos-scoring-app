@@ -136,7 +136,7 @@ As a **Group Owner**, I run a prediction league and a weekly Rummy night in the 
 
 - **FR-001**: System MUST support a **prediction contest mode** for ongoing leagues/tournaments including scheduled events, winner picks, lock windows, scoring, contest leaderboard, and personal history with itemized point breakdown.
 - **FR-002**: System MUST support **per-event bonus questions** (multiple prompts per event where configured), award bonus points when official answers match member answers, and show bonus lines separately in history and leaderboard detail.
-- **FR-003**: System MUST support **legacy-style single bonus pick per event** where configured, consistent with historical behavior when multi-prompt bonuses are not used.
+- **FR-003**: System MUST support **single bonus pick per event** where configured, when multi-prompt bonuses are not used.
 - **FR-004**: System MUST support **season-level bonus questions** as a distinct tab or section, including admin-controlled visibility timing and reveal, and include season bonus points in member totals when scored.
 - **FR-005**: System MUST expose **prediction statistics** (aggregate pick distribution for completed events) to group members without exposing other members’ editable drafts before lock.
 - **FR-006**: System MUST support a **card-game score-entry mode** for Indian Rummy including hand/round recording, drop penalties, unmelded-card points, declared winner, and cumulative contest totals.

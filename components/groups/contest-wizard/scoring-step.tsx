@@ -10,7 +10,7 @@ export function ScoringStep({
       <h2 className="font-medium">Step 4: Scoring preset</h2>
       {formatLabel === "prediction" ? (
         <p className="text-sm text-muted-foreground">
-          Prediction contests use legacy match winner and bonus points from{" "}
+          Prediction contests use match winner and bonus points from{" "}
           <code className="text-xs">scoring_config</code> via the group prediction adapter.
         </p>
       ) : (

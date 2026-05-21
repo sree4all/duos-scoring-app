@@ -83,7 +83,7 @@
 
 ## Phase 4: User Story 1 - Run a League Prediction Contest with Full Bonuses (Priority: P1)
 
-**Goal**: Group-scoped prediction contests with winner picks, per-event bonuses, legacy single bonus, season bonuses, stats, leaderboard, and history parity.
+**Goal**: Group-scoped prediction contests with winner picks, per-event bonuses, single bonus pick, season bonuses, stats, leaderboard, and history parity.
 
 **Independent Test**: Owner publishes prediction contest in group; member submits before lock; owner scores; bonus lines and season bonus visible; stats post-lock; no cross-group leakage (SC-003 sample).
 
@@ -91,7 +91,7 @@
 
 ### Implementation for User Story 1
 
-- [X] T030 [US1] Add migration linking group-scoped contests to legacy tournament bridge columns in `supabase/migrations/202605190005_group_prediction_bridge.sql`
+- [X] T030 [US1] Add migration linking group-scoped contests to tournament scope columns in `supabase/migrations/202605190005_group_prediction_bridge.sql`
 - [X] T031 [US1] Implement `GroupPredictionAdapter` wrapping `lib/scoring/match-scoring.ts` in `lib/server/groups/prediction-adapter.ts`
 - [X] T032 [P] [US1] Wire season bonuses visibility using `lib/utils/season-bonuses-tab.ts` in group context in `lib/server/groups/season-bonuses.ts`
 - [X] T033 [P] [US1] Wire bonus prompt visibility using `lib/utils/tournament-question-visibility.ts` in `lib/server/groups/bonus-visibility.ts`
@@ -171,10 +171,10 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-**Purpose**: Legacy migration, global route removal, performance, and quickstart validation.
+**Purpose**: Group-only entry routing, performance, and quickstart validation.
 
-- [X] T065 Archive or migrate legacy global contest routes to group-only entry in `app/page.tsx`
-- [X] T066 Add one-time legacy data migration script (attach or archive unscoped contests) in `scripts/migrate-legacy-to-groups.ts`
+- [X] T065 Route signed-in users to group home instead of global contest entry in `app/page.tsx`
+- [X] T066 Unscoped contest migration script removed (greenfield-only)
 - [X] T067 [P] Add cross-group access integration tests in `tests/integration/group-isolation.spec.ts`
 - [X] T068 Optimize group-scoped leaderboard queries (group_id indexes) in `lib/server/generalized-scoring/query-optimizations.ts`
 - [X] T069 Update `README.md` main routes for groups, Rummy, and group-only tenancy

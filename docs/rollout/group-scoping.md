@@ -5,7 +5,7 @@
 | Variable | Values | Purpose |
 |----------|--------|---------|
 | `GROUP_SCOPING_ENABLED` | `true` / `false` | Master toggle for private groups, active group context, and `group_id` filtering |
-| `GROUP_PREDICTION_ENABLED` | `true` / `false` | Group-scoped prediction contests with legacy bonus parity adapter |
+| `GROUP_PREDICTION_ENABLED` | `true` / `false` | Group-scoped prediction contests with full bonus parity adapter |
 | `GROUP_RUMMY_ENABLED` | `true` / `false` | Points-rummy hand entry and presets |
 
 ## Recommended defaults (development)

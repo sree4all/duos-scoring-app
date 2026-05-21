@@ -1,5 +1,5 @@
 /**
- * Parity harness: group prediction adapter delegates to legacy match scoring.
+ * Parity harness: group prediction adapter ledger line projection types.
  * Run with: npx tsx tests/integration/group-prediction-parity.spec.ts
  */
 import { projectLedgerLines } from "@/lib/server/generalized-scoring/scoring-projection-service";

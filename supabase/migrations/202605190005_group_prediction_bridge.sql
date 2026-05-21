@@ -1,14 +1,14 @@
--- Bridge group-scoped prediction contests to legacy match/tournament scoring
+-- Group-scoped prediction contests linked to match/tournament scoring
 
 begin;
 
 alter table public.contests
   add column if not exists format_label text,
-  add column if not exists legacy_tournament_scope_id uuid;
+  add column if not exists tournament_scope_id uuid;
 
 comment on column public.contests.format_label is 'UI label: prediction | rummy_points';
-comment on column public.contests.legacy_tournament_scope_id is
-  'Optional scope id for group-scoped tournament_config during legacy bridge';
+comment on column public.contests.tournament_scope_id is
+  'Optional link to group_tournament_config for season bonus settings';
 
 alter table public.events
   add column if not exists source_match_id uuid references public.matches (id) on delete set null;

@@ -6,15 +6,15 @@ import { requireGroupMembership, requireGroupOwner } from "@/lib/server/groups/g
 export type GroupPredictionBridge = {
   groupId: string;
   contestId: string;
-  legacyTournamentScopeId?: string | null;
+  tournamentScopeId?: string | null;
 };
 
 export function createGroupPredictionBridge(
   groupId: string,
   contestId: string,
-  legacyTournamentScopeId?: string | null,
+  tournamentScopeId?: string | null,
 ): GroupPredictionBridge {
-  return { groupId, contestId, legacyTournamentScopeId };
+  return { groupId, contestId, tournamentScopeId };
 }
 
 export class GroupPredictionAdapter {
@@ -38,13 +38,11 @@ export class GroupPredictionAdapter {
     return createGroupPredictionBridge(
       groupId,
       contestId,
-      contest.legacy_tournament_scope_id ?? null,
+      contest.tournament_scope_id ?? null,
     );
   }
 
-  /**
-   * Score a legacy match linked to a group contest event (winner + bonus parity).
-   */
+  /** Score a match linked to a group contest event (winner + bonus points). */
   async scoreLinkedMatch(
     bridge: GroupPredictionBridge,
     matchId: string,

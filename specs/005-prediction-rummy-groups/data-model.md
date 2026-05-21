@@ -4,7 +4,7 @@
 
 - **Tenant root** is `groups`; every contest and downstream scoring artifact carries `group_id`.
 - Extend 004 generalized entities additively; do not fork parallel contest systems.
-- Prediction bonus parity may temporarily use legacy-linked tables scoped by `group_id` during bridge phase.
+- Prediction bonus parity uses season tournament tables scoped by `group_id` via contest bridge fields.
 - Rummy uses explicit hand entities plus ledger entries for cumulative totals.
 
 ## New entities
@@ -106,17 +106,17 @@ Per-player outcome for a hand.
 | `format_label` | text nullable | UI: `prediction` / `rummy_points` |
 
 - Remove reliance on `visibility = public` for participant access; effective visibility is **group membership**.
-- Platform-global contests deprecated; migration sets `group_id` for any retained legacy rows or archives them.
+- Platform-global contests are not supported; all contests require `group_id`.
 
 ### `contests` / prediction bridge (optional link)
 
 | Field | Type | Rules |
 |---|---|---|
-| `legacy_tournament_scope_id` | UUID nullable | Maps to group-scoped legacy tournament config during bridge |
+| `tournament_scope_id` | UUID nullable | Optional link to group tournament config for season bonuses |
 
 ### Season / match bonus (bridge)
 
-- Legacy: `tournament_config`, `bonus_prompts`, `prediction_bonus_answers`, season bonuses columns — scoped by `group_id` on config or via contest bridge id.
+- Season tables: `tournament_config`, `bonus_prompts`, `prediction_bonus_answers`, plus `group_tournament_config` per group.
 
 ## Relationships
 

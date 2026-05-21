@@ -24,7 +24,7 @@ export function EventsStep({
     <section className="space-y-4 rounded-lg border p-4">
       <h2 className="font-medium">Step 2: Events and lock schedule</h2>
       <p className="text-sm text-muted-foreground">
-        Link each event to a legacy match id for prediction scoring parity.
+        Link each event to a match id so owner scoring can run after results are entered.
       </p>
       {events.map((ev, index) => (
         <div key={index} className="space-y-2 rounded border p-3">

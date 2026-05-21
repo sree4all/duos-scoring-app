@@ -29,7 +29,7 @@ export async function voidGroupContestEvent(
   if (evErr) throw evErr;
 
   if (reversal !== 0) {
-    const { error: ledgerErr } = await supabase.from("points_ledger").insert({
+    const { error: ledgerErr } = await supabase.from("contest_points_ledger").insert({
       contest_id: contestId,
       event_id: eventId,
       participant_id: "system",

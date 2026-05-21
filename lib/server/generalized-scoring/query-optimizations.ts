@@ -6,9 +6,9 @@
  * - Materialize leaderboard snapshots post-scoring when contests exceed scale thresholds.
  */
 export const LEADERBOARD_INDEX_HINTS = [
-  "CREATE INDEX IF NOT EXISTS idx_ledger_contest_participant ON points_ledger (contest_id, participant_id);",
-  "CREATE INDEX IF NOT EXISTS idx_ledger_created_at ON points_ledger (created_at);",
-  "CREATE INDEX IF NOT EXISTS idx_ledger_contest_created ON points_ledger (contest_id, created_at);",
+  "CREATE INDEX IF NOT EXISTS idx_contest_ledger_contest_participant ON contest_points_ledger (contest_id, participant_id);",
+  "CREATE INDEX IF NOT EXISTS idx_contest_ledger_created_at ON contest_points_ledger (created_at);",
+  "CREATE INDEX IF NOT EXISTS idx_contest_ledger_contest_created ON contest_points_ledger (contest_id, created_at);",
 ] as const;
 
 export const GROUP_SCOPING_INDEX_HINTS = [
@@ -19,7 +19,7 @@ export const GROUP_SCOPING_INDEX_HINTS = [
 
 /** Recommended select shape: always scope by contest_id (never aggregate across contests). */
 export const LEADERBOARD_QUERY_PATTERN = {
-  table: "points_ledger",
+  table: "contest_points_ledger",
   filter: "contest_id = $1",
   groupBy: ["participant_id"],
 } as const;

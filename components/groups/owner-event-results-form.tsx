@@ -43,7 +43,7 @@ export function OwnerEventResultsForm({
     <section className="rounded-lg border p-4">
       <h2 className="font-medium">Official results</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Match must be completed in legacy data before scoring runs.
+        Match must be marked completed with winner and bonus results before scoring runs.
       </p>
       <Button type="button" className="mt-3" disabled={pending} onClick={runScoring}>
         Apply match scoring

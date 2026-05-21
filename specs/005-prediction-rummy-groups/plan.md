@@ -5,7 +5,7 @@
 
 ## Summary
 
-Extend `duos-scoring-app` with **private group tenancy** (invite codes, multi-group membership, active group context), **group-only** prediction contests with **full historical bonus parity**, and **points-rummy** score-entry contests with owner/scorer hand recording. Builds additively on the generalized scoring platform (004) and legacy prediction scoring adapters, with RLS-enforced isolation and phased rollout flags.
+Extend `duos-scoring-app` with **private group tenancy** (invite codes, multi-group membership, active group context), **group-only** prediction contests with **full bonus parity**, and **points-rummy** score-entry contests with owner/scorer hand recording. Builds additively on the generalized scoring platform (004) and match/tournament scoring adapters, with RLS-enforced isolation and phased rollout flags.
 
 ## Technical Context
 
@@ -25,7 +25,7 @@ Extend `duos-scoring-app` with **private group tenancy** (invite codes, multi-gr
 
 | Principle | Alignment |
 |---|---|
-| **I. Incremental compatibility** | Phased rollout (`GROUP_SCOPING_ENABLED`); legacy prediction via adapter; migrate/archive unscoped contests |
+| **I. Incremental compatibility** | Phased rollout (`GROUP_SCOPING_ENABLED`); prediction via match-scoring adapter; group-only contest routes |
 | **II. Security / roles** | RLS on `group_id`; owner/scorer/member matrix; session-validated active group |
 | **III. Auditable scoring** | Ledger append for Rummy hands/corrections; prediction uses existing immutable ledger patterns |
 | **IV. Contract-driven gates** | Spec FR-* → contracts → tasks; SC-001–SC-008 verification in quickstart |
@@ -84,7 +84,7 @@ docs/rollout/
 └── group-scoping.md               # NEW flags doc
 ```
 
-**Structure Decision**: Single Next.js app; new `lib/server/groups` and `lib/server/rummy` modules; extend existing generalized and legacy scoring paths rather than new services.
+**Structure Decision**: Single Next.js app; new `lib/server/groups` and `lib/server/rummy` modules; extend existing generalized and season scoring paths rather than new services.
 
 ## Complexity Tracking
 
@@ -96,7 +96,7 @@ No constitution violations requiring justification.
 
 **Status**: Complete → [research.md](./research.md)
 
-Key decisions: group tenancy tables, session active group, reusable rotating invite codes, owner/scorer roles, prediction legacy adapter, points-rummy hand tables, RLS membership policies, phased flags.
+Key decisions: group tenancy tables, session active group, reusable rotating invite codes, owner/scorer roles, prediction adapter, points-rummy hand tables, RLS membership policies, phased flags.
 
 ---
 
@@ -156,13 +156,13 @@ flowchart TB
 | **G3** | `group_id` on contests; block unscoped participant routes | same |
 | **G4** | Prediction parity in group (bridge + owner result entry + bonuses) | `GROUP_PREDICTION_ENABLED` |
 | **G5** | Points rummy preset + hand UI + ledger | `GROUP_RUMMY_ENABLED` |
-| **G6** | Migration script for any legacy global data → archive or assign group | one-time |
+| **G6** | Greenfield deploy docs + column cleanup migration | one-time |
 
-### Migration / legacy handling
+### Data handling (greenfield)
 
-- Existing global `matches` / `tournament_config` flows: **read-only archive** or admin-only migration wizard to attach to a designated group; no new global contests after G3.
-- Reuse `lib/scoring/match-scoring.ts`, `season-bonuses-tab.ts`, `tournament-question-visibility.ts` behind `GroupPredictionAdapter` that injects `group_id` and contest bridge ids.
-- 004 generalized tables gain `group_id NOT NULL` on new rows; backfill migration for dev/demo seeds only.
+- All contests require `group_id`; no global participant contests.
+- Reuse `lib/scoring/match-scoring.ts`, `season-bonuses-tab.ts`, `tournament-question-visibility.ts` behind `GroupPredictionAdapter` scoped by `group_id`.
+- Generalized tables use `contest_points_ledger` for group/rummy; season `points_ledger` for match/tournament scoring.
 
 ### API surface (new / extended)
 

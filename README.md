@@ -21,7 +21,15 @@ Editable diagram (diagrams.net / draw.io): [`docs/app-architecture.drawio`](docs
 
 1. Copy `.env.local.example` to `.env.local`.
 2. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and server secrets needed for scripts.
-3. Apply SQL migrations in `supabase/migrations/` in filename order (through `202605190008` for groups/rummy).
+3. Apply all migrations to your empty Supabase project:
+
+   ```bash
+   npm run db:link    # one-time: project ref from Dashboard → Settings → General
+   npm run db:push    # applies every file in supabase/migrations/ in order
+   ```
+
+   **Empty database:** no manual SQL needed. The chain runs `0001` → `0024` → `20260501*` → `20260519*` (groups, rummy, contest ledger).  
+   If `db push` fails mid-way, reset the database in the Supabase Dashboard and run `db push` again.
 4. Enable auth providers (Google and/or Email) and set callback URL to `http://localhost:3000/auth/callback`.
 5. Set group flags (recommended for local dev):
 
@@ -37,14 +45,6 @@ Editable diagram (diagrams.net / draw.io): [`docs/app-architecture.drawio`](docs
 ## Scripts
 
 See [`scripts/README.md`](scripts/README.md) for seed/import commands.
-
-Legacy contest migration (one-time):
-
-```bash
-npx tsx scripts/migrate-legacy-to-groups.ts --group-id <your-group-uuid>
-# or archive unscoped rows:
-npx tsx scripts/migrate-legacy-to-groups.ts --archive
-```
 
 ## Main routes
 

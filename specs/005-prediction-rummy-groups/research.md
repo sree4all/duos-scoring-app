@@ -32,13 +32,13 @@
   - Platform admin for all setup: rejected — groups are self-serve.
   - Scorer as separate table: rejected — boolean on membership is sufficient at v1 scale.
 
-## Decision 5: Prediction parity via legacy scoring adapter (phased)
+## Decision 5: Prediction parity via match-scoring adapter (phased)
 
-- **Decision**: For prediction contests, **bridge** existing legacy capabilities (match winner scoring, per-prompt bonuses, legacy single bonus pick, season bonuses tab, prediction stats) into group-scoped contests using an adapter layer over `lib/scoring/match-scoring.ts` and related utilities, while generalized entities remain the long-term model from 004.
-- **Rationale**: Fastest path to "all bonus features as in history" without re-implementing proven logic; constitution favors incremental compatibility.
+- **Decision**: For prediction contests, **bridge** season capabilities (match winner scoring, per-prompt bonuses, single bonus pick, season bonuses tab, prediction stats) into group-scoped contests using an adapter layer over `lib/scoring/match-scoring.ts` and related utilities, while generalized entities remain the long-term model from 004.
+- **Rationale**: Reuse proven scoring logic; constitution favors incremental compatibility.
 - **Alternatives considered**:
   - Rebuild all bonus flows only in generalized engine before launch: rejected due to time/risk.
-  - Legacy tables without group scope: rejected — violates group-only tenancy.
+  - Season tables without group scope: rejected — violates group-only tenancy.
 
 ## Decision 6: Points rummy as score-entry preset v1
 
@@ -58,7 +58,7 @@
 ## Decision 8: Incremental rollout with compatibility gates
 
 - **Decision**: Roll out in phases behind `GROUP_SCOPING_ENABLED` (and reuse `GENERALIZED_SCORING_ENABLED` where applicable): (1) groups CRUD/join, (2) group context + RLS, (3) group-bound contests, (4) prediction parity in group, (5) rummy hands.
-- **Rationale**: Constitution principle I — avoid big-bang; existing deployments may have legacy global data requiring migration scripts.
+- **Rationale**: Constitution principle I — avoid big-bang; phased flags reduce regression risk.
 - **Alternatives considered**:
   - Single release: rejected for regression risk.
 

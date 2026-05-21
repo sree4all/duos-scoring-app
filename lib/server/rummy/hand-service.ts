@@ -96,7 +96,7 @@ export class RummyHandService {
 
     for (const p of input.players) {
       const delta = computed[p.participantId] ?? 0;
-      const { error: ledgerErr } = await this.supabase.from("points_ledger").insert({
+      const { error: ledgerErr } = await this.supabase.from("contest_points_ledger").insert({
         contest_id: input.contestId,
         participant_id: p.participantId,
         action_type: "rummy_hand",
@@ -145,7 +145,7 @@ export class RummyHandService {
 
     for (const row of players ?? []) {
       const delta = -Number(row.computed_points ?? 0);
-      await this.supabase.from("points_ledger").insert({
+      await this.supabase.from("contest_points_ledger").insert({
         contest_id: hand.contest_id,
         participant_id: row.participant_id,
         action_type: "rummy_void",

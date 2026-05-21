@@ -29,7 +29,7 @@ export async function listGroupHistoryForUser(
   if (contestIds.length === 0) return [];
 
   const { data: ledger, error: lErr } = await supabase
-    .from("points_ledger")
+    .from("contest_points_ledger")
     .select(
       "id, contest_id, event_id, participant_id, action_type, points_delta, reason_text, created_at",
     )

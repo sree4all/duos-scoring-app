@@ -16,7 +16,7 @@ Group-bound prediction contests that preserve historical league features: winner
 
 ## Participant submission
 
-- Per event before lock: winner pick + applicable bonus answers (multi-prompt and/or legacy single bonus per contest config)
+- Per event before lock: winner pick + applicable bonus answers (multi-prompt and/or single bonus pick per contest config)
 - Season bonuses: visible only when contest/group config says so (timed and/or owner reveal); submissions editable until season bonus lock policy says otherwise
 - After lock: edits rejected with lock message
 
@@ -24,7 +24,7 @@ Group-bound prediction contests that preserve historical league features: winner
 
 - Owner records winner and bonus official answers per event
 - Triggers scoring run producing ledger lines: `match` / `bonus` / season bonus sources
-- Scoring MUST match legacy reference behavior for equivalent config (parity tests)
+- Scoring MUST match reference spreadsheet behavior for equivalent config (parity tests)
 
 ## Prediction statistics
 

@@ -6,7 +6,7 @@ create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text,
   display_name text not null default '',
-  legacy_points numeric,
+  imported_points numeric,
   current_points numeric not null default 0,
   rank integer,
   created_at timestamptz not null default now(),
