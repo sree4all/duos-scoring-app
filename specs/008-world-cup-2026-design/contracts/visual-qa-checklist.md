@@ -8,7 +8,8 @@
 
 | # | Check | Pass |
 |---|--------|------|
-| A1 | `/groups` with WC contest — **no** hero image, gradient only | |
+| A1 | `/groups` list with WC contest — **no** hero image, gradient only | |
+| A1b | `/groups/[groupId]` with WC contest — **welcome** hero (same as `/welcome`) | |
 | A2 | Rummy contest matches route — **no** WC hero | |
 | A3 | `prefers-reduced-motion: reduce` on — all three pages gradient-only | |
 

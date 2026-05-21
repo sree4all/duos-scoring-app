@@ -24,7 +24,7 @@ Three stakeholder-provided hero artworks must be **blended into page backgrounds
 
 - Q: When should the World Cup 2026 backgrounds (and theme) be active? → A: Only on the three in-scope page families when the user is in a **World Cup prediction contest** context (aligned with feature 006 and FR-007); Rummy and other contest types keep the default neon theme on all routes.
 - Q: How should `/welcome` decide to show the first hero image? → A: Show welcome artwork when the user’s **current group has an active World Cup prediction contest** (group-level check; no contest ID required in the URL).
-- Q: Should `/groups` use the welcome hero image when the group has an active World Cup contest? → A: No — `/groups` stays default neon gradient only; hero images apply only to `/welcome`, prediction, and leaderboard.
+- Q: Should `/groups` use the welcome hero image when the group has an active World Cup contest? → A: Initially no for `/groups` list; **updated**: `/groups/[groupId]` hub uses the same welcome hero as `/welcome` when the group has an active World Cup prediction contest. `/groups` list remains gradient-only.
 - Q: When the user has `prefers-reduced-motion` enabled, what should happen on the three World Cup hero pages? → A: Skip hero images entirely — show default neon gradient only on welcome, prediction, and leaderboard.
 - Q: On the three hero pages (when images are shown), how should the artwork relate to the existing purple neon gradient? → A: **Subtle texture** — hero image at low opacity (~20–30%) over the full gradient so the gradient remains visually dominant.
 
@@ -55,7 +55,7 @@ Three stakeholder-provided hero artworks must be **blended into page backgrounds
 - Changing routes, copy, workflows, permissions, imports, or scoring rules.
 - Replacing logos, creating new illustrations, or licensing third-party likenesses beyond using the supplied assets as provided.
 - Applying World Cup imagery to unrelated flows (Rummy, generic group settings, non–World Cup contests) unless explicitly toggled later.
-- **Group hub (`/groups`)**: remains default neon gradient only—even when the group has an active World Cup prediction contest (hero imagery is limited to `/welcome`, prediction, and leaderboard).
+- **`/groups` list**: remains default neon gradient only. Hero imagery applies to `/welcome`, `/groups/[groupId]`, prediction, and leaderboard.
 - Admin/owner dense tooling themes (imports, stage reveal tables) unless they share the same page shell as leaderboard—leaderboard styling is in scope; separate admin-only screens are out of scope for v1.
 - Automated visual regression infrastructure (manual QA checklist is acceptable).
 - Renaming or removing the default **Neon Sports Scoreboard** theme; World Cup 2026 is an additional named theme/variant.
@@ -135,7 +135,7 @@ As a **member moving welcome → prediction → leaderboard**, I perceive one **
 - Non–World Cup contests and Rummy: default neon gradient theme applies on all routes; World Cup hero backgrounds do not leak.
 - World Cup contest **history**, **stats**, or **bonus** routes (outside the three page families): default neon gradient only—no hero artwork (per activation rule).
 - `/welcome` with no World Cup contest in the current group: default neon gradient only (e.g., Rummy-only group phase).
-- `/groups` with an active World Cup contest in the group: default neon gradient only (no welcome artwork on the hub).
+- `/groups` list with an active World Cup contest in a group: default neon gradient only (hub artwork is on `/groups/[groupId]`).
 - Owner viewing the same member leaderboard route: same standings background as members.
 
 ## Requirements *(mandatory)*
@@ -147,7 +147,7 @@ As a **member moving welcome → prediction → leaderboard**, I perceive one **
 - **FR-003**: Each background entry MUST specify blend behavior: the **base purple neon gradient remains the dominant layer**; the hero image renders as a **low-opacity texture (~20–30% opacity)** over that gradient (cover fit, focal position, optional vignette). Imagery MUST NOT appear as a full-opacity full-bleed poster behind text; dense content continues to use elevated glass panels for readability.
 - **FR-004**: Welcome MUST use the first artwork; prediction MUST use the second; standings/leaderboard MUST use the third—with no cross-assignment on production routes.
 - **FR-011**: `/welcome` MUST show the first artwork when the user’s **current group has an active World Cup prediction contest**, determined by a group-level check (contest ID in the URL is not required). If the group has no active World Cup prediction contest, `/welcome` MUST use the default neon gradient without World Cup artwork.
-- **FR-012**: `/groups` MUST NOT display World Cup hero artwork; it MUST always use the default neon gradient shell regardless of World Cup contest presence in the group.
+- **FR-012**: `/groups` (list) MUST NOT display World Cup hero artwork. `/groups/[groupId]` MUST show the welcome hero when the group has an active World Cup prediction contest (same rules as FR-011).
 - **FR-013**: When the user’s system reports **`prefers-reduced-motion: reduce`**, the three in-scope pages MUST omit World Cup hero images and render the default neon gradient shell only (same as image load failure).
 - **FR-005**: Foreground content (headlines, body, buttons, tables, forms) MUST remain readable on all three pages; overlays or panel treatments MUST meet the same minimum text contrast standard established for the app-wide dark theme (WCAG 2.1 AA for text and essential UI labels).
 - **FR-006**: Dense pages (prediction and standings) MUST keep main interactive and tabular content on elevated semi-transparent panels per the existing dense-tier pattern; backgrounds MUST NOT replace panel readability requirements.

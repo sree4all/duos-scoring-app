@@ -13,6 +13,8 @@ import {
 } from "@/components/contests/contest-format-badge";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 import { isWorldCupContest } from "@/lib/server/world-cup/resolve-group-contest";
+import { resolveWelcomePageBackground } from "@/lib/design/resolve-page-background";
+import { PageHeroLayer } from "@/components/layout/page-hero-layer";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 
 type PageProps = { params: Promise<{ groupId: string }> };
@@ -28,6 +30,7 @@ export default async function GroupDashboardPage({ params }: PageProps) {
   const summary = summarizeContestsByFormat(contests);
   const worldCupContests = summary.prediction.filter((c) => isWorldCupContest(c));
   const pickContests = privatePilot ? worldCupContests : summary.prediction;
+  const pageBackground = await resolveWelcomePageBackground(supabase, groupId);
 
   function ContestList({
     title,
@@ -66,14 +69,18 @@ export default async function GroupDashboardPage({ params }: PageProps) {
   }
 
   return (
-    <section className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">{group.name}</h1>
+    <section className="relative space-y-6">
+      {pageBackground ? <PageHeroLayer pageBackground={pageBackground} /> : null}
+      <header className="relative z-[1]">
+        <h1 className={pageBackground ? "text-hero text-left" : "text-2xl font-semibold"}>
+          {group.name}
+        </h1>
         <p className="text-sm text-muted-foreground">
           {privatePilot ? "FIFA World Cup 2026 Prediction Game" : "Group home"}
         </p>
       </header>
 
+      <div className="relative z-[1] space-y-6">
       {!privatePilot ? <GroupDualFormatPanel isOwner={membership.isOwner} /> : null}
 
       {privatePilot ? (
@@ -115,6 +122,7 @@ export default async function GroupDashboardPage({ params }: PageProps) {
             Settings
           </Link>
         ) : null}
+      </div>
       </div>
     </section>
   );

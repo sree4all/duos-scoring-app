@@ -8,7 +8,7 @@ import {
 
 export type { PageBackgroundKey };
 
-/** Group-level: active World Cup prediction contest → welcome hero (FR-011). */
+/** Group-level: active World Cup prediction contest → welcome hero (FR-011, group hub). */
 export async function resolveWelcomePageBackground(
   supabase: SupabaseClient,
   groupId: string,

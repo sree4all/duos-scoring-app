@@ -43,7 +43,9 @@
 | `/welcome` | no | `welcome` if `hasWorldCupContestInGroup` |
 | `/contests/[id]/matches` | yes | `prediction` if `isWorldCupContest(contest)` |
 | `/contests/[id]/leaderboard` | yes | `standings` if `isWorldCupContest(contest)` |
-| `/groups`, `/groups/[id]`, others | — | `null` |
+| `/groups` (list) | — | `null` |
+| `/groups/[groupId]` (hub) | no | `welcome` if `hasWorldCupContestInGroup` |
+| Other routes | — | `null` |
 
 ## Server wiring
 

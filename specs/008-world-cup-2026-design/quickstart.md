@@ -26,7 +26,8 @@
 1. Open `/welcome` (ensure group has WC contest).
 2. Expect dual-portrait texture at ~25% opacity over purple gradient.
 3. CTA navigates to matches.
-4. Confirm `/groups` — **no** hero (gradient only).
+4. Confirm `/groups` list — **no** hero (gradient only).
+5. Open `/groups/{groupId}` — same welcome hero as step 1 when group has a WC contest.
 
 ### 2. Prediction (image 2)
 
