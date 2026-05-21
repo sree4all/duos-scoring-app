@@ -44,14 +44,19 @@ Bonuses: unchanged from [prediction-parity](../../005-prediction-rummy-groups/co
 ## Official results
 
 - Owner sets `matches.winner` and `status = completed` → `GroupPredictionAdapter.scoreLinkedMatch`.
+- **Group stage** (`stage_key = group_stage`): owner MAY set `matches.winner` to home team name, away team name, or canonical **`Draw`** (regulation tie after 90 minutes). Member picks use the same three values.
+- **Knockout stages**: owner MUST set `matches.winner` to the team that won the match (including extra time / penalties); **`Draw` is rejected** for official results and member picks.
+- Owner saves result via `PATCH /api/groups/{groupId}/contests/{contestId}/matches/{matchId}/result` with body `{ winner }`, then runs scoring via existing results endpoint.
 - Scoring MUST be deterministic: same inputs + rule version → same ledger totals.
 
 ## Verification hooks
 
+- Pick/result validation: `tests/unit/world-cup-match-outcome.spec.ts` (draw allowed only for `group_stage`).
 - Reference table tests: 20 matches across stages → expected deltas per SC-003 (`world-cup-stage-scoring.spec.ts`).
 - Unrevealed stage deep link → 404 or friendly “Not open yet” (`world-cup-stage-reveal.spec.ts`, SC-005).
 - Stage recalculate: rule change + recalculate produces append-only ledger adjustments with `reason`.
 
 ## Out of scope
 
-- Extra-time / penalty shootout pick granularity (winner pick is match winner team only)
+- Separate picks for “winner after 90 minutes” vs “winner after extra time” in knockout matches (one winning team per fixture).
+- Predicting draw in knockout rounds (not permitted by tournament rules).

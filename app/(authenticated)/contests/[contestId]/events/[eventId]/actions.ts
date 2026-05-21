@@ -6,7 +6,11 @@ import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
-import { assertEventRevealedForMember } from "@/lib/server/world-cup/schedule-query";
+import {
+  assertEventRevealedForMember,
+  resolveEventStageKey,
+} from "@/lib/server/world-cup/schedule-query";
+import { validateMatchPick } from "@/lib/domain/world-cup/match-outcome";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 
 export async function saveMatchPick(
@@ -49,11 +53,32 @@ export async function saveMatchPick(
     return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
   }
 
+  const { data: match } = await supabase
+    .from("matches")
+    .select("home_team, away_team")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (!match) return { ok: false as const, error: "Match not found." };
+
+  const stageKey = await resolveEventStageKey(supabase, {
+    stage_key: event.stage_key as string | null,
+    source_match_id: event.source_match_id as string | null,
+  });
+
+  const pickCheck = validateMatchPick(
+    stageKey,
+    predictedWinner,
+    match.home_team as string,
+    match.away_team as string,
+  );
+  if (!pickCheck.ok) return { ok: false as const, error: pickCheck.error };
+
   const { error } = await supabase.from("predictions").upsert(
     {
       user_id: user.id,
       match_id: matchId,
-      predicted_winner: predictedWinner,
+      predicted_winner: pickCheck.value,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id,match_id" },

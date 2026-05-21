@@ -109,7 +109,12 @@ function mapRowToMatchPayload(r: Record<string, string>) {
   else if (/CANCEL/i.test(ms)) status = "cancelled";
   else if (/COMPLET/i.test(ms)) status = "completed";
 
-  const winner = status === "completed" && winnerRaw && !/ABANDON/i.test(winnerRaw) ? winnerRaw : null;
+  let winner: string | null =
+    status === "completed" && winnerRaw && !/ABANDON/i.test(winnerRaw) ? winnerRaw : null;
+  if (winner) {
+    const draw = /^(draw|tie)$/i.test(winner.trim());
+    if (draw) winner = "Draw";
+  }
   const bonus_result = status === "completed" && bonusRaw ? bonusRaw : null;
 
   return { external_key, home_team, away_team, match_time_utc, status, winner, bonus_result };

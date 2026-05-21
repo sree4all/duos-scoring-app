@@ -4,7 +4,12 @@ import { requireUser } from "@/lib/auth/require-user";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
-import { assertEventRevealedForMember } from "@/lib/server/world-cup/schedule-query";
+import {
+  assertEventRevealedForMember,
+  resolveEventStageKey,
+} from "@/lib/server/world-cup/schedule-query";
+import { allowsDrawPick } from "@/lib/domain/world-cup/match-outcome";
+import { OwnerMatchResultForm } from "@/components/world-cup/owner-match-result-form";
 import { formatEasternDateTime } from "@/lib/utils/eastern-time";
 import { MatchPickForm } from "@/components/world-cup/match-pick-form";
 import { MatchBonusAnswerForm } from "@/components/world-cup/match-bonus-answer-form";
@@ -57,11 +62,17 @@ export default async function EventSubmissionPage({ params }: PageProps) {
   const matchId = event.source_match_id as string;
   const { data: match } = await supabase
     .from("matches")
-    .select("home_team, away_team, match_time_utc, status")
+    .select("home_team, away_team, match_time_utc, status, winner, stage_key")
     .eq("id", matchId)
     .maybeSingle();
 
   if (!match) notFound();
+
+  const stageKey = await resolveEventStageKey(supabase, {
+    stage_key: event.stage_key as string | null,
+    source_match_id: event.source_match_id as string | null,
+  });
+  const allowDraw = allowsDrawPick(stageKey);
 
   const lockAt = event.lock_at as string | null;
   const locked = Boolean(lockAt && new Date(lockAt).getTime() <= Date.now());
@@ -107,6 +118,7 @@ export default async function EventSubmissionPage({ params }: PageProps) {
         matchId={matchId}
         homeTeam={match.home_team as string}
         awayTeam={match.away_team as string}
+        allowDraw={allowDraw}
         initialPick={(existingPick?.predicted_winner as string) ?? null}
         locked={locked}
       />
@@ -134,6 +146,15 @@ export default async function EventSubmissionPage({ params }: PageProps) {
               contestId={contestId}
               eventId={eventId}
               lockAt={lockAt}
+            />
+            <OwnerMatchResultForm
+              groupId={activeGroupId}
+              contestId={contestId}
+              matchId={matchId}
+              homeTeam={match.home_team as string}
+              awayTeam={match.away_team as string}
+              allowDraw={allowDraw}
+              initialWinner={(match.winner as string | null) ?? null}
             />
             <OwnerEventResultsForm
               groupId={activeGroupId}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { formatEasternDateTime } from "@/lib/utils/eastern-time";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
 import type { ScheduleEventRow } from "@/lib/server/world-cup/schedule-query";
 import { MOBILE_LIST_INITIAL, MOBILE_LIST_STEP } from "@/lib/world-cup/mobile-list";
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
@@ -78,7 +79,8 @@ function MatchCard({
       </p>
       {hasPrediction ? (
         <p className="mt-1 text-sm">
-          Your prediction: <strong className="break-words">{savedPick}</strong>
+          Your prediction:{" "}
+          <strong className="break-words">{formatMatchPickLabel(savedPick!)}</strong>
         </p>
       ) : null}
 
