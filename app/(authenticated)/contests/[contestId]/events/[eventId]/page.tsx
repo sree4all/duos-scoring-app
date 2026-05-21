@@ -71,13 +71,13 @@ export default async function EventSubmissionPage({ params }: PageProps) {
     .maybeSingle();
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-5 pb-4">
       <header className="space-y-1">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Match prediction
         </p>
-        <h1 className="text-2xl font-semibold">{event.title as string}</h1>
-        <p className="text-lg font-medium">
+        <h1 className="text-xl font-semibold sm:text-2xl">{event.title as string}</h1>
+        <p className="break-words text-base font-medium sm:text-lg">
           {match.home_team as string} vs {match.away_team as string}
         </p>
         <p className="text-sm text-muted-foreground">

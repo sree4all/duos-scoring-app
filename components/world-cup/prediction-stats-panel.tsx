@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { formatEasternDateTime } from "@/lib/utils/eastern-time";
+import { MOBILE_LIST_INITIAL, MOBILE_LIST_STEP } from "@/lib/world-cup/mobile-list";
+import { SeeMoreFooter } from "@/components/ui/see-more-footer";
 
 export type PredictionStatsEvent = {
   eventId: string;
@@ -26,6 +28,7 @@ export function PredictionStatsPanel({
   predictionsByEventId: Record<string, MemberPredictionRow[]>;
 }) {
   const [eventId, setEventId] = useState(defaultEventId ?? events[0]?.eventId ?? "");
+  const [visibleRows, setVisibleRows] = useState(MOBILE_LIST_INITIAL);
 
   const selected = useMemo(
     () => events.find((e) => e.eventId === eventId),
@@ -33,6 +36,8 @@ export function PredictionStatsPanel({
   );
 
   const rows = predictionsByEventId[eventId] ?? [];
+  const shownRows = rows.slice(0, visibleRows);
+  const remainingRows = rows.length - shownRows.length;
 
   if (events.length === 0) {
     return (
@@ -50,9 +55,12 @@ export function PredictionStatsPanel({
         </label>
         <select
           id="stats-match"
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="mt-1 h-11 w-full touch-manipulation rounded-md border border-input bg-background px-3 py-2 text-base sm:h-10 sm:text-sm"
           value={eventId}
-          onChange={(e) => setEventId(e.target.value)}
+          onChange={(e) => {
+            setEventId(e.target.value);
+            setVisibleRows(MOBILE_LIST_INITIAL);
+          }}
         >
           {events.map((ev) => (
             <option key={ev.eventId} value={ev.eventId}>
@@ -63,20 +71,20 @@ export function PredictionStatsPanel({
       </div>
 
       {selected ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="break-words text-sm text-muted-foreground">
           {selected.homeTeam} vs {selected.awayTeam} · Kickoff{" "}
           {formatEasternDateTime(selected.kickoffUtc)}
         </p>
       ) : null}
 
       <ul className="divide-y rounded-lg border">
-        {rows.map((row) => (
+        {shownRows.map((row) => (
           <li
             key={row.displayName}
-            className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
+            className="flex flex-col gap-1 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
           >
             <span className="font-medium">{row.displayName}</span>
-            <span className="text-muted-foreground">
+            <span className="break-words text-muted-foreground sm:text-right">
               {row.predictedWinner ?? "— Not yet"}
             </span>
           </li>
@@ -87,6 +95,13 @@ export function PredictionStatsPanel({
           </li>
         ) : null}
       </ul>
+
+      <SeeMoreFooter
+        remaining={remainingRows}
+        onShowMore={() =>
+          setVisibleRows((n) => Math.min(n + MOBILE_LIST_STEP, rows.length))
+        }
+      />
     </div>
   );
 }

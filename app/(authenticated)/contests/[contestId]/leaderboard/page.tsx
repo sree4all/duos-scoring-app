@@ -1,9 +1,13 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { aggregateLeaderboardForContest } from "@/lib/server/generalized-scoring/scoring-projection-service";
+import { LeaderboardList } from "@/components/world-cup/leaderboard-list";
+import { worldCupCopy } from "@/lib/copy/world-cup";
+
 type LeaderboardPageProps = {
   params: Promise<{ contestId: string }>;
 };
@@ -32,29 +36,46 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
     { lowerTotalWins: isRummy },
   );
 
+  const participantIds = sorted.map((e) => e.participantId);
+  const displayNameById = new Map<string, string>();
+  if (participantIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", participantIds);
+    for (const p of profiles ?? []) {
+      displayNameById.set(
+        p.id as string,
+        (p.display_name as string)?.trim() || "Player",
+      );
+    }
+  }
+
+  const entries = sorted.map((entry) => ({
+    participantId: entry.participantId,
+    displayName: displayNameById.get(entry.participantId) ?? "Player",
+    totalPoints: entry.totalPoints,
+  }));
+
   return (
-    <main className="space-y-4 p-6">
-      <h1 className="text-2xl font-semibold">Leaderboard</h1>
-      <p className="text-sm text-muted-foreground">
-        {isRummy
-          ? "Points rummy: lower cumulative total ranks higher."
-          : "Prediction: higher total ranks higher. Bonus lines included in totals."}
-      </p>
-      <ul className="space-y-2">
-        {sorted.map((entry, index) => (
-          <li
-            key={entry.participantId}
-            className="flex items-center gap-3 rounded-lg border p-3 text-sm"
-          >
-            <span className="font-medium">#{index + 1}</span>
-            <span className="font-mono">{entry.participantId.slice(0, 8)}…</span>
-            <span>{entry.totalPoints} pts</span>
-          </li>
-        ))}
-        {sorted.length === 0 ? (
-          <li className="text-muted-foreground">No scores yet for this contest.</li>
-        ) : null}
-      </ul>
-    </main>
+    <section className="space-y-4">
+      <header>
+        <h1 className="text-xl font-semibold sm:text-2xl">{worldCupCopy.nav.standings}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {isRummy
+            ? "Lower total ranks higher."
+            : "Higher total ranks higher."}
+        </p>
+      </header>
+
+      <LeaderboardList entries={entries} />
+
+      <Link
+        href={`/contests/${contestId}/matches`}
+        className="inline-block text-sm font-medium underline"
+      >
+        ← {worldCupCopy.nav.worldCupPredictions}
+      </Link>
+    </section>
   );
 }

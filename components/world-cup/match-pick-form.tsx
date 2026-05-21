@@ -74,7 +74,7 @@ export function MatchPickForm({
           <label
             key={team}
             className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-lg border-2 px-4 py-3 text-base transition-colors",
+              "flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border-2 px-4 py-3 text-base transition-colors touch-manipulation",
               pick === team && !locked
                 ? "border-primary bg-primary/5"
                 : "border-border hover:bg-muted/50",
@@ -90,7 +90,7 @@ export function MatchPickForm({
               onChange={() => setPick(team)}
               className="h-5 w-5"
             />
-            <span className="font-medium">{team}</span>
+            <span className="break-words font-medium">{team}</span>
           </label>
         ))}
       </div>
@@ -98,7 +98,7 @@ export function MatchPickForm({
       {!locked ? (
         <Button
           type="button"
-          className="mt-5 w-full sm:w-auto"
+          className="mt-5 h-12 w-full touch-manipulation sm:h-10 sm:w-auto"
           size="lg"
           disabled={pending || !pick}
           onClick={save}

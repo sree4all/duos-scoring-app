@@ -95,9 +95,11 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   );
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-5 pb-4">
       <header>
-        <h1 className="text-2xl font-semibold">{worldCupCopy.nav.worldCupPredictions}</h1>
+        <h1 className="text-xl font-semibold sm:text-2xl">
+          {worldCupCopy.nav.worldCupPredictions}
+        </h1>
         <p className="text-sm text-muted-foreground">{contest.name}</p>
       </header>
 

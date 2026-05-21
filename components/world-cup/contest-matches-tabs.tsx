@@ -34,7 +34,7 @@ export function ContestMatchesTabs({
             role="tab"
             aria-selected={tab === id}
             className={cn(
-              "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "min-h-11 flex-1 rounded-md px-2 py-2.5 text-sm font-medium transition-colors touch-manipulation sm:min-h-0 sm:px-3 sm:py-2",
               tab === id
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
