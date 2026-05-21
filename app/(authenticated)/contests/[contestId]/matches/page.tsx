@@ -14,6 +14,8 @@ import { ContestMatchesTabs } from "@/components/world-cup/contest-matches-tabs"
 import { PredictionStatsPanel } from "@/components/world-cup/prediction-stats-panel";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
+import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
+import { PageHeroLayer } from "@/components/layout/page-hero-layer";
 
 type PageProps = { params: Promise<{ contestId: string }> };
 
@@ -129,9 +131,15 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     />
   );
 
+  const pageBackground = resolveContestPageBackground(
+    contest,
+    `/contests/${contestId}/matches`,
+  );
+
   return (
-    <section className="space-y-5 pb-4">
-      <header>
+    <section className="relative space-y-5 pb-4">
+      {pageBackground ? <PageHeroLayer pageBackground={pageBackground} /> : null}
+      <header className="relative z-[1]">
         <h1 className="text-title-dense">
           {worldCupCopy.nav.worldCupPredictions}
         </h1>
