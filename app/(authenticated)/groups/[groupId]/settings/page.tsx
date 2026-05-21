@@ -3,7 +3,6 @@ import { requireUser } from "@/lib/auth/require-user";
 import { GroupRepository } from "@/lib/server/groups/repository";
 import { GroupSettingsPanel } from "@/components/groups/group-settings-panel";
 import { setActiveGroupIdCookie } from "@/lib/server/groups/active-context";
-import { createClient } from "@/lib/supabase/server";
 
 type PageProps = { params: Promise<{ groupId: string }> };
 
@@ -18,12 +17,13 @@ export default async function GroupSettingsPage({ params }: PageProps) {
 
   await setActiveGroupIdCookie(groupId);
 
-  const adminClient = await createClient();
-  const { data: memberRows } = await adminClient
+  const { data: memberRows, error: membersError } = await supabase
     .from("group_memberships")
     .select("user_id, is_owner, is_scorer")
     .eq("group_id", groupId)
     .is("removed_at", null);
+
+  if (membersError) throw membersError;
 
   const members =
     memberRows?.map((row) => ({

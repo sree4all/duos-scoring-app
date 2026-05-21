@@ -11,12 +11,16 @@ export async function getActiveGroupIdFromCookie(): Promise<string | null> {
 }
 
 export async function setActiveGroupIdCookie(groupId: string): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.set(ACTIVE_GROUP_COOKIE, groupId, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-  });
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set(ACTIVE_GROUP_COOKIE, groupId, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+    });
+  } catch {
+    /* Next.js: cookies can only be modified in Server Actions / Route Handlers */
+  }
 }
 
 export async function resolveActiveGroupId(
