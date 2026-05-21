@@ -23,7 +23,7 @@ export async function listRevealedScheduleEvents(
 ): Promise<ScheduleEventRow[]> {
   const rulesRepo = new StageRulesRepository(supabase);
   const revealed = await rulesRepo.listForContest(contestId, memberView);
-  const revealedKeys = new Set(revealed.map((r) => r.stageKey));
+  const revealedKeys = new Set<string>(revealed.map((r) => r.stageKey));
   if (memberView && revealedKeys.size === 0) return [];
 
   const { data: events, error } = await supabase

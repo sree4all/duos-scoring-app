@@ -21,8 +21,12 @@ export async function recalculateStageScoring(
   const errors: string[] = [];
 
   for (const ev of events ?? []) {
-    const match = ev.matches as { status: string; stage_key: string };
-    if (match.status !== "completed") continue;
+    const joined = ev.matches as
+      | { status: string; stage_key: string }
+      | { status: string; stage_key: string }[]
+      | null;
+    const match = Array.isArray(joined) ? joined[0] : joined;
+    if (!match || match.status !== "completed") continue;
     const matchId = ev.source_match_id as string;
     const outcome = await applyMatchScoring(supabase, matchId, seasonYear, {
       contestId,
