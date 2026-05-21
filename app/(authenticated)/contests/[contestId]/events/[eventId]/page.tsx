@@ -7,8 +7,11 @@ import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { assertEventRevealedForMember } from "@/lib/server/world-cup/schedule-query";
 import { formatEasternDateTime } from "@/lib/utils/eastern-time";
 import { MatchPickForm } from "@/components/world-cup/match-pick-form";
+import { MatchBonusAnswerForm } from "@/components/world-cup/match-bonus-answer-form";
 import { OwnerEventResultsForm } from "@/components/groups/owner-event-results-form";
 import { OwnerMatchLockForm } from "@/components/world-cup/owner-match-lock-form";
+import { OwnerMatchBonusPanel } from "@/components/world-cup/owner-match-bonus-panel";
+import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 
 type PageProps = { params: Promise<{ contestId: string; eventId: string }> };
@@ -70,6 +73,19 @@ export default async function EventSubmissionPage({ params }: PageProps) {
     .eq("match_id", matchId)
     .maybeSingle();
 
+  const bonusPrompts = await new MatchBonusRepository(supabase).listForMatch(matchId);
+  const bonusAnswers: Record<string, string> = {};
+  if (bonusPrompts.length > 0) {
+    const { data: answerRows } = await supabase
+      .from("prediction_bonus_answers")
+      .select("prompt_id, answer_text")
+      .eq("user_id", user.id)
+      .eq("match_id", matchId);
+    for (const row of answerRows ?? []) {
+      bonusAnswers[row.prompt_id as string] = row.answer_text as string;
+    }
+  }
+
   return (
     <section className="space-y-5 pb-4">
       <header className="space-y-1">
@@ -95,10 +111,24 @@ export default async function EventSubmissionPage({ params }: PageProps) {
         locked={locked}
       />
 
+      <MatchBonusAnswerForm
+        contestId={contestId}
+        eventId={eventId}
+        matchId={matchId}
+        prompts={bonusPrompts}
+        initialAnswers={bonusAnswers}
+        locked={locked}
+      />
+
       {membership.isOwner ? (
         <details className="rounded-lg border p-4 text-sm">
           <summary className="cursor-pointer font-medium">Organizer tools</summary>
           <div className="mt-4 space-y-4">
+            <OwnerMatchBonusPanel
+              groupId={activeGroupId}
+              contestId={contestId}
+              matchId={matchId}
+            />
             <OwnerMatchLockForm
               groupId={activeGroupId}
               contestId={contestId}

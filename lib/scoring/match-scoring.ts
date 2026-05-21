@@ -117,10 +117,11 @@ export async function applyMatchScoring(
 
   const { data: promptRows } = await supabase
     .from("bonus_prompts")
-    .select("id, correct_answer, display_order")
+    .select("id, correct_answer, correct_points, incorrect_penalty, display_order")
     .eq("season_year", seasonYear)
     .eq("scope", "match")
     .eq("match_id", matchId)
+    .eq("is_active", true)
     .order("display_order", { ascending: true });
 
   const promptsOrdered = promptRows ?? [];
@@ -188,13 +189,27 @@ export async function applyMatchScoring(
         const official = (pr.correct_answer as string | null)?.trim();
         if (!official) continue;
         const userAns = answersByUserPrompt.get(`${userId}\t${pid}`)?.trim() ?? "";
-        if (userAns && normAnswer(userAns) === normAnswer(official)) {
+        if (!userAns) continue;
+        const promptCorrectPts = Number(pr.correct_points ?? bonusPts);
+        const promptMissPts = Number(pr.incorrect_penalty ?? 0);
+        if (normAnswer(userAns) === normAnswer(official)) {
+          if (promptCorrectPts !== 0) {
+            toInsert.push({
+              user_id: userId,
+              source_type: "bonus",
+              source_id: matchId,
+              points_delta: promptCorrectPts,
+              reason: `match_bonus:${pid}`,
+              awarded_at: now,
+            });
+          }
+        } else if (promptMissPts !== 0) {
           toInsert.push({
             user_id: userId,
             source_type: "bonus",
             source_id: matchId,
-            points_delta: bonusPts,
-            reason: `match_bonus:${pid}`,
+            points_delta: promptMissPts,
+            reason: `match_bonus_miss:${pid}`,
             awarded_at: now,
           });
         }

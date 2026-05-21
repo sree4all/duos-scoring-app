@@ -42,6 +42,7 @@ export async function mirrorMatchLedgerToContest(
 
 function mapReasonToAction(reason: string | null, sourceType: string): string {
   if (reason === "match_winner_miss") return "match_winner_miss";
+  if (reason?.startsWith("match_bonus_miss")) return "match_bonus";
   if (sourceType === "bonus" || reason?.startsWith("match_bonus")) return "match_bonus";
   return "match_winner";
 }

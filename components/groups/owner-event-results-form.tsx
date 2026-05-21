@@ -45,7 +45,8 @@ export function OwnerEventResultsForm({
     <section className="rounded-lg border p-4">
       <h2 className="font-medium">Official results</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Match must be marked completed with winner and bonus results before scoring runs.
+        Set the match winner, then set the official answer on any bonus question above. Run
+        scoring after the match is completed.
       </p>
       <Button type="button" className="mt-3" disabled={pending} onClick={runScoring}>
         Apply match scoring

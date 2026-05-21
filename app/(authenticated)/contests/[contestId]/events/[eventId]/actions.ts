@@ -63,6 +63,79 @@ export async function saveMatchPick(
   return { ok: true as const };
 }
 
+export async function saveMatchBonusAnswer(
+  contestId: string,
+  eventId: string,
+  matchId: string,
+  promptId: string,
+  answerText: string,
+) {
+  const { supabase, user } = await requireUser();
+  const activeGroupId = await resolveActiveGroupId(supabase, user.id);
+  if (!activeGroupId) {
+    return { ok: false as const, error: "Select an active group first." };
+  }
+
+  await requireGroupMembership(supabase, activeGroupId, user.id);
+  await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("stage_key, lock_at, source_match_id")
+    .eq("id", eventId)
+    .eq("contest_id", contestId)
+    .maybeSingle();
+
+  if (!event) return { ok: false as const, error: "Match not found." };
+
+  const reveal = await assertEventRevealedForMember(
+    supabase,
+    contestId,
+    event.stage_key as string | null,
+    {
+      stage_key: event.stage_key as string | null,
+      source_match_id: event.source_match_id as string | null,
+    },
+  );
+  if (!reveal.ok) return { ok: false as const, error: reveal.message };
+
+  const lockAt = event.lock_at as string | null;
+  if (lockAt && new Date(lockAt).getTime() <= Date.now()) {
+    return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
+  }
+
+  const trimmed = answerText.trim();
+  if (!trimmed) {
+    return { ok: false as const, error: "Choose an answer." };
+  }
+
+  const { data: prompt } = await supabase
+    .from("bonus_prompts")
+    .select("id, match_id, is_active")
+    .eq("id", promptId)
+    .eq("match_id", matchId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (!prompt) {
+    return { ok: false as const, error: "Bonus question not found for this match." };
+  }
+
+  const { error } = await supabase.from("prediction_bonus_answers").upsert(
+    {
+      user_id: user.id,
+      match_id: matchId,
+      prompt_id: promptId,
+      answer_text: trimmed,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,prompt_id" },
+  );
+
+  if (error) return { ok: false as const, error: error.message };
+  return { ok: true as const };
+}
+
 export async function submitParticipantEntry(contestId: string, locked: boolean) {
   if (!isSubmissionEditable(locked)) {
     return { ok: false, message: "Event is locked." };
