@@ -16,7 +16,7 @@ export function StagePointsPanel({ rules }: { rules: StageScoringRule[] }) {
           <li key={r.stageKey} className="rounded-lg border bg-card p-3 text-sm">
             <p className="font-medium">{r.stageName}</p>
             <p className="mt-1 text-muted-foreground">
-              Correct: <span className="font-medium text-green-700 dark:text-green-400">+{r.correctPoints}</span>
+              Correct: <span className="font-medium text-score-positive">+{r.correctPoints}</span>
               {" · "}
               Wrong:{" "}
               <span className="font-medium">
@@ -40,7 +40,7 @@ export function StagePointsPanel({ rules }: { rules: StageScoringRule[] }) {
             {rules.map((r) => (
               <tr key={r.stageKey} className="border-b last:border-0">
                 <td className="p-2 font-medium">{r.stageName}</td>
-                <td className="p-2 text-green-700 dark:text-green-400">+{r.correctPoints}</td>
+                <td className="p-2 text-score-positive">+{r.correctPoints}</td>
                 <td className="p-2">
                   {r.incorrectPenalty === 0 ? "0" : r.incorrectPenalty}
                 </td>

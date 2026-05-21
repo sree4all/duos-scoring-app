@@ -68,14 +68,14 @@ export function WorldCupOrganizerHub({
             {pending ? "Publishing…" : "Publish contest"}
           </Button>
         ) : (
-          <p className="mt-2 text-sm text-green-700">Published — members can see this contest.</p>
+          <p className="mt-2 text-sm text-status-success">Published — members can see this contest.</p>
         )}
       </div>
 
       <ol className="list-decimal space-y-2 pl-5 text-sm">
         <li>
           {linkedEvents > 0 ? (
-            <span className="text-green-700">Schedule imported ({linkedEvents} matches)</span>
+            <span className="text-status-success">Schedule imported ({linkedEvents} matches)</span>
           ) : (
             <Link
               href={`/groups/${groupId}/world-cup/import?${q}`}
@@ -87,7 +87,7 @@ export function WorldCupOrganizerHub({
         </li>
         <li>
           {groupStageRevealed ? (
-            <span className="text-green-700">Group Stage is open for predictions</span>
+            <span className="text-status-success">Group Stage is open for predictions</span>
           ) : (
             <Link
               href={`/groups/${groupId}/world-cup/stages?${q}`}
@@ -131,7 +131,7 @@ export function WorldCupOrganizerHub({
         </Link>
       </div>
 
-      {message ? <p className="text-sm text-green-700">{message}</p> : null}
+      {message ? <p className="text-sm text-status-success">{message}</p> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </section>
   );

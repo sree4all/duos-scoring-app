@@ -128,16 +128,7 @@ Run after plan: `.specify/scripts/powershell/update-agent-context.ps1 -AgentType
 
 ## Phase 2: Task Generation
 
-**Status**: Not started — use `/speckit.tasks` to produce `tasks.md` with requirement-linked file paths and story checkpoints.
-
-Suggested task groups:
-
-- T1 Foundation tokens + Tailwind
-- T2 PageShell + layouts
-- T3 UI primitives + nav
-- T4 Dense route rollout (contests, history, admin)
-- T5 Entry/light routes + login/join
-- T6 Visual QA + contrast fixes
+**Status**: Complete → [tasks.md](./tasks.md) (53 tasks — **implemented** 2026-05-21)
 
 ---
 

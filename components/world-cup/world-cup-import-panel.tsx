@@ -89,7 +89,7 @@ export function WorldCupImportPanel({
       <Button type="submit" disabled={pending}>
         {pending ? "Importing…" : "Import schedule"}
       </Button>
-      {message ? <p className="text-sm text-green-700">{message}</p> : null}
+      {message ? <p className="text-sm text-status-success">{message}</p> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>
   );

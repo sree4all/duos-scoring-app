@@ -6,7 +6,8 @@
 
 | Variant | Size | Visual | When |
 |---------|------|--------|------|
-| `default` (remapped) | `cta` | Mint fill, radius 20px, shadow, white label | Major page CTAs on entry/light |
+| `default` (remapped) | `cta` | Mint fill, radius 20px, shadow, white label | Full-width hero CTAs on entry/light (outside cards) |
+| `default` | `cta-entry` | Same colors, h-14 (56px), text-lg | Primary action inside entry cards (login, join) |
 | `default` | `cta-compact` | Same colors, h-11 min (44px), text-base | Dense forms, table actions |
 | `outline` | * | Border subtle, transparent bg, white/muted text | Secondary on dark |
 | `ghost` | `sm` | Muted hover | Nav sign-out, tertiary |
@@ -45,6 +46,13 @@
 ## Toaster (`sonner`)
 
 - Theme aligned to dark shell (`theme` prop or className) so toasts are not light boxes on purple gradient.
+
+## Focus and state tokens (FR-007)
+
+- **Focus**: `focus-visible:ring-2` using mint or `neon.violetGlow`; minimum 2px offset on dark backgrounds  
+- **Disabled**: `opacity-50` + `pointer-events-none`; label still meets AA where shown  
+- **Error**: destructive/red accent plus text label (never color-only)  
+- Validated in implementation task T052
 
 ## Acceptance
 

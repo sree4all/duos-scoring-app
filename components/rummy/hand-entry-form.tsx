@@ -105,7 +105,7 @@ export function HandEntryForm({
       <Button type="submit" disabled={pending}>
         Record hand
       </Button>
-      {message ? <p className="text-sm text-green-700">{message}</p> : null}
+      {message ? <p className="text-sm text-status-success">{message}</p> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>
   );

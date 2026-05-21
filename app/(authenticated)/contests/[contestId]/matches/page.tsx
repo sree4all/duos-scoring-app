@@ -37,17 +37,51 @@ export default async function ContestMatchesPage({ params }: PageProps) {
 
   const matchIds = events.map((e) => e.matchId);
   const userPickByEventId: Record<string, string | null> = {};
+  const bonusNotPredictedByEventId: Record<string, boolean> = {};
   if (matchIds.length > 0) {
-    const { data: myPicks } = await supabase
-      .from("predictions")
-      .select("match_id, predicted_winner")
-      .eq("user_id", user.id)
-      .in("match_id", matchIds);
+    const [{ data: myPicks }, { data: bonusPromptRows }, { data: bonusAnswerRows }] =
+      await Promise.all([
+        supabase
+          .from("predictions")
+          .select("match_id, predicted_winner")
+          .eq("user_id", user.id)
+          .in("match_id", matchIds),
+        supabase
+          .from("bonus_prompts")
+          .select("id, match_id")
+          .eq("scope", "match")
+          .eq("is_active", true)
+          .eq("season_year", 2026)
+          .in("match_id", matchIds),
+        supabase
+          .from("prediction_bonus_answers")
+          .select("prompt_id, match_id")
+          .eq("user_id", user.id)
+          .in("match_id", matchIds),
+      ]);
+
     const pickByMatch = new Map(
       (myPicks ?? []).map((p) => [p.match_id as string, p.predicted_winner as string]),
     );
+    const promptIdsByMatch = new Map<string, string[]>();
+    for (const row of bonusPromptRows ?? []) {
+      const matchId = row.match_id as string;
+      const list = promptIdsByMatch.get(matchId) ?? [];
+      list.push(row.id as string);
+      promptIdsByMatch.set(matchId, list);
+    }
+    const answeredPromptIds = new Set(
+      (bonusAnswerRows ?? []).map((a) => a.prompt_id as string),
+    );
+
     for (const ev of events) {
       userPickByEventId[ev.eventId] = pickByMatch.get(ev.matchId) ?? null;
+      const promptIds = promptIdsByMatch.get(ev.matchId) ?? [];
+      const hasWinnerPick = Boolean(userPickByEventId[ev.eventId]);
+      const allBonusAnswered =
+        promptIds.length > 0 && promptIds.every((id) => answeredPromptIds.has(id));
+      bonusNotPredictedByEventId[ev.eventId] =
+        hasWinnerPick && promptIds.length > 0 && !allBonusAnswered;
     }
   }
 
@@ -80,6 +114,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
             contestId={contestId}
             events={events}
             userPickByEventId={userPickByEventId}
+            bonusNotPredictedByEventId={bonusNotPredictedByEventId}
           />
         </div>
       </div>
@@ -97,7 +132,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   return (
     <section className="space-y-5 pb-4">
       <header>
-        <h1 className="text-xl font-semibold sm:text-2xl">
+        <h1 className="text-title-dense">
           {worldCupCopy.nav.worldCupPredictions}
         </h1>
         <p className="text-sm text-muted-foreground">{contest.name}</p>

@@ -38,6 +38,24 @@
 - FR-004: dense route renders gradient without grid/dot when inspected in DevTools.
 - FR-002: authenticated layout wraps children in `PageShell` with correct tier resolver.
 
+## Route → tier table (authoritative for `resolve-page-tier.ts`)
+
+Implement T004 in this table; T009 must follow these rules (longest prefix wins; default `dense` for authenticated app routes not listed).
+
+| Pathname pattern | Tier | Notes |
+|------------------|------|--------|
+| `/login` | `entry` | Public auth |
+| `/join`, `/join/*` | `entry` | Invite flows |
+| `/welcome` | `light` | Post-auth hub |
+| `/groups`, `/groups/new`, `/groups/join` | `light` | Group list / create / join |
+| `/groups/[groupId]` (exact, no subpath) | `light` | Group home hub |
+| `/contests` (list only) | `light` | Contest picker |
+| `/contests/*/matches`, `/contests/*/leaderboard`, `/contests/*/stats`, `/contests/*/season-bonuses` | `dense` | |
+| `/contests/*/events/*`, `/contests/*/rummy/*` | `dense` | |
+| `/history` | `dense` | |
+| `/groups/*/settings`, `/groups/*/contests/new`, `/groups/*/world-cup/*` | `dense` | Owner tools |
+| `/admin/*` | `dense` | Admin surfaces |
+
 ## Tier resolver (helper)
 
-`lib/design/resolve-page-tier.ts`: maps `pathname` → tier using prefix rules documented in `research.md` screen table.
+`lib/design/resolve-page-tier.ts`: maps `pathname` → tier using the table above.

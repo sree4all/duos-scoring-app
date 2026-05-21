@@ -55,7 +55,7 @@ export function PredictionStatsPanel({
         </label>
         <select
           id="stats-match"
-          className="mt-1 h-11 w-full touch-manipulation rounded-md border border-input bg-background px-3 py-2 text-base sm:h-10 sm:text-sm"
+          className="neon-input mt-1 touch-manipulation text-base sm:text-sm"
           value={eventId}
           onChange={(e) => {
             setEventId(e.target.value);

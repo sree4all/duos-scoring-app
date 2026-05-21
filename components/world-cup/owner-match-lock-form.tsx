@@ -81,7 +81,7 @@ export function OwnerMatchLockForm({
       <Button type="button" className="mt-3" disabled={pending} onClick={saveLock}>
         Save lock time
       </Button>
-      {message ? <p className="mt-2 text-sm text-green-700">{message}</p> : null}
+      {message ? <p className="mt-2 text-sm text-status-success">{message}</p> : null}
       {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
     </section>
   );

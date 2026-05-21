@@ -49,7 +49,7 @@ export function LoginForm({ redirectPath = "/contests" }: { redirectPath?: strin
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
       <Button
         type="button"
-        className="w-full"
+        size="cta-entry"
         disabled={loading}
         onClick={signInWithGoogle}
       >
@@ -57,14 +57,14 @@ export function LoginForm({ redirectPath = "/contests" }: { redirectPath?: strin
       </Button>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border" />
+          <span className="w-full border-t border-white/10" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or</span>
+          <span className="bg-transparent px-2 text-muted-foreground">Or</span>
         </div>
       </div>
       <form onSubmit={signInWithEmail} className="flex flex-col gap-3">
-        <label className="text-sm font-medium text-foreground" htmlFor="email">
+        <label className="text-body-dense font-medium" htmlFor="email">
           Email
         </label>
         <input
@@ -75,15 +75,15 @@ export function LoginForm({ redirectPath = "/contests" }: { redirectPath?: strin
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="neon-input"
           placeholder="you@example.com"
         />
-        <Button type="submit" variant="secondary" disabled={loading}>
+        <Button type="submit" variant="secondary" size="cta-compact" disabled={loading}>
           Email me a magic link
         </Button>
       </form>
       {message ? (
-        <p className="text-center text-sm text-muted-foreground">{message}</p>
+        <p className="text-center text-caption">{message}</p>
       ) : null}
     </div>
   );

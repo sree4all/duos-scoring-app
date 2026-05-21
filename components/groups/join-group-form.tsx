@@ -53,7 +53,7 @@ export function JoinGroupForm({ redirectAfterJoin }: { redirectAfterJoin?: strin
         </label>
         <input
           id="invite-code"
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 uppercase"
+          className="neon-input mt-1 uppercase"
           value={inviteCode}
           onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
           required

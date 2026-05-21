@@ -41,7 +41,7 @@ export function GroupSwitcher({
     <label className="flex items-center gap-2 text-sm">
       <span className="text-muted-foreground">Group</span>
       <select
-        className="rounded-md border border-input bg-background px-2 py-1"
+        className="neon-input h-9 py-1"
         value={activeGroupId ?? ""}
         disabled={pending}
         onChange={(e) => onChange(e.target.value)}

@@ -4,24 +4,27 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --background: 265 100% 12%;
+    --foreground: 0 0% 100%;
+    --card: 265 40% 18%;
+    --card-foreground: 0 0% 100%;
+    --primary: 168 84% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 265 50% 22%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 265 35% 20%;
+    --muted-foreground: 0 0% 72%;
+    --accent: 265 55% 28%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 348 100% 57%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.08;
+    --input: 265 35% 22%;
+    --ring: 168 84% 45%;
+    --radius: 0.75rem;
+    --neon-score-green: 118 42% 51%;
+    --neon-score-blue: 232 100% 61%;
+    --neon-score-red: 348 100% 57%;
   }
 }
 
@@ -30,6 +33,127 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}
+
+/* Page shell backgrounds */
+.page-shell {
+  background-color: #12003b;
+  background-image: linear-gradient(
+    145deg,
+    #18004f 0%,
+    #2d0d8d 45%,
+    #102f86 100%
+  );
+}
+
+.page-shell--patterns::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.04) 0,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 26px
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.08) 1.5px,
+      transparent 1.5px
+    );
+  background-size: auto, 40px 40px;
+  z-index: 0;
+}
+
+.page-shell--patterns::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+  z-index: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-shell--patterns::before,
+  .page-shell--patterns::after {
+    display: none;
+  }
+}
+
+@layer components {
+  .text-hero {
+    @apply text-center font-extrabold tracking-tight text-white;
+    font-size: clamp(2.25rem, 8vw, 3.375rem);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+
+  .text-body-lg {
+    @apply text-center font-normal text-white/90;
+    font-size: clamp(1.125rem, 4vw, 1.6875rem);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+
+  .text-title-dense {
+    @apply font-bold tracking-tight text-white;
+    font-size: clamp(1.5rem, 4vw, 2.125rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .text-body-dense {
+    @apply text-white/90;
+    font-size: 1.0625rem;
+    line-height: 1.45;
+  }
+
+  .text-caption {
+    @apply text-sm text-muted-foreground;
+    line-height: 1.4;
+  }
+
+  .text-button {
+    @apply font-medium tracking-tight;
+    font-size: 1.9375rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .neon-input {
+    @apply h-11 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-body-dense text-white placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  .neon-glass-card {
+    @apply rounded-xl border border-white/10 bg-white/5 text-card-foreground shadow-lg backdrop-blur-sm;
+  }
+
+  .text-score-positive {
+    @apply font-semibold text-[hsl(var(--neon-score-green))];
+  }
+
+  .text-score-negative {
+    @apply font-semibold text-[hsl(var(--neon-score-red))];
+  }
+
+  .text-score-neutral {
+    @apply font-semibold text-[hsl(var(--neon-score-blue))];
+  }
+
+  .text-status-success {
+    @apply text-[hsl(var(--neon-score-green))];
+  }
+
+  .section-gap {
+    @apply mb-10;
   }
 }

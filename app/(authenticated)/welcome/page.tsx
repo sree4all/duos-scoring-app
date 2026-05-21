@@ -27,7 +27,7 @@ export default async function WelcomePage({ searchParams }: PageProps) {
   if (!result.ok) {
     return (
       <section className="space-y-4">
-        <h1 className="text-2xl font-semibold">Join your league</h1>
+        <h1 className="text-title-dense">Join your league</h1>
         <p className="text-sm text-destructive">{result.error}</p>
         <Link href="/groups/join" className="text-sm font-medium underline">
           Enter invite code manually

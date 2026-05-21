@@ -21,10 +21,10 @@ export function PredictionHistoryTable({ rows }: { rows: Row[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div className="neon-glass-card overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-muted/40 text-left">
+            <tr className="border-b border-white/10 bg-white/5 text-left">
               <th className="px-3 py-2">Item</th>
               <th className="px-3 py-2">Prediction</th>
               <th className="px-3 py-2">Points</th>
@@ -33,10 +33,20 @@ export function PredictionHistoryTable({ rows }: { rows: Row[] }) {
           </thead>
           <tbody>
             {visibleRows.map((r) => (
-              <tr key={r.source_id} className="border-b border-border">
+              <tr key={r.source_id} className="border-b border-white/10">
                 <td className="px-3 py-2">{r.label}</td>
                 <td className="px-3 py-2 whitespace-pre-line">{r.prediction}</td>
-                <td className="px-3 py-2">{r.points_delta ?? "-"}</td>
+                <td
+                  className={`px-3 py-2 font-medium tabular-nums ${
+                    r.points_delta != null && r.points_delta > 0
+                      ? "text-score-positive"
+                      : r.points_delta != null && r.points_delta < 0
+                        ? "text-score-negative"
+                        : ""
+                  }`}
+                >
+                  {r.points_delta ?? "-"}
+                </td>
                 <td className="px-3 py-2">{r.status}</td>
               </tr>
             ))}

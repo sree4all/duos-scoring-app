@@ -38,7 +38,7 @@ export function ContestDetailsStep({
         ) : (
           <select
             id="contest-format"
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            className="neon-input w-full text-sm"
             value={values.formatLabel}
             onChange={(e) =>
               onChange({

@@ -48,7 +48,15 @@ Confirm: no screen still uses default light gray shadcn slate theme as the page 
 2. Login, matches, leaderboard: no horizontal scroll on main column.
 3. Tap primary and compact buttons: comfortable hit area, no overlap.
 
-## 5) Accessibility (SC-004)
+## 5) Primary action clarity (SC-002)
+
+On **three pilot screens** (`/login`, `/contests/{id}/matches`, `/contests/{id}/leaderboard`):
+
+1. Ask a reviewer who did not build the UI to open each screen cold.
+2. They must name the primary action (e.g. Sign in, submit pick, filter/sort if applicable) within **5 seconds** without hints.
+3. Record Pass if mint CTA or obvious single primary control stands out; Fail if multiple controls compete equally.
+
+## 6) Accessibility (SC-004)
 
 Per screen sample (headline, body, caption, label):
 
@@ -56,7 +64,7 @@ Per screen sample (headline, body, caption, label):
 2. Fail if any required text below WCAG 2.1 AA.
 3. If caption muted fails, file token fix (increase opacity)—do not waive requirement.
 
-## 6) Scoring colors (FR-008)
+## 7) Scoring colors (FR-008)
 
 On leaderboard or history with positive/negative points:
 
@@ -64,13 +72,13 @@ On leaderboard or history with positive/negative points:
 - Negative uses red accent.
 - Neutral/info uses blue where applicable.
 
-## 7) Regression guard
+## 8) Regression guard
 
 - Submit a test pick (if env has contest): pick flow still works.
 - Sign out: still redirects to login.
 - No new console hydration errors on first paint.
 
-## 8) Lint
+## 9) Lint
 
 ```bash
 npm run lint

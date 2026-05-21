@@ -26,7 +26,7 @@ export function PublishStep({
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-sm text-green-700">Ready to publish.</p>
+        <p className="mt-2 text-sm text-status-success">Ready to publish.</p>
       )}
     </section>
   );

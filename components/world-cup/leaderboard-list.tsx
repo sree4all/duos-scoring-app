@@ -22,13 +22,23 @@ export function LeaderboardList({ entries }: { entries: LeaderboardEntry[] }) {
         {visible.map((entry, index) => (
           <li
             key={entry.participantId}
-            className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm"
+            className="neon-glass-card flex items-center justify-between gap-3 p-3 text-sm"
           >
             <div className="flex min-w-0 items-center gap-2">
               <span className="shrink-0 font-semibold">#{index + 1}</span>
               <span className="truncate font-medium">{entry.displayName}</span>
             </div>
-            <span className="shrink-0 font-semibold tabular-nums">{entry.totalPoints} pts</span>
+            <span
+              className={`shrink-0 font-semibold tabular-nums ${
+                entry.totalPoints > 0
+                  ? "text-score-positive"
+                  : entry.totalPoints < 0
+                    ? "text-score-negative"
+                    : "text-score-neutral"
+              }`}
+            >
+              {entry.totalPoints} pts
+            </span>
           </li>
         ))}
       </ul>

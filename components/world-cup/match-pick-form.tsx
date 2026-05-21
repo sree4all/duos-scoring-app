@@ -55,13 +55,13 @@ export function MatchPickForm({
   }
 
   return (
-    <section className="rounded-xl border-2 border-border bg-card p-5 shadow-sm">
+    <section className="neon-glass-card space-y-4 p-5">
       <div
         className={cn(
-          "rounded-md px-3 py-2 text-center text-sm font-semibold",
+          "rounded-xl px-3 py-2 text-center text-sm font-semibold",
           hasSavedPick
-            ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"
-            : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
+            ? "bg-neon-score-green/20 text-score-positive"
+            : "bg-neon-score-red/20 text-score-negative",
         )}
       >
         {statusLabel}
@@ -77,7 +77,7 @@ export function MatchPickForm({
               "flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border-2 px-4 py-3 text-base transition-colors touch-manipulation",
               pick === team && !locked
                 ? "border-primary bg-primary/5"
-                : "border-border hover:bg-muted/50",
+                : "border-white/10 hover:bg-white/10",
               locked && "cursor-not-allowed opacity-70",
             )}
           >
@@ -98,8 +98,8 @@ export function MatchPickForm({
       {!locked ? (
         <Button
           type="button"
-          className="mt-5 h-12 w-full touch-manipulation sm:h-10 sm:w-auto"
-          size="lg"
+          className="mt-5 w-full touch-manipulation"
+          size="cta-compact"
           disabled={pending || !pick}
           onClick={save}
         >
@@ -111,7 +111,7 @@ export function MatchPickForm({
         <p className="mt-4 text-sm text-muted-foreground">{worldCupCopy.matchStatus.locked}</p>
       )}
 
-      {message ? <p className="mt-3 text-sm font-medium text-green-700">{message}</p> : null}
+      {message ? <p className="mt-3 text-sm font-medium text-status-success">{message}</p> : null}
       {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
     </section>
   );
