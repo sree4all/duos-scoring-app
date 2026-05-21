@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { MATCH_DRAW_PICK } from "@/lib/domain/world-cup/match-outcome";
 import { saveMatchPick } from "@/app/(authenticated)/contests/[contestId]/events/[eventId]/actions";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ export function MatchPickForm({
   matchId,
   homeTeam,
   awayTeam,
+  allowDraw,
   initialPick,
   locked,
 }: {
@@ -21,6 +23,7 @@ export function MatchPickForm({
   matchId: string;
   homeTeam: string;
   awayTeam: string;
+  allowDraw: boolean;
   initialPick: string | null;
   locked: boolean;
 }) {
@@ -67,10 +70,15 @@ export function MatchPickForm({
         {statusLabel}
       </div>
 
-      <p className="mt-4 text-base font-medium">{worldCupCopy.prediction.whoWillWin}</p>
+      <p className="mt-4 text-base font-medium">
+        {allowDraw ? worldCupCopy.prediction.howWillItEnd : worldCupCopy.prediction.whoWillWin}
+      </p>
+      {allowDraw ? (
+        <p className="text-sm text-muted-foreground">{worldCupCopy.prediction.groupStageDrawHint}</p>
+      ) : null}
 
       <div className="mt-4 flex flex-col gap-3">
-        {[homeTeam, awayTeam].map((team) => (
+        {(allowDraw ? [homeTeam, MATCH_DRAW_PICK, awayTeam] : [homeTeam, awayTeam]).map((team) => (
           <label
             key={team}
             className={cn(

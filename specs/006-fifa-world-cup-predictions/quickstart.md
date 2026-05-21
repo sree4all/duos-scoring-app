@@ -32,10 +32,10 @@ WORLD_CUP_IMPORT_ENABLED=true
 
 ## 2) Picks and Group Stage scoring (+2 / 0)
 
-1. User B opens a revealed match → kickoff shows **Eastern Time** (verify evening match date).
-2. User B picks winner + optional bonus before lock.
-3. User A locks/completes match with official winner.
-4. Correct pick: **+2** on leaderboard/history; wrong pick: **0** (not negative).
+1. User B opens a revealed **group stage** match → kickoff shows **Eastern Time** (verify evening match date).
+2. User B picks **home, Draw, or away** + optional bonus before lock (knockout matches show two teams only).
+3. User A saves official result (including **Draw** when applicable), then applies match scoring.
+4. Correct pick: **+2** on leaderboard/history; wrong pick: **0** (not negative). Correct **Draw** pick when the match ends level after 90 minutes.
 5. Bonus line appears separately when configured and scored.
 
 ## 3) Knockout stage reveal and penalties

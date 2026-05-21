@@ -39,7 +39,8 @@ The product today supports generic prediction leagues and Rummy scoring inside p
   | Final | +20 | −10 |
 
 - **Bonus questions** (per-match multi-prompt, single-pick where used, season-level tab with timed reveal) remain supported, **configurable and updatable** by the group owner.
-- **Prediction flows**: pick winner before lock, view lock status, leaderboard, personal history with line-item points, aggregate stats after events complete.
+- **Prediction flows**: pick match outcome before lock (see **Group stage draws** below), view lock status, leaderboard, personal history with line-item points, aggregate stats after events complete.
+- **Group stage draws**: for **First Stage (Group Stage)** fixtures only, members MAY predict **home win, draw, or away win** after 90 minutes of regulation; knockout rounds (Round of 32 through Final, including Third Place Playoff) require a **definitive winning team** (extra time and penalties if needed—no draw pick or draw official result).
 - **Time zone**: all member-facing kickoff and lock displays in **US Eastern Time**.
 - **UI simplification**: hide or remove navigation and features unrelated to World Cup prediction and Rummy for this deployment (legacy public contests, unused admin wizards, extra game types).
 - **Rummy**: unchanged points-rummy behavior for the same private group.
@@ -58,7 +59,7 @@ The product today supports generic prediction leagues and Rummy scoring inside p
 
 ### User Story 1 - Play the World Cup Prediction Season (Priority: P1)
 
-As a **group member**, I see upcoming matches in Eastern Time, pick the winner (and answer bonus questions when available) before lock, and track my points on a clear leaderboard and history as results are entered.
+As a **group member**, I see upcoming matches in Eastern Time, pick the match outcome (home, away, or **draw** in group stage only) and answer bonus questions when available before lock, and track my points on a clear leaderboard and history as results are entered.
 
 **Why this priority**: This is the core reason for the personalization effort.
 
@@ -67,11 +68,12 @@ As a **group member**, I see upcoming matches in Eastern Time, pick the winner (
 **Acceptance Scenarios**:
 
 1. **Given** the Group Stage is revealed, **When** a member opens the schedule, **Then** they see match number, teams, city/venue label, and kickoff in Eastern Time with simple status labels (e.g., “Open”, “Locked”, “Finished”).
-2. **Given** a match is open, **When** a member selects a winner and saves before lock, **Then** the pick is stored and shown in their history as pending.
-3. **Given** a match is locked, **When** a member tries to change their winner pick, **Then** the system blocks the edit and explains that picks are closed.
-4. **Given** the owner records the official winner, **When** scoring runs, **Then** each member receives stage-appropriate winner points and incorrect picks receive the configured penalty (including zero penalty in Group Stage).
-5. **Given** bonus prompts exist for a match, **When** a member answers before lock and official bonus answers are published, **Then** bonus points appear as separate lines in history and count toward the leaderboard total.
-6. **Given** a later stage is not yet revealed, **When** a member browses the contest, **Then** they do not see unrevealed stage matches or unrevealed stage scoring rules.
+2. **Given** an open **group stage** match, **When** a member selects home, **Draw**, or away and saves before lock, **Then** the pick is stored and shown in their history as pending.
+3. **Given** an open **knockout** match, **When** a member views the pick form, **Then** they see only the two teams (no draw option) and copy explains that knockout games always produce a winner after extra time or penalties if needed.
+4. **Given** a match is locked, **When** a member tries to change their outcome pick, **Then** the system blocks the edit and explains that picks are closed.
+5. **Given** the owner records the official result (including **Draw** for group stage after 90 minutes, or the winning team for knockout), **When** scoring runs, **Then** each member receives stage-appropriate winner points and incorrect picks receive the configured penalty (including zero penalty in Group Stage).
+6. **Given** bonus prompts exist for a match, **When** a member answers before lock and official bonus answers are published, **Then** bonus points appear as separate lines in history and count toward the leaderboard total.
+7. **Given** a later stage is not yet revealed, **When** a member browses the contest, **Then** they do not see unrevealed stage matches or unrevealed stage scoring rules.
 
 ---
 
@@ -135,6 +137,9 @@ As a **group owner or designated scorer**, I still run points-rummy sessions wit
 - Child or low-literacy user: all error and status messages avoid jargon (no “422”, “UUID”, or “submission payload”).
 - Dataset missing or import fails; owner sees actionable recovery steps (retry, check credentials) without exposing technical stack traces to members.
 - Third Place Playoff incorrect-penalty value ambiguous in source notes; owner can correct in configuration before reveal (see Assumptions).
+- Member predicts **Draw** in group stage but owner enters a winning team (or vice versa); scoring treats mismatch as an incorrect pick (0 penalty in Group Stage).
+- Member attempts **Draw** on a knockout match (client or API); system rejects with a clear message.
+- Owner attempts to record **Draw** as the official result for a knockout match; system rejects and asks for the team that advanced.
 
 ## Requirements *(mandatory)*
 
@@ -150,6 +155,9 @@ As a **group owner or designated scorer**, I still run points-rummy sessions wit
 - **FR-008**: System MUST support **per-match bonus questions** (multiple prompts and single-pick modes where configured) with points awarded on official answers, shown separately in history and leaderboard detail.
 - **FR-009**: System MUST support **season-level bonus questions** with owner-controlled visibility/reveal timing, consistent with prior prediction seasons.
 - **FR-010**: System MUST enforce **pick lock** before kickoff (or owner-configured offset) with clear open/locked/finished states readable by non-technical users.
+- **FR-010a**: For matches in **group stage** (`stage_key = group_stage`), system MUST allow members to predict **home team, away team, or Draw** (canonical stored value `Draw`) before lock; scoring compares picks to the official result after 90 minutes of regulation.
+- **FR-010b**: For **knockout** stages (Round of 32, Round of 16, Quarter-Finals, Semi-Finals, Third Place Playoff, Final), system MUST accept only **home or away team** as member picks and as official results; draws after regulation are resolved via extra time and/or penalties, and the stored winner is the **team that won the match**, not `Draw`.
+- **FR-010c**: Group owner MUST enter official results via the match result flow (home / draw / away for group stage; winning team only for knockout) before applying match scoring.
 - **FR-011**: System MUST compute **leaderboard and personal history** with itemized winner and bonus lines and deterministic recalculation from the same official inputs.
 - **FR-012**: System MUST expose **aggregate prediction statistics** for completed matches without exposing other members’ editable picks before lock.
 - **FR-013**: System MUST **simplify navigation** for this deployment by removing or hiding features unrelated to World Cup prediction and Rummy within the private group context.
@@ -168,7 +176,7 @@ As a **group owner or designated scorer**, I still run points-rummy sessions wit
 - **Host City / Venue**: Location metadata for member display (city, stadium, region cluster optional for filters).
 - **Match**: Numbered fixture with kickoff, teams, stage, status (scheduled, open, locked, completed, voided).
 - **Prediction Contest**: Group-scoped competition instance binding matches, bonuses, and scoring policies for the World Cup.
-- **Member Pick**: A user’s winner choice for a match before lock.
+- **Member Pick**: A user’s outcome choice for a match before lock—home team name, away team name, or `Draw` (group stage only); stored in `predictions.predicted_winner`.
 - **Bonus Prompt**: Per-match or season-level question with points, visibility schedule, and official answer.
 - **Points Ledger Line**: Atomic point change (winner, bonus, adjustment) tied to match or season prompt.
 - **Reveal Control**: Owner action linking a stage to member visibility and active scoring rules.
@@ -193,6 +201,7 @@ As a **group owner or designated scorer**, I still run points-rummy sessions wit
 - **Dataset source** is the unofficial Kaggle FIFA World Cup 2026 package cited by the user; import is operator-triggered with credentials stored securely outside the repo.
 - **Third Place Playoff incorrect penalty**: user input listed “13 pts”; interpreted as **−3** to match the knockout penalty pattern until the owner sets otherwise in configuration.
 - **Official results** are entered by the group owner (or delegated process outside the app); no live API feed in v1.
+- **Group stage vs knockout outcomes**: group stage official results and picks MAY be **Draw** (tie after 90 minutes); knockout fixtures always resolve to a single winning team for prediction and scoring purposes.
 - **Bonus parity** means the same categories of bonus features already shipped for prediction leagues (per-event prompts, season tab, reveal timing)—not a reduced subset.
 - **Lock policy** defaults to kickoff time in Eastern Time unless the owner sets an earlier lock offset per match or stage.
 - Existing **authentication and group invite** mechanics from the private-groups feature remain in place.

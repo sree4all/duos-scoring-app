@@ -15,8 +15,21 @@ export const worldCupCopy = {
     update: "Update prediction",
     saved: "Prediction saved!",
     whoWillWin: "Who will win?",
+    howWillItEnd: "How will the match end?",
+    draw: "Draw",
+    groupStageDrawHint:
+      "Group stage matches can end in a tie. Knockout matches always have a winner after extra time or penalties.",
     makePrediction: "Make your prediction",
     viewOrUpdate: "View or update",
+  },
+  organizer: {
+    officialResult: "Official result (90 minutes)",
+    officialResultKnockout:
+      "Enter the team that won the match (including extra time or penalties if needed).",
+    officialResultGroup:
+      "Enter the result after 90 minutes — home win, away win, or draw.",
+    saveResult: "Save official result",
+    resultSaved: "Official result saved.",
   },
   bonus: {
     sectionTitle: "Bonus question",

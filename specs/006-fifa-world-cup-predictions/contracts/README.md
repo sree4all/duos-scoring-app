@@ -3,7 +3,7 @@
 | Contract | Scope |
 |---|---|
 | [world-cup-import.md](./world-cup-import.md) | Dataset import, merge, contest bootstrap |
-| [stage-scoring-reveal.md](./stage-scoring-reveal.md) | Stage rules, reveal gates, winner/penalty scoring, lock override |
+| [stage-scoring-reveal.md](./stage-scoring-reveal.md) | Stage rules, reveal gates, winner/penalty scoring, group-stage draw picks/results, lock override |
 | [void-and-correction.md](./void-and-correction.md) | Void/correct results, ledger append (FR-017) |
 | [simplified-shell.md](./simplified-shell.md) | Private deployment UX and navigation (`app-nav`) |
 | [../005-prediction-rummy-groups/contracts/prediction-parity.md](../../005-prediction-rummy-groups/contracts/prediction-parity.md) | Bonus, season tab, stats, history (inherited) |

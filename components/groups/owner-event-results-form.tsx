@@ -45,8 +45,8 @@ export function OwnerEventResultsForm({
     <section className="rounded-lg border p-4">
       <h2 className="font-medium">Official results</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Set the match winner, then set the official answer on any bonus question above. Run
-        scoring after the match is completed.
+        Save the official result above (group stage: include draws), set bonus answers if any,
+        then run scoring after the match is completed.
       </p>
       <Button type="button" className="mt-3" disabled={pending} onClick={runScoring}>
         Apply match scoring

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { formatEasternDateTime } from "@/lib/utils/eastern-time";
 import { MOBILE_LIST_INITIAL, MOBILE_LIST_STEP } from "@/lib/world-cup/mobile-list";
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
+import { formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
 
 export type PredictionStatsEvent = {
   eventId: string;
@@ -85,7 +86,9 @@ export function PredictionStatsPanel({
           >
             <span className="font-medium">{row.displayName}</span>
             <span className="break-words text-muted-foreground sm:text-right">
-              {row.predictedWinner ?? "— Not yet"}
+              {row.predictedWinner
+                ? formatMatchPickLabel(row.predictedWinner)
+                : "— Not yet"}
             </span>
           </li>
         ))}

@@ -73,6 +73,11 @@ Per-contest stage scoring and reveal gate.
 
 Existing: `external_key` (use `wc2026:m{match_number}`), `match_time_utc`, `status`, `winner`, `bonus_result`.
 
+**`matches.winner` values**:
+
+- Group stage: home team display name, away team display name, or **`Draw`** (regulation tie).
+- Knockout: winning team display name only (never `Draw`).
+
 **Re-import merge rules**:
 
 - Upsert by `external_key`; update `match_time_utc`, team display names, `venue_label` if match not `completed`.
@@ -107,7 +112,7 @@ Member picks: allowed only in `open` for revealed stages.
 
 ### Scoring run
 
-Owner sets winner on completed match → `applyMatchScoring` reads stage rule → ledger lines:
+Owner sets official outcome on completed match (`winner` as team name or `Draw` in group stage) → `applyMatchScoring` reads stage rule → ledger lines:
 
 - `source_type=match`, `reason=match_winner` or `match_winner_miss` with `points_delta` positive or negative.
 - Bonus lines unchanged.
