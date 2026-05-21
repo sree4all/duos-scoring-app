@@ -7,10 +7,12 @@ export function OwnerEventResultsForm({
   groupId,
   contestId,
   matchId,
+  eventId,
 }: {
   groupId: string;
   contestId: string;
   matchId: string;
+  eventId?: string;
 }) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -50,6 +52,36 @@ export function OwnerEventResultsForm({
       </Button>
       {message ? <p className="mt-2 text-sm text-green-700">{message}</p> : null}
       {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
+      {eventId ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3"
+          disabled={pending}
+          onClick={async () => {
+            const reason = window.prompt("Why void this match?");
+            if (!reason?.trim()) return;
+            setPending(true);
+            setError(null);
+            try {
+              const res = await fetch(`/api/groups/${groupId}/contests/${contestId}/void`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ eventId, reason: reason.trim() }),
+              });
+              const data = (await res.json()) as { error?: string };
+              if (!res.ok) throw new Error(data.error ?? "Void failed");
+              setMessage("Match voided.");
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Void failed");
+            } finally {
+              setPending(false);
+            }
+          }}
+        >
+          Void match
+        </Button>
+      ) : null}
     </section>
   );
 }

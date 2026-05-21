@@ -68,8 +68,8 @@ export default async function GroupDashboardPage({ params }: PageProps) {
       <GroupDualFormatPanel isOwner={membership.isOwner} />
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <ContestList title="Prediction contests" items={summary.prediction} />
-        <ContestList title="Points rummy contests" items={summary.rummy} />
+        <ContestList title="World Cup Picks" items={summary.prediction} />
+        <ContestList title="Rummy Scores" items={summary.rummy} />
       </div>
 
       <div className="flex flex-wrap gap-3 text-sm">

@@ -25,5 +25,9 @@ export function contestPrimaryLink(contest: ContestRow): string {
   if (contest.format_label === "rummy_points") {
     return `/contests/${contest.id}/rummy/record`;
   }
+  const name = (contest.name ?? "").toLowerCase();
+  if (name.includes("world cup") || name.includes("fifa")) {
+    return `/contests/${contest.id}/matches`;
+  }
   return `/contests/${contest.id}/leaderboard`;
 }

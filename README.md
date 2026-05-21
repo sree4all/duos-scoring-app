@@ -14,7 +14,9 @@ Editable diagram (diagrams.net / draw.io): [`docs/app-architecture.drawio`](docs
 |---------|------|
 | Generalized scoring (004) | [`specs/004-generalized-scoring-platform/`](specs/004-generalized-scoring-platform/) |
 | Groups + prediction + rummy (005) | [`specs/005-prediction-rummy-groups/`](specs/005-prediction-rummy-groups/) |
+| FIFA World Cup private game (006) | [`specs/006-fifa-world-cup-predictions/`](specs/006-fifa-world-cup-predictions/) |
 | Group rollout flags | [`docs/rollout/group-scoping.md`](docs/rollout/group-scoping.md) |
+| World Cup private rollout | [`docs/rollout/world-cup-private.md`](docs/rollout/world-cup-private.md) |
 | Group observability | [`docs/operations/group-scoping-observability.md`](docs/operations/group-scoping-observability.md) |
 
 ## Fresh setup (new database)
@@ -47,6 +49,8 @@ Editable diagram (diagrams.net / draw.io): [`docs/app-architecture.drawio`](docs
    GROUP_PREDICTION_ENABLED=true
    GROUP_RUMMY_ENABLED=true
    ```
+
+6. **World Cup pilot** (optional): see [`docs/rollout/world-cup-private.md`](docs/rollout/world-cup-private.md). Create a group, add a **World Cup 2026** contest, drop Kaggle CSVs into `data/worldcup-2026/`, then `npm run import:worldcup -- --group-id <uuid> --contest-id <uuid>`.
 
 6. Run `npm install`.
 7. Run `npm run dev`.

@@ -10,6 +10,7 @@
     "seed": "tsx scripts/seed-csv.ts",
     "seed:demo": "tsx scripts/seed-csv.ts demo",
     "recompute:matches": "tsx scripts/recompute-match-scoring.ts",
+    "import:worldcup": "tsx scripts/import-worldcup-2026.ts",
     "db:link": "npx supabase link",
     "db:push": "npx supabase db push",
     "db:migration-list": "npx supabase migration list"

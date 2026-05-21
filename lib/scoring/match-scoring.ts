@@ -7,6 +7,12 @@ export type ScoringConfigRow = {
   match_bonus_points: number;
 };
 
+export type MatchScoreOptions = {
+  contestId?: string;
+  stageKey?: string;
+  auditReason?: string;
+};
+
 export type MatchScoreOutcome =
   | { ok: true; ledgerRows: number }
   | { ok: false; error: string };
@@ -36,10 +42,34 @@ function sumByUser(rows: { user_id: string; points_delta: number }[]): Map<strin
   return m;
 }
 
+async function resolveWinnerPoints(
+  supabase: SupabaseClient,
+  contestId: string | undefined,
+  stageKey: string | undefined,
+  fallbackWinnerPts: number,
+): Promise<{ correct: number; incorrect: number }> {
+  if (contestId && stageKey) {
+    const { data } = await supabase
+      .from("contest_stage_scoring_rules")
+      .select("correct_points, incorrect_penalty")
+      .eq("contest_id", contestId)
+      .eq("stage_key", stageKey)
+      .maybeSingle();
+    if (data) {
+      return {
+        correct: Number(data.correct_points ?? 0),
+        incorrect: Number(data.incorrect_penalty ?? 0),
+      };
+    }
+  }
+  return { correct: fallbackWinnerPts, incorrect: 0 };
+}
+
 export async function applyMatchScoring(
   supabase: SupabaseClient,
   matchId: string,
   seasonYear = 2026,
+  options?: MatchScoreOptions,
 ): Promise<MatchScoreOutcome> {
   const { data: cfg, error: cErr } = await supabase
     .from("scoring_config")
@@ -52,7 +82,7 @@ export async function applyMatchScoring(
 
   const { data: match, error: mErr } = await supabase
     .from("matches")
-    .select("id, external_key, status, winner, bonus_result, home_team, away_team")
+    .select("id, external_key, status, winner, bonus_result, home_team, away_team, stage_key")
     .eq("id", matchId)
     .maybeSingle();
   if (mErr || !match) {
@@ -63,7 +93,15 @@ export async function applyMatchScoring(
     return { ok: false, error: "Match status must be completed before scoring." };
   }
 
-  const winnerPts = Number(cfg.match_winner_points ?? 0);
+  const stageKey = options?.stageKey ?? (match.stage_key as string | undefined);
+  const stagePts = await resolveWinnerPoints(
+    supabase,
+    options?.contestId,
+    stageKey,
+    Number(cfg.match_winner_points ?? 0),
+  );
+  const winnerPts = stagePts.correct;
+  const missPts = stagePts.incorrect;
   const bonusPts = Number(cfg.match_bonus_points ?? 0);
 
   const actualWinner = match.winner as string | null;
@@ -121,9 +159,27 @@ export async function applyMatchScoring(
     const userId = pred.user_id as string;
     const predictedWinner = pred.predicted_winner as string;
 
-    let wDelta = 0;
     if (actualWinner) {
-      wDelta = normAnswer(predictedWinner) === normAnswer(actualWinner) ? winnerPts : 0;
+      const correct = normAnswer(predictedWinner) === normAnswer(actualWinner);
+      if (correct && winnerPts !== 0) {
+        toInsert.push({
+          user_id: userId,
+          source_type: "match",
+          source_id: matchId,
+          points_delta: winnerPts,
+          reason: options?.auditReason ? `match_winner:${options.auditReason}` : "match_winner",
+          awarded_at: now,
+        });
+      } else if (!correct && missPts !== 0) {
+        toInsert.push({
+          user_id: userId,
+          source_type: "match",
+          source_id: matchId,
+          points_delta: missPts,
+          reason: "match_winner_miss",
+          awarded_at: now,
+        });
+      }
     }
 
     if (usePerPromptBonus) {
@@ -167,16 +223,6 @@ export async function applyMatchScoring(
       }
     }
 
-    if (wDelta > 0) {
-      toInsert.push({
-        user_id: userId,
-        source_type: "match",
-        source_id: matchId,
-        points_delta: wDelta,
-        reason: "match_winner",
-        awarded_at: now,
-      });
-    }
   }
 
   const awardByUser = sumByUser(toInsert);

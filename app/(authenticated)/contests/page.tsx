@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/require-user";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
+import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
+import { redirect } from "next/navigation";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { contestPrimaryLink } from "@/lib/server/groups/contest-summary";
 import {
@@ -14,6 +16,10 @@ export default async function ParticipantContestsPage() {
   const activeGroupId = isGroupScopingEnabled()
     ? await resolveActiveGroupId(supabase, user.id)
     : null;
+
+  if (isWorldCupPrivateMode() && activeGroupId) {
+    redirect(`/groups/${activeGroupId}`);
+  }
 
   if (!activeGroupId) {
     return (

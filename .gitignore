@@ -35,3 +35,7 @@ coverage/
 
 # Misc
 *.tmp
+
+# World Cup CSV drop (keep README)
+data/worldcup-2026/*
+!data/worldcup-2026/README.md
