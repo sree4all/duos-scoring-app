@@ -152,7 +152,12 @@ export async function runWorldCupImport(
       })
       .eq("id", runRow.id as string);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Import failed";
+    const msg =
+      e instanceof Error
+        ? e.message
+        : e && typeof e === "object" && "message" in e
+          ? String((e as { message: unknown }).message)
+          : "Import failed";
     summary.errors.push(msg);
     await supabase
       .from("worldcup_import_runs")

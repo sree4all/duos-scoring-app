@@ -44,7 +44,7 @@ export async function linkContestEventsFromMatches(
         source_match_id: matchId,
         stage_key: match.stage_key as string | null,
         lock_at: match.match_time_utc as string,
-        state: "open",
+        state: "scheduled_open",
       });
       if (error) throw error;
     }
