@@ -1,13 +1,11 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
-import { GroupRepository } from "@/lib/server/groups/repository";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import {
   contestPrimaryLink,
   summarizeContestsByFormat,
 } from "@/lib/server/groups/contest-summary";
-import { requireGroupMembership } from "@/lib/server/groups/guards";
+import { requireGroupPageAccess } from "@/lib/server/groups/member-access";
 import { GroupDualFormatPanel } from "@/components/onboarding/group-dual-format-panel";
 import {
   ContestFormatBadge,
@@ -24,10 +22,7 @@ export default async function GroupDashboardPage({ params }: PageProps) {
   const { supabase, user } = await requireUser();
   const privatePilot = isWorldCupPrivateMode();
 
-  const group = await new GroupRepository(supabase).getGroupById(groupId);
-  if (!group) notFound();
-
-  const membership = await requireGroupMembership(supabase, groupId, user.id);
+  const { group, membership } = await requireGroupPageAccess(supabase, groupId, user.id);
 
   const contests = await new GroupContestService(supabase).listContests(groupId);
   const summary = summarizeContestsByFormat(contests);
@@ -75,7 +70,7 @@ export default async function GroupDashboardPage({ params }: PageProps) {
       <header>
         <h1 className="text-2xl font-semibold">{group.name}</h1>
         <p className="text-sm text-muted-foreground">
-          {privatePilot ? "FIFA World Cup 2026 picks" : "Group home"}
+          {privatePilot ? "FIFA World Cup 2026 Prediction Game" : "Group home"}
         </p>
       </header>
 

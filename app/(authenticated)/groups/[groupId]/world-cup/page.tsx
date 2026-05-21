@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
-import { GroupRepository } from "@/lib/server/groups/repository";
-import { requireGroupOwner } from "@/lib/server/groups/guards";
+import { requireGroupOwnerPageAccess } from "@/lib/server/groups/member-access";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { resolveWorldCupContestForGroup } from "@/lib/server/world-cup/resolve-group-contest";
 import { seedDefaultStageRules } from "@/lib/server/world-cup/seed-stage-rules";
@@ -19,9 +18,7 @@ export default async function WorldCupOrganizerPage({ params, searchParams }: Pa
   const sp = await searchParams;
   const { supabase, user } = await requireUser();
 
-  const group = await new GroupRepository(supabase).getGroupById(groupId);
-  if (!group) notFound();
-  await requireGroupOwner(supabase, groupId, user.id);
+  const { group } = await requireGroupOwnerPageAccess(supabase, groupId, user.id);
 
   const contestFromQuery = sp.contestId
     ? await new GroupContestService(supabase).getContest(sp.contestId)

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/auth/login-form";
+import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
+import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
 import {
   getDefaultGroupId,
   isWorldCupPrivateMode,
@@ -19,7 +21,10 @@ export default async function LoginPage({
   } = await supabase.auth.getUser();
   if (user) {
     if (isWorldCupPrivateMode()) {
-      const gid = getDefaultGroupId();
+      const gid =
+        (isGroupScopingEnabled()
+          ? await resolveActiveGroupId(supabase, user.id)
+          : null) ?? getDefaultGroupId();
       redirect(gid ? `/groups/${gid}` : "/groups/join");
     }
     redirect("/contests");

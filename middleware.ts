@@ -5,10 +5,16 @@ import {
   applyActiveGroupIdCookie,
 } from "@/lib/server/groups/active-context";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
-import { isGroupCreationDisabled } from "@/lib/server/world-cup/flags";
+import {
+  isGroupCreationDisabled,
+  isWorldCupPrivateMode,
+  getDefaultGroupId,
+} from "@/lib/server/world-cup/flags";
 
 const GROUP_ID_PATH =
   /^\/groups\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/|$)/i;
+const CONTEST_ID_PATH =
+  /^\/contests\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/|$)/i;
 
 export async function middleware(request: NextRequest) {
   if (
@@ -65,6 +71,16 @@ export async function middleware(request: NextRequest) {
       const groupId = groupMatch[1]!;
       if (request.cookies.get(ACTIVE_GROUP_COOKIE)?.value !== groupId) {
         applyActiveGroupIdCookie(supabaseResponse, groupId);
+      }
+    } else if (isWorldCupPrivateMode()) {
+      const contestMatch = request.nextUrl.pathname.match(CONTEST_ID_PATH);
+      const defaultGroupId = getDefaultGroupId();
+      if (
+        contestMatch &&
+        defaultGroupId &&
+        request.cookies.get(ACTIVE_GROUP_COOKIE)?.value !== defaultGroupId
+      ) {
+        applyActiveGroupIdCookie(supabaseResponse, defaultGroupId);
       }
     }
   }

@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
-import { GroupRepository } from "@/lib/server/groups/repository";
-import { requireGroupOwner } from "@/lib/server/groups/guards";
+import { requireGroupOwnerPageAccess } from "@/lib/server/groups/member-access";
 import { WorldCupStagesPanel } from "@/components/world-cup/world-cup-stages-panel";
 import { resolveWorldCupContestForGroup } from "@/lib/server/world-cup/resolve-group-contest";
 
@@ -19,9 +18,7 @@ export default async function WorldCupStagesPage({ params, searchParams }: PageP
     contestIdParam ?? (await resolveWorldCupContestForGroup(supabase, groupId))?.id;
   if (!contestId) redirect(`/groups/${groupId}/world-cup`);
 
-  const group = await new GroupRepository(supabase).getGroupById(groupId);
-  if (!group) notFound();
-  await requireGroupOwner(supabase, groupId, user.id);
+  await requireGroupOwnerPageAccess(supabase, groupId, user.id);
 
   return (
     <section className="space-y-6">

@@ -21,6 +21,7 @@ export default async function AuthenticatedLayout({
   const activeGroupId = isGroupScopingEnabled()
     ? await resolveActiveGroupId(supabase, user.id)
     : null;
+  const homeGroupId = activeGroupId ?? getDefaultGroupId();
 
   let groupSwitcher = null;
   if (isGroupScopingEnabled() && activeGroupId && !isWorldCupPrivateMode()) {
@@ -39,7 +40,7 @@ export default async function AuthenticatedLayout({
     <div className="min-h-screen bg-background">
       <AppNav
         worldCupPrivateMode={isWorldCupPrivateMode()}
-        defaultGroupId={getDefaultGroupId() ?? activeGroupId}
+        homeGroupId={homeGroupId}
         defaultContestId={getDefaultContestId()}
       />
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-2">

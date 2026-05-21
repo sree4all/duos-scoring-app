@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function JoinGroupForm() {
+function safeInternalPath(path: string | undefined): string | null {
+  if (!path?.startsWith("/")) return null;
+  if (path.startsWith("//")) return null;
+  return path;
+}
+
+export function JoinGroupForm({ redirectAfterJoin }: { redirectAfterJoin?: string }) {
   const router = useRouter();
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +28,15 @@ export function JoinGroupForm() {
       });
       const data = (await res.json()) as { error?: string; groupId?: string };
       if (!res.ok) throw new Error(data.error ?? "Failed to join group");
-      router.push(data.groupId ? `/groups/${data.groupId}` : "/groups");
+
+      const next = safeInternalPath(redirectAfterJoin);
+      if (next) {
+        router.push(next);
+      } else if (data.groupId) {
+        router.push(`/groups/${data.groupId}`);
+      } else {
+        router.push("/groups");
+      }
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to join group");
@@ -44,6 +58,7 @@ export function JoinGroupForm() {
           onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
           required
           maxLength={12}
+          placeholder="e.g. DQBGKVTM"
         />
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

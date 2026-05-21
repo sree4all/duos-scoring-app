@@ -1,19 +1,15 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
-import { GroupRepository } from "@/lib/server/groups/repository";
 import { GroupSettingsPanel } from "@/components/groups/group-settings-panel";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
+import { requireGroupPageAccess } from "@/lib/server/groups/member-access";
 
 type PageProps = { params: Promise<{ groupId: string }> };
 
 export default async function GroupSettingsPage({ params }: PageProps) {
   const { groupId } = await params;
   const { supabase, user } = await requireUser();
-  const repo = new GroupRepository(supabase);
-
-  const group = await repo.getGroupById(groupId);
-  const membership = await repo.getMembership(groupId, user.id);
-  if (!group || !membership) notFound();
+  const { group, membership } = await requireGroupPageAccess(supabase, groupId, user.id);
 
   if (isWorldCupPrivateMode() && !membership.isOwner) {
     redirect(`/groups/${groupId}`);

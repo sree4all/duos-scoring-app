@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
-import { requireGroupOwner } from "@/lib/server/groups/guards";
-import { GroupRepository } from "@/lib/server/groups/repository";
+import { requireGroupOwnerPageAccess } from "@/lib/server/groups/member-access";
 import { GroupContestWizard } from "@/components/groups/contest-wizard/group-contest-wizard";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 import { resolveWorldCupContestForGroup } from "@/lib/server/world-cup/resolve-group-contest";
@@ -13,14 +12,7 @@ export default async function GroupNewContestPage({ params }: PageProps) {
   const { groupId } = await params;
   const { supabase, user } = await requireUser();
 
-  try {
-    await requireGroupOwner(supabase, groupId, user.id);
-  } catch {
-    notFound();
-  }
-
-  const group = await new GroupRepository(supabase).getGroupById(groupId);
-  if (!group) notFound();
+  const { group } = await requireGroupOwnerPageAccess(supabase, groupId, user.id);
 
   if (isWorldCupPrivateMode()) {
     const existing = await resolveWorldCupContestForGroup(supabase, groupId);

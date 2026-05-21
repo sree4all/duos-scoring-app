@@ -6,20 +6,22 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { isNavLinkActive } from "@/lib/navigation/nav-active";
 
 export function WorldCupAppNav({
-  defaultGroupId,
+  homeGroupId,
   defaultContestId,
 }: {
-  defaultGroupId?: string | null;
+  homeGroupId?: string | null;
   defaultContestId?: string | null;
 }) {
   const pathname = usePathname();
   const supabase = createClient();
-  const groupId = defaultGroupId ?? null;
+
+  const homeHref = homeGroupId ? `/groups/${homeGroupId}` : "/groups/join";
 
   const links: { href: string; label: string }[] = [
-    { href: groupId ? `/groups/${groupId}` : "/groups", label: worldCupCopy.nav.groups },
+    { href: homeHref, label: worldCupCopy.nav.groups },
   ];
   if (defaultContestId) {
     links.push({
@@ -44,11 +46,11 @@ export function WorldCupAppNav({
         <nav className="flex gap-1 sm:gap-2" aria-label="Main">
           {links.map(({ href, label }) => (
             <Link
-              key={href}
+              key={`${label}-${href}`}
               href={href}
               className={cn(
                 "rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                pathname === href || pathname.startsWith(`${href}/`)
+                isNavLinkActive(pathname, href)
                   ? "bg-secondary text-secondary-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
