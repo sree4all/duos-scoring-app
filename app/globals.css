@@ -82,9 +82,26 @@
   z-index: 0;
 }
 
+/* World Cup 2026 hero texture (gradient-dominant, ~20–30% opacity) */
+.page-shell__hero {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--page-hero-image);
+  background-size: cover;
+  background-position: var(--page-hero-position, center center);
+  background-repeat: no-repeat;
+  opacity: var(--page-hero-opacity, 0.25);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-shell--patterns::before,
   .page-shell--patterns::after {
+    display: none;
+  }
+
+  .page-shell__hero {
     display: none;
   }
 }

@@ -7,6 +7,9 @@ import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { aggregateLeaderboardForContest } from "@/lib/server/generalized-scoring/scoring-projection-service";
 import { LeaderboardList } from "@/components/world-cup/leaderboard-list";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
+import { PageHeroLayer } from "@/components/layout/page-hero-layer";
+import { Card } from "@/components/ui/card";
 
 type LeaderboardPageProps = {
   params: Promise<{ contestId: string }>;
@@ -57,10 +60,16 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
     totalPoints: entry.totalPoints,
   }));
 
+  const pageBackground = resolveContestPageBackground(
+    contest,
+    `/contests/${contestId}/leaderboard`,
+  );
+
   return (
-    <section className="space-y-4">
-      <header>
-        <h1 className="text-xl font-semibold sm:text-2xl">{worldCupCopy.nav.standings}</h1>
+    <section className="relative space-y-4">
+      {pageBackground ? <PageHeroLayer pageBackground={pageBackground} /> : null}
+      <header className="relative z-[1]">
+        <h1 className="text-title-dense">{worldCupCopy.nav.standings}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {isRummy
             ? "Lower total ranks higher."
@@ -68,11 +77,13 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
         </p>
       </header>
 
-      <LeaderboardList entries={entries} />
+      <Card variant="glass" className="relative z-[1] p-4">
+        <LeaderboardList entries={entries} />
+      </Card>
 
       <Link
         href={`/contests/${contestId}/matches`}
-        className="inline-block text-sm font-medium underline"
+        className="relative z-[1] inline-block text-sm font-medium underline"
       >
         ← {worldCupCopy.nav.worldCupPredictions}
       </Link>
