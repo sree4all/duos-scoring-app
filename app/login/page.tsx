@@ -2,42 +2,64 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/auth/login-form";
+import { ensurePilotGroupMembership } from "@/lib/server/groups/auto-join";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
 import {
+  getDefaultContestId,
   getDefaultGroupId,
   isWorldCupPrivateMode,
 } from "@/lib/server/world-cup/flags";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+function safeInternalPath(path: string | undefined): string | null {
+  if (!path?.startsWith("/")) return null;
+  if (path.startsWith("//")) return null;
+  return path;
+}
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const privatePilot = isWorldCupPrivateMode();
+  const redirectAfterAuth = safeInternalPath(params.next) ?? (privatePilot ? "/welcome" : "/contests");
+
   if (user) {
-    if (isWorldCupPrivateMode()) {
+    if (privatePilot) {
+      if (redirectAfterAuth.startsWith("/welcome")) {
+        redirect(redirectAfterAuth);
+      }
+      const join = await ensurePilotGroupMembership(supabase, user.id);
+      if (join.ok) {
+        const contestId = getDefaultContestId();
+        redirect(contestId ? `/contests/${contestId}/matches` : `/groups/${join.groupId}`);
+      }
       const gid =
         (isGroupScopingEnabled()
           ? await resolveActiveGroupId(supabase, user.id)
           : null) ?? getDefaultGroupId();
-      redirect(gid ? `/groups/${gid}` : "/groups/join");
+      redirect(gid ? `/groups/${gid}` : "/welcome");
     }
-    redirect("/contests");
+    redirect(redirectAfterAuth);
   }
 
-  const params = await searchParams;
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Duos Scoring App</CardTitle>
+          <CardTitle className="text-2xl">FIFA World Cup 2026</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Sign in to participate in contests and view leaderboard updates.
+            {privatePilot
+              ? "Sign in to join your family league and make match predictions."
+              : "Sign in to participate in contests and view leaderboard updates."}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -46,12 +68,21 @@ export default async function LoginPage({
               Sign-in failed. Try again.
             </p>
           ) : null}
-          <LoginForm />
-          <p className="text-center text-xs text-muted-foreground">
-            <Link href="/" className="underline">
-              Home
-            </Link>
-          </p>
+          <LoginForm redirectPath={redirectAfterAuth} />
+          {privatePilot ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Share this link with players:{" "}
+              <Link href="/join" className="font-medium underline">
+                Join the league
+              </Link>
+            </p>
+          ) : (
+            <p className="text-center text-xs text-muted-foreground">
+              <Link href="/" className="underline">
+                Home
+              </Link>
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -87,7 +87,7 @@ export function WorldCupOrganizerHub({
         </li>
         <li>
           {groupStageRevealed ? (
-            <span className="text-green-700">Group Stage is open for picks</span>
+            <span className="text-green-700">Group Stage is open for predictions</span>
           ) : (
             <Link
               href={`/groups/${groupId}/world-cup/stages?${q}`}

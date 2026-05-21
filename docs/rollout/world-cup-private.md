@@ -18,9 +18,10 @@ GROUP_RUMMY_ENABLED=true
 | Variable | Values | Purpose |
 |----------|--------|---------|
 | `WORLD_CUP_IMPORT_ENABLED` | `true` / `false` | Owner CSV import UI and API |
-| `WORLD_CUP_PRIVATE_MODE` | `true` / `false` | Simplified nav; redirect root to group home |
-| `DEFAULT_GROUP_ID` | UUID (optional) | Auto-select group; members land on group home after join |
-| `DEFAULT_CONTEST_ID` | UUID (optional) | Nav links for World Cup Picks and Standings |
+| `WORLD_CUP_PRIVATE_MODE` | `true` / `false` | Simplified nav; kid-friendly league flow |
+| `DEFAULT_GROUP_ID` | UUID (optional) | Pilot group; active-group cookie fallback |
+| `DEFAULT_CONTEST_ID` | UUID (optional) | Nav links for Predictions and Standings |
+| `DEFAULT_INVITE_CODE` | e.g. `DQBGKVTM` | Auto-join on `/welcome` after sign-in |
 
 ## Recommended pilot `.env.local`
 
@@ -32,26 +33,35 @@ WORLD_CUP_IMPORT_ENABLED=true
 WORLD_CUP_PRIVATE_MODE=true
 DEFAULT_GROUP_ID=<your-group-uuid>
 DEFAULT_CONTEST_ID=<your-world-cup-contest-uuid>
+DEFAULT_INVITE_CODE=DQBGKVTM
 ```
 
 When `WORLD_CUP_PRIVATE_MODE=true`:
 
 - Rummy UI and routes are hidden; members cannot open group settings or create groups.
-- New members use **Join with code** only; API blocks `POST /api/groups` (create group).
+- Players use a **share link** (no manual code): `/join` or `/join/DQBGKVTM` → sign in → auto-join → predictions schedule.
+- Point rules for unrevealed rounds stay hidden until the owner reveals each stage.
+
+## Share links for players
+
+| URL | Behavior |
+|-----|----------|
+| `https://<app>/join` | Sign in → auto-join with `DEFAULT_INVITE_CODE` |
+| `https://<app>/join/DQBGKVTM` | Sign in → auto-join with that code |
+| `https://<app>/groups/<group-uuid>` | Sign in → auto-join if not a member (no 404) |
 
 ## Operator workflow
 
-1. Create a private group and note its UUID.
-2. Set `DEFAULT_GROUP_ID` to that UUID (optional).
-3. Download Kaggle CSVs into `data/worldcup-2026/` (see README there).
-4. Create a **World Cup 2026** prediction contest from the group wizard.
-5. Run `npm run import:worldcup -- --group-id <id> --contest-id <id>`.
-6. Open **World Cup stages** and reveal Group Stage when ready.
-7. Configure bonus questions in the contest wizard as needed.
+1. Create a private group and note its UUID and invite code.
+2. Set `DEFAULT_GROUP_ID`, `DEFAULT_CONTEST_ID`, and `DEFAULT_INVITE_CODE`.
+3. Download CSVs into `data/worldcup-2026/` (see README there) or upload on Vercel.
+4. Publish the World Cup contest from the organizer hub.
+5. Import the schedule, then reveal **Group Stage** when ready.
+6. Share `/join` with players.
 
 ## Stage recalculate
 
-If stage point values change after some matches were scored, the group owner uses **Recalculate stage** on the stages page. This re-runs scoring for completed matches in that stage and appends net ledger adjustments (constitution: append-only).
+If stage point values change after some matches were scored, the group owner uses **Recalculate stage** on the stages page. Scoring runs only for completed matches in that stage.
 
 ## SC-006 spot-check
 

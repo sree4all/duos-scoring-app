@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
 
   if (isGroupCreationDisabled() && request.nextUrl.pathname === "/groups/new") {
     const url = request.nextUrl.clone();
-    url.pathname = "/groups/join";
+    url.pathname = "/join";
     return NextResponse.redirect(url);
   }
 

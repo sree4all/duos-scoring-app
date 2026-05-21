@@ -18,7 +18,7 @@ export function WorldCupAppNav({
   const pathname = usePathname();
   const supabase = createClient();
 
-  const homeHref = homeGroupId ? `/groups/${homeGroupId}` : "/groups/join";
+  const homeHref = homeGroupId ? `/groups/${homeGroupId}` : "/join";
 
   const links: { href: string; label: string }[] = [
     { href: homeHref, label: worldCupCopy.nav.groups },
@@ -26,7 +26,7 @@ export function WorldCupAppNav({
   if (defaultContestId) {
     links.push({
       href: `/contests/${defaultContestId}/matches`,
-      label: worldCupCopy.nav.worldCupPicks,
+      label: worldCupCopy.nav.worldCupPredictions,
     });
     links.push({
       href: `/contests/${defaultContestId}/leaderboard`,
@@ -43,7 +43,7 @@ export function WorldCupAppNav({
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
-        <nav className="flex gap-1 sm:gap-2" aria-label="Main">
+        <nav className="flex flex-wrap gap-1 sm:gap-2" aria-label="Main">
           {links.map(({ href, label }) => (
             <Link
               key={`${label}-${href}`}

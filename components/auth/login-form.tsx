@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export function LoginForm() {
+export function LoginForm({ redirectPath = "/contests" }: { redirectPath?: string }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -12,6 +12,7 @@ export function LoginForm() {
   const supabase = createClient();
   const origin =
     typeof window !== "undefined" ? window.location.origin : "";
+  const callbackNext = encodeURIComponent(redirectPath);
 
   async function signInWithGoogle() {
     setLoading(true);
@@ -19,7 +20,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth/callback?next=/contests`,
+        redirectTo: `${origin}/auth/callback?next=${callbackNext}`,
       },
     });
     setLoading(false);
@@ -33,7 +34,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${origin}/auth/callback?next=/contests`,
+        emailRedirectTo: `${origin}/auth/callback?next=${callbackNext}`,
       },
     });
     setLoading(false);

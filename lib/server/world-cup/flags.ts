@@ -16,6 +16,12 @@ export function getDefaultContestId(): string | null {
   return id || null;
 }
 
+/** Invite code for one-tap league join (private pilot). */
+export function getDefaultInviteCode(): string | null {
+  const code = process.env.DEFAULT_INVITE_CODE?.trim();
+  return code || null;
+}
+
 /** Pilot shell: single group, World Cup only, no self-serve group creation. */
 export function isGroupCreationDisabled(): boolean {
   return isWorldCupPrivateMode();

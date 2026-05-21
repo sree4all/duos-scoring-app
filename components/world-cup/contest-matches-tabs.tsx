@@ -1,0 +1,51 @@
+"use client";
+
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { worldCupCopy } from "@/lib/copy/world-cup";
+
+type Tab = "schedule" | "stats";
+
+export function ContestMatchesTabs({
+  schedule,
+  stats,
+}: {
+  schedule: React.ReactNode;
+  stats: React.ReactNode;
+}) {
+  const [tab, setTab] = useState<Tab>("schedule");
+
+  return (
+    <div className="space-y-4">
+      <div
+        className="flex rounded-lg border bg-muted/30 p-1"
+        role="tablist"
+        aria-label="Predictions views"
+      >
+        {(
+          [
+            ["schedule", worldCupCopy.nav.worldCupPredictions],
+            ["stats", worldCupCopy.nav.predictionStats],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            className={cn(
+              "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              tab === id
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+            onClick={() => setTab(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel">{tab === "schedule" ? schedule : stats}</div>
+    </div>
+  );
+}

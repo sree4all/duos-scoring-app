@@ -57,7 +57,7 @@ export default async function GroupDashboardPage({ params }: PageProps) {
             <li className="text-sm text-muted-foreground">
               {privatePilot && membership.isOwner
                 ? "Publish your World Cup contest, then import the schedule."
-                : "Your organizer will open picks soon."}
+                : "Your organizer will open predictions soon."}
             </li>
           ) : null}
         </ul>
@@ -77,10 +77,10 @@ export default async function GroupDashboardPage({ params }: PageProps) {
       {!privatePilot ? <GroupDualFormatPanel isOwner={membership.isOwner} /> : null}
 
       {privatePilot ? (
-        <ContestList title={worldCupCopy.nav.worldCupPicks} items={pickContests} />
+        <ContestList title={worldCupCopy.nav.worldCupPredictions} items={pickContests} />
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
-          <ContestList title="World Cup Picks" items={summary.prediction} />
+          <ContestList title="World Cup Predictions" items={summary.prediction} />
           <ContestList title="Rummy Scores" items={summary.rummy} />
         </div>
       )}

@@ -38,12 +38,12 @@ export default async function EventSubmissionPage({ params }: PageProps) {
   );
   if (!reveal.ok) {
     return (
-      <main className="space-y-4 p-6">
+      <section className="space-y-4">
         <p className="text-sm">{reveal.message}</p>
-        <Link href={`/contests/${contestId}/matches`} className="text-sm underline">
-          Back to matches
+        <Link href={`/contests/${contestId}/matches`} className="text-sm font-medium underline">
+          Back to predictions
         </Link>
-      </main>
+      </section>
     );
   }
 
@@ -67,11 +67,17 @@ export default async function EventSubmissionPage({ params }: PageProps) {
     .maybeSingle();
 
   return (
-    <main className="space-y-6 p-6">
-      <header>
-        <h1 className="text-xl font-semibold">{event.title as string}</h1>
+    <section className="space-y-6">
+      <header className="space-y-1">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Match prediction
+        </p>
+        <h1 className="text-2xl font-semibold">{event.title as string}</h1>
+        <p className="text-lg font-medium">
+          {match.home_team as string} vs {match.away_team as string}
+        </p>
         <p className="text-sm text-muted-foreground">
-          Kickoff: {formatEasternDateTime(match.match_time_utc as string)}
+          Kickoff (Eastern): {formatEasternDateTime(match.match_time_utc as string)}
         </p>
       </header>
 
@@ -86,25 +92,31 @@ export default async function EventSubmissionPage({ params }: PageProps) {
       />
 
       {membership.isOwner ? (
-        <>
-          <OwnerMatchLockForm
-            groupId={activeGroupId}
-            contestId={contestId}
-            eventId={eventId}
-            lockAt={lockAt}
-          />
-          <OwnerEventResultsForm
-            groupId={activeGroupId}
-            contestId={contestId}
-            matchId={matchId}
-            eventId={eventId}
-          />
-        </>
+        <details className="rounded-lg border p-4 text-sm">
+          <summary className="cursor-pointer font-medium">Organizer tools</summary>
+          <div className="mt-4 space-y-4">
+            <OwnerMatchLockForm
+              groupId={activeGroupId}
+              contestId={contestId}
+              eventId={eventId}
+              lockAt={lockAt}
+            />
+            <OwnerEventResultsForm
+              groupId={activeGroupId}
+              contestId={contestId}
+              matchId={matchId}
+              eventId={eventId}
+            />
+          </div>
+        </details>
       ) : null}
 
-      <Link href={`/contests/${contestId}/matches`} className="text-sm underline">
-        Back to {worldCupCopy.nav.worldCupPicks}
+      <Link
+        href={`/contests/${contestId}/matches`}
+        className="inline-block text-sm font-medium underline"
+      >
+        ← Back to {worldCupCopy.nav.worldCupPredictions}
       </Link>
-    </main>
+    </section>
   );
 }

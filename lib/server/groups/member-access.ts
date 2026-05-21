@@ -6,6 +6,10 @@ import { canManageContests } from "@/lib/server/groups/role-helpers";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 
 export function joinGroupRedirectPath(groupId: string): string {
+  if (isWorldCupPrivateMode()) {
+    const next = encodeURIComponent(`/groups/${groupId}`);
+    return `/welcome?next=${next}`;
+  }
   const next = encodeURIComponent(`/groups/${groupId}`);
   return `/groups/join?next=${next}`;
 }

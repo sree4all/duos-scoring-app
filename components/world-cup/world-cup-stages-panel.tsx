@@ -73,7 +73,7 @@ export function WorldCupStagesPanel({
           </div>
           <div className="mt-3 flex flex-wrap gap-4 text-sm">
             <label>
-              Right pick
+              Correct
               <input
                 type="number"
                 className="ml-2 w-16 rounded border px-2"
@@ -84,7 +84,7 @@ export function WorldCupStagesPanel({
               />
             </label>
             <label>
-              Wrong pick
+              Wrong
               <input
                 type="number"
                 className="ml-2 w-16 rounded border px-2"

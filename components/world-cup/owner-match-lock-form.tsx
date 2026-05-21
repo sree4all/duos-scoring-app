@@ -49,7 +49,7 @@ export function OwnerMatchLockForm({
       );
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? "Could not update lock time");
-      setMessage(`Picks lock at ${formatEasternDateTime(datetimeLocalToIso(value))}.`);
+      setMessage(`Predictions lock at ${formatEasternDateTime(datetimeLocalToIso(value))}.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update lock time");
     } finally {
@@ -61,7 +61,7 @@ export function OwnerMatchLockForm({
     <section className="rounded-lg border p-4">
       <h2 className="font-medium">Pick lock time</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Members cannot save picks after this time (shown in Eastern Time on the schedule).
+        Members cannot save predictions after this time (shown in Eastern Time on the schedule).
       </p>
       {lockAt ? (
         <p className="mt-2 text-sm">

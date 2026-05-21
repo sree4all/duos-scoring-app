@@ -27,7 +27,7 @@ export default async function ParticipantContestsPage() {
         <h1 className="text-2xl font-semibold">Active contests</h1>
         <p className="text-sm text-muted-foreground">
           {isWorldCupPrivateMode()
-            ? "Join with your invite code to see World Cup picks."
+            ? "Sign in with the league link to make World Cup predictions."
             : "Create or join a private group to see contests for your team."}
         </p>
         <div className="flex gap-3">

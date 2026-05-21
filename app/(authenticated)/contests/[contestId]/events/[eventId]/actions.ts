@@ -42,7 +42,7 @@ export async function saveMatchPick(
 
   const lockAt = event.lock_at as string | null;
   if (lockAt && new Date(lockAt).getTime() <= Date.now()) {
-    return { ok: false as const, error: worldCupCopy.errors.picksClosed };
+    return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
   }
 
   const { error } = await supabase.from("predictions").upsert(

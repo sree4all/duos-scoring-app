@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { GroupRepository } from "@/lib/server/groups/repository";
 import { isGroupCreationDisabled } from "@/lib/server/world-cup/flags";
+import { getDefaultContestId } from "@/lib/server/world-cup/flags";
 
 export default async function GroupsHomePage() {
   const { supabase, user } = await requireUser();
@@ -17,21 +18,18 @@ export default async function GroupsHomePage() {
       activeGroupId && groups.some((g) => g.id === activeGroupId)
         ? activeGroupId
         : groups[0]!.id;
+
+    if (privatePilot) {
+      const contestId = getDefaultContestId();
+      if (contestId) {
+        redirect(`/contests/${contestId}/matches`);
+      }
+    }
     redirect(`/groups/${target}`);
   }
 
   if (privatePilot) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold">Join your league</h1>
-        <p className="text-sm text-muted-foreground">
-          Enter the invite code from your organizer to start making World Cup picks.
-        </p>
-        <Link href="/groups/join" className="text-sm font-medium underline">
-          Join with invite code
-        </Link>
-      </div>
-    );
+    redirect("/welcome");
   }
 
   return (
