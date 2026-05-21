@@ -35,6 +35,10 @@ export default async function EventSubmissionPage({ params }: PageProps) {
     supabase,
     contestId,
     event.stage_key as string | null,
+    {
+      stage_key: event.stage_key as string | null,
+      source_match_id: event.source_match_id as string | null,
+    },
   );
   if (!reveal.ok) {
     return (

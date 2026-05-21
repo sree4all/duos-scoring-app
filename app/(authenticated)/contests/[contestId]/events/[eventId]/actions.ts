@@ -26,7 +26,7 @@ export async function saveMatchPick(
 
   const { data: event } = await supabase
     .from("events")
-    .select("stage_key, lock_at")
+    .select("stage_key, lock_at, source_match_id")
     .eq("id", eventId)
     .eq("contest_id", contestId)
     .maybeSingle();
@@ -37,6 +37,10 @@ export async function saveMatchPick(
     supabase,
     contestId,
     event.stage_key as string | null,
+    {
+      stage_key: event.stage_key as string | null,
+      source_match_id: event.source_match_id as string | null,
+    },
   );
   if (!reveal.ok) return { ok: false as const, error: reveal.message };
 

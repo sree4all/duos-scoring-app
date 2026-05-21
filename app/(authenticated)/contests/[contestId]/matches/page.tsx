@@ -30,7 +30,8 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   );
 
   const isOwner = membership.isOwner;
-  const memberView = !isOwner;
+  /** Predictions page always uses member view (revealed rounds only), including for owners. */
+  const memberView = true;
   const events = await listRevealedScheduleEvents(supabase, contestId, memberView);
   const rules = await new StageRulesRepository(supabase).listForContest(contestId, memberView);
 

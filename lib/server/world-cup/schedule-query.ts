@@ -16,6 +16,23 @@ export type ScheduleEventRow = {
   matchStatus: string;
 };
 
+/** Prefer event.stage_key; fall back to linked match when import left events without stage_key. */
+export async function resolveEventStageKey(
+  supabase: SupabaseClient,
+  event: { stage_key: string | null; source_match_id: string | null },
+): Promise<string | null> {
+  const fromEvent = event.stage_key as string | null;
+  if (fromEvent) return fromEvent;
+  const matchId = event.source_match_id as string | null;
+  if (!matchId) return null;
+  const { data: match } = await supabase
+    .from("matches")
+    .select("stage_key")
+    .eq("id", matchId)
+    .maybeSingle();
+  return (match?.stage_key as string | null) ?? null;
+}
+
 export async function listRevealedScheduleEvents(
   supabase: SupabaseClient,
   contestId: string,
@@ -42,7 +59,9 @@ export async function listRevealedScheduleEvents(
   if (matchIds.length > 0) {
     const { data: matchRows } = await supabase
       .from("matches")
-      .select("id, match_number, home_team, away_team, venue_label, match_time_utc, status")
+      .select(
+        "id, match_number, home_team, away_team, venue_label, match_time_utc, status, stage_key",
+      )
       .in("id", matchIds);
     for (const m of matchRows ?? []) {
       matchById.set(m.id as string, m as Record<string, unknown>);
@@ -51,12 +70,13 @@ export async function listRevealedScheduleEvents(
 
   const rows: ScheduleEventRow[] = [];
   for (const ev of events ?? []) {
-    const stageKey = ev.stage_key as string | null;
-    if (memberView && stageKey && !revealedKeys.has(stageKey)) continue;
-
     const matchId = ev.source_match_id as string;
     const match = matchById.get(matchId);
     if (!match) continue;
+
+    const stageKey =
+      (ev.stage_key as string | null) ?? (match.stage_key as string | null) ?? null;
+    if (memberView && (!stageKey || !revealedKeys.has(stageKey))) continue;
 
     rows.push({
       eventId: ev.id as string,
@@ -80,10 +100,13 @@ export async function assertEventRevealedForMember(
   supabase: SupabaseClient,
   contestId: string,
   stageKey: string | null,
-): Promise<{ ok: true } | { ok: false; message: string }> {
-  if (!stageKey) return { ok: false, message: worldCupCopy.errors.notOpenYet };
+  event?: { stage_key: string | null; source_match_id: string | null },
+): Promise<{ ok: true; stageKey: string } | { ok: false; message: string }> {
+  const resolved =
+    stageKey ?? (event ? await resolveEventStageKey(supabase, event) : null);
+  if (!resolved) return { ok: false, message: worldCupCopy.errors.notOpenYet };
   const repo = new StageRulesRepository(supabase);
-  const revealed = await repo.isStageRevealed(contestId, stageKey);
+  const revealed = await repo.isStageRevealed(contestId, resolved);
   if (!revealed) return { ok: false, message: worldCupCopy.errors.notOpenYet };
-  return { ok: true };
+  return { ok: true, stageKey: resolved };
 }

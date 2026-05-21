@@ -23,6 +23,24 @@ path = kagglehub.dataset_download("areezvisram12/fifa-world-cup-2026-match-data-
 # Copy the four CSV files into this folder
 ```
 
+## UEFA playoff winners (2026)
+
+These replace Kaggle placeholders in `teams.csv`:
+
+| Path | Winner | Final |
+|------|--------|-------|
+| A | Bosnia and Herzegovina | 1–1 vs Italy (4–1 pens) |
+| B | Sweden | 3–2 vs Poland |
+| C | Türkiye | 1–0 vs Kosovo |
+| D | Czechia | 2–2 vs Denmark (3–1 pens) |
+
+**Confirmed groups (playoff winners):**
+
+| Group | Teams |
+|-------|--------|
+| I | France, Senegal, Norway, Iraq (FIFA Playoff 2) |
+| K | Portugal, Colombia, Uzbekistan, DR Congo (FIFA Playoff 1) |
+
 ## Import into the app
 
 ```bash
