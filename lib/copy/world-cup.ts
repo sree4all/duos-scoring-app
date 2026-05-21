@@ -9,6 +9,7 @@ export const worldCupCopy = {
   },
   prediction: {
     alreadyPredicted: "Already predicted",
+    bonusNotPredicted: "Bonus not predicted",
     duePrediction: "Due prediction",
     save: "Save prediction",
     update: "Update prediction",

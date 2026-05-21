@@ -21,10 +21,12 @@ function MatchCard({
   contestId,
   ev,
   savedPick,
+  showBonusNotPredicted,
 }: {
   contestId: string;
   ev: ScheduleEventRow;
   savedPick: string | null;
+  showBonusNotPredicted: boolean;
 }) {
   const now = Date.now();
   const locked = Boolean(ev.lockAt && new Date(ev.lockAt).getTime() <= now);
@@ -41,21 +43,28 @@ function MatchCard({
         </span>
       </div>
 
-      <div
-        className={cn(
-          "mt-2 inline-block rounded-md px-2 py-0.5 text-xs font-semibold",
-          hasPrediction
-            ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"
+      <div className="mt-2 flex flex-wrap gap-2">
+        <span
+          className={cn(
+            "inline-block rounded-md px-2 py-0.5 text-xs font-semibold",
+            hasPrediction
+              ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"
+              : !locked
+                ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"
+                : "bg-muted text-muted-foreground",
+          )}
+        >
+          {hasPrediction
+            ? worldCupCopy.prediction.alreadyPredicted
             : !locked
-              ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"
-              : "bg-muted text-muted-foreground",
-        )}
-      >
-        {hasPrediction
-          ? worldCupCopy.prediction.alreadyPredicted
-          : !locked
-            ? worldCupCopy.prediction.duePrediction
-            : "No prediction saved"}
+              ? worldCupCopy.prediction.duePrediction
+              : "No prediction saved"}
+        </span>
+        {hasPrediction && showBonusNotPredicted ? (
+          <span className="inline-block rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+            {worldCupCopy.prediction.bonusNotPredicted}
+          </span>
+        ) : null}
       </div>
 
       <p className="mt-2 break-words text-base font-semibold leading-snug sm:text-lg">
@@ -89,10 +98,12 @@ export function MatchScheduleList({
   contestId,
   events,
   userPickByEventId = {},
+  bonusNotPredictedByEventId = {},
 }: {
   contestId: string;
   events: ScheduleEventRow[];
   userPickByEventId?: Record<string, string | null>;
+  bonusNotPredictedByEventId?: Record<string, boolean>;
 }) {
   const [visibleCount, setVisibleCount] = useState(MOBILE_LIST_INITIAL);
 
@@ -119,6 +130,7 @@ export function MatchScheduleList({
             contestId={contestId}
             ev={ev}
             savedPick={userPickByEventId[ev.eventId] ?? null}
+            showBonusNotPredicted={bonusNotPredictedByEventId[ev.eventId] ?? false}
           />
         ))}
       </ul>
