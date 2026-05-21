@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 const links = [
+  { href: "/groups", label: "Groups" },
   { href: "/contests", label: "Contests" },
   { href: "/history", label: "History" },
   { href: "/admin/scoring", label: "Scoring" },

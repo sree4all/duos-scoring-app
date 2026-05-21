@@ -109,3 +109,39 @@ export type PredictionBonusAnswer = {
   answer_text: string;
   updated_at: string;
 };
+
+export type GroupRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  status: "active" | "archived";
+  current_invite_code: string;
+  invite_code_rotated_at: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type GroupMembershipRow = {
+  id: string;
+  group_id: string;
+  user_id: string;
+  is_owner: boolean;
+  is_scorer: boolean;
+  joined_at: string;
+  removed_at: string | null;
+};
+
+export type ContestRow = {
+  id: string;
+  game_type_id: string;
+  name: string;
+  state: string;
+  visibility: string;
+  group_id: string | null;
+  format_label?: string | null;
+  legacy_tournament_scope_id?: string | null;
+  default_lock_policy: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};

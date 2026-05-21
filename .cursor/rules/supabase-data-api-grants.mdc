@@ -1,0 +1,41 @@
+---
+description: Require explicit GRANTs on new public tables for Supabase Data API
+globs: supabase/**/*.sql
+alwaysApply: false
+---
+
+# Supabase Data API — explicit GRANTs on public tables
+
+This app uses the Supabase Data API (`supabase-js`, PostgREST). Every **new** `public` table must include explicit role grants in the **same migration** that creates it (after RLS is enabled and policies are defined).
+
+**Deadline:** enforced on existing projects **2026-10-30** (new projects from **2026-05-30**). Missing grants cause PostgREST `42501` errors.
+
+## Migration checklist
+
+1. `CREATE TABLE public.<name> ...`
+2. `ALTER TABLE public.<name> ENABLE ROW LEVEL SECURITY;`
+3. `CREATE POLICY ...` (match app access: usually `authenticated` only; avoid `anon` unless intentional)
+4. Explicit `GRANT`s for Data API roles
+
+## Grant pattern
+
+Default for tables behind RLS (no anonymous access):
+
+```sql
+grant select, insert, update, delete on public.your_table to authenticated;
+grant select, insert, update, delete on public.your_table to service_role;
+```
+
+Only if the table is intentionally readable without login:
+
+```sql
+grant select on public.your_table to anon;
+```
+
+Tune privileges per table (e.g. read-only config: `grant select` only to `authenticated`).
+
+## When editing migrations
+
+- Do not add `CREATE TABLE public.*` without accompanying `GRANT`s in that file.
+- When adding a new table to an existing feature, mirror grants used on similar tables in this repo.
+- `service_role` bypasses RLS; use for scripts (`lib/supabase/service.ts`) only where appropriate.
