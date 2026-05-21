@@ -22,7 +22,17 @@ export function mapGroupError(error: unknown): string {
     return "Please sign in to continue.";
   }
   if (message.includes("row-level security") || message.includes("42501")) {
+    if (message.includes("bonus_prompt")) {
+      return "You do not have permission to manage bonus questions for this match. Confirm you are the group owner and migrations through 202605220002 are applied.";
+    }
     return "Could not create the group (permissions). Ensure group migrations are applied, then try again.";
+  }
+  if (
+    message.includes("PGRST204") ||
+    message.includes("correct_points") ||
+    message.includes("incorrect_penalty")
+  ) {
+    return "Bonus questions require a database update. Run Supabase migrations through 202605220001 (match bonus prompts), then try again.";
   }
   if (process.env.NODE_ENV === "development" && message) {
     return message;

@@ -12,6 +12,8 @@ Auto-generated guidance. Canonical feature: **004-generalized-scoring-platform**
 - TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Supabase JS/SSR, Tailwind CSS, shadcn/ui, `csv-parse` (import script) (006-fifa-world-cup-predictions)
 - Supabase PostgreSQL (additive: `contest_stage_scoring_rules`, `worldcup_import_runs`, `matches` WC columns) (006-fifa-world-cup-predictions)
 - Supabase PostgreSQL (additive: `contest_stage_scoring_rules`, `worldcup_import_runs`, `matches` WC columns, `events.lock_at` overrides) (006-fifa-world-cup-predictions)
+- TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Tailwind CSS 3, shadcn/ui (existing), `class-variance-authority`, `next/font` (Inter) (007-design-system-styling)
+- N/A (no schema changes) (007-design-system-styling)
 
 - TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Supabase JS/SSR, Tailwind CSS, shadcn/ui
 - Supabase PostgreSQL (existing schema + additive migrations; generalized scoring tables per 004)

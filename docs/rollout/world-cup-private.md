@@ -4,7 +4,7 @@
 
 Before enabling World Cup features:
 
-1. Apply Supabase migrations through `202605200004` (World Cup) and all `005` group migrations.
+1. Apply Supabase migrations through `202605220002` (World Cup + per-match bonus prompts) and all `005` group migrations.
 2. Set group rollout flags (see [group-scoping.md](./group-scoping.md)):
 
 ```env
