@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normAnswer } from "@/lib/scoring/normalize";
-import { isLegacyLateExcluded } from "@/lib/scoring/legacy-late-exclusions";
 
 export type ScoringConfigRow = {
   season_year: number;
@@ -68,7 +67,7 @@ export async function applyMatchScoring(
   const bonusPts = Number(cfg.match_bonus_points ?? 0);
 
   const actualWinner = match.winner as string | null;
-  const legacyBonusResult = match.bonus_result as string | null;
+  const matchBonusResult = match.bonus_result as string | null;
 
   const { data: predictions, error: pErr } = await supabase
     .from("predictions")
@@ -76,18 +75,6 @@ export async function applyMatchScoring(
     .eq("match_id", matchId);
   if (pErr) {
     return { ok: false, error: pErr.message };
-  }
-  const userIds = [...new Set((predictions ?? []).map((p) => p.user_id as string))];
-  let excludedUsers = new Set<string>();
-  try {
-    const { data: excludedRows } = await supabase
-      .from("legacy_prediction_exclusions")
-      .select("user_id")
-      .eq("match_id", matchId)
-      .in("user_id", userIds.length > 0 ? userIds : ["00000000-0000-0000-0000-000000000000"]);
-    excludedUsers = new Set((excludedRows ?? []).map((r) => r.user_id as string));
-  } catch {
-    excludedUsers = new Set<string>();
   }
 
   const { data: promptRows } = await supabase
@@ -132,8 +119,6 @@ export async function applyMatchScoring(
 
   for (const pred of predictions ?? []) {
     const userId = pred.user_id as string;
-    if (excludedUsers.has(userId)) continue;
-    if (isLegacyLateExcluded(userId, (match.external_key as string | null) ?? null)) continue;
     const predictedWinner = pred.predicted_winner as string;
 
     let wDelta = 0;
@@ -158,8 +143,8 @@ export async function applyMatchScoring(
           });
         }
       }
-    } else if (legacyBonusResult) {
-      const legacyPick = (pred.bonus_pick as string | null)?.trim();
+    } else if (matchBonusResult) {
+      const singleBonusPick = (pred.bonus_pick as string | null)?.trim();
       let fromPrompts = "";
       if (promptIds.length > 0) {
         const sorted = bonusAnswers.filter((b) => b.user_id === userId);
@@ -169,8 +154,8 @@ export async function applyMatchScoring(
         );
         fromPrompts = sorted[0]?.answer_text?.trim() ?? "";
       }
-      const userBonus = legacyPick || fromPrompts;
-      if (userBonus && normAnswer(userBonus) === normAnswer(legacyBonusResult)) {
+      const userBonus = singleBonusPick || fromPrompts;
+      if (userBonus && normAnswer(userBonus) === normAnswer(matchBonusResult)) {
         toInsert.push({
           user_id: userId,
           source_type: "bonus",

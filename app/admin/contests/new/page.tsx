@@ -1,18 +1,27 @@
-import { ContestDetailsStep } from "@/components/admin/contest-wizard/contest-details-step";
-import { EventsStep } from "@/components/admin/contest-wizard/events-step";
-import { PromptsStep } from "@/components/admin/contest-wizard/prompts-step";
-import { ScoringStep } from "@/components/admin/contest-wizard/scoring-step";
-import { PublishStep } from "@/components/admin/contest-wizard/publish-step";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/auth/require-user";
+export default async function PlatformAdminNewContestPage() {
+  const { supabase, user } = await requireUser();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
 
-export default function NewContestPage() {
-  return (
-    <main className="space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">New Contest Wizard</h1>
-      <ContestDetailsStep />
-      <EventsStep />
-      <PromptsStep />
-      <ScoringStep />
-      <PublishStep />
-    </main>
-  );
+  if (profile?.role !== "admin") {
+    return (
+      <main className="space-y-4 p-6">
+        <h1 className="text-2xl font-semibold">Group owner setup</h1>
+        <p className="text-sm text-muted-foreground">
+          Contest configuration for informal teams is under your group, not this admin area.
+        </p>
+        <Link href="/groups" className="text-sm font-medium underline">
+          Go to your groups
+        </Link>
+      </main>
+    );
+  }
+
+  redirect("/admin");
 }

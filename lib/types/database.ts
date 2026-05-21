@@ -4,11 +4,11 @@ export type Profile = {
   id: string;
   email: string | null;
   display_name: string;
-  legacy_points: number | null;
+  imported_points: number | null;
   current_points: number;
   rank: number | null;
   role?: string;
-  legacy_alias_onboarding_completed?: boolean;
+  alias_onboarding_completed?: boolean;
   scoring_bootstrapped_at?: string | null;
   created_at: string;
   updated_at: string;
@@ -107,5 +107,41 @@ export type PredictionBonusAnswer = {
   match_id: string | null;
   prompt_id: string;
   answer_text: string;
+  updated_at: string;
+};
+
+export type GroupRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  status: "active" | "archived";
+  current_invite_code: string;
+  invite_code_rotated_at: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type GroupMembershipRow = {
+  id: string;
+  group_id: string;
+  user_id: string;
+  is_owner: boolean;
+  is_scorer: boolean;
+  joined_at: string;
+  removed_at: string | null;
+};
+
+export type ContestRow = {
+  id: string;
+  game_type_id: string;
+  name: string;
+  state: string;
+  visibility: string;
+  group_id: string | null;
+  format_label?: string | null;
+  tournament_scope_id?: string | null;
+  default_lock_policy: Record<string, unknown>;
+  created_at: string;
   updated_at: string;
 };

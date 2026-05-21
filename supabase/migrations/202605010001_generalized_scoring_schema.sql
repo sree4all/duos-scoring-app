@@ -38,7 +38,8 @@ create table if not exists public.events (
   updated_at timestamptz not null default now()
 );
 
-create table if not exists public.points_ledger (
+-- Contest-scoped ledger (separate from season points_ledger used by match/tournament scoring)
+create table if not exists public.contest_points_ledger (
   id uuid primary key default gen_random_uuid(),
   contest_id uuid not null references public.contests(id),
   event_id uuid null references public.events(id),
@@ -49,5 +50,8 @@ create table if not exists public.points_ledger (
   correlation_id text not null,
   created_at timestamptz not null default now()
 );
+
+create index if not exists contest_points_ledger_contest_id_idx
+  on public.contest_points_ledger (contest_id);
 
 commit;

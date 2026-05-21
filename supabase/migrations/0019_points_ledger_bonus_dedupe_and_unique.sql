@@ -1,5 +1,5 @@
 -- Prevent duplicate bonus rows for the same user/match/reason combination.
--- Safe for legacy (single bonus per match) and per-prompt bonus rows (`match_bonus:<prompt_id>`).
+-- Safe for single bonus per match and per-prompt bonus rows (`match_bonus:<prompt_id>`).
 
 with ranked as (
   select

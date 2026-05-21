@@ -1,0 +1,24 @@
+{
+  "preset": {
+    "maxPointsPerHand": 80,
+    "firstDropPenalty": 20,
+    "middleDropPenalty": 40,
+    "fullCountPenalty": 80,
+    "lowerTotalWins": true
+  },
+  "hands": [
+    {
+      "id": "hand-1",
+      "players": [
+        { "participantId": "p1", "dropType": "none", "unmeldedPoints": 0 },
+        { "participantId": "p2", "dropType": "none", "unmeldedPoints": 34 },
+        { "participantId": "p3", "dropType": "first", "unmeldedPoints": null }
+      ],
+      "expectedComputed": {
+        "p1": 0,
+        "p2": 34,
+        "p3": 20
+      }
+    }
+  ]
+}
