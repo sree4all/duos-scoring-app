@@ -344,9 +344,11 @@
     "pageBackgrounds": {
     "welcome": {
     "assetPath": "/design/world-cup-2026/welcome.png",
-    "imageOpacity": 0.28,
-    "objectPosition": "center 40%",
-    "focalHint": "dual portrait; keep faces out of top headline zone",
+    "imageOpacity": 0.32,
+    "objectPosition": "center center",
+    "backgroundSizeMobile": "contain",
+    "backgroundSizeDesktop": "88% auto",
+    "focalHint": "dual portrait; mobile uses contain so full artwork is visible",
     "accentPalette": ["#FF7044", "#11398C", "#E4FF3B"]
     },
     "prediction": {

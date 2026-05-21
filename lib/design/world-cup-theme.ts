@@ -17,8 +17,8 @@ export const WORLD_CUP_THEME_NAME = "World Cup 2026";
 const PAGE_BACKGROUNDS: Record<PageBackgroundKey, PageBackgroundDef> = {
   welcome: {
     assetPath: "/design/world-cup-2026/welcome.png",
-    imageOpacity: 0.28,
-    objectPosition: "center 40%",
+    imageOpacity: 0.32,
+    objectPosition: "center center",
   },
   prediction: {
     assetPath: "/design/world-cup-2026/prediction.png",

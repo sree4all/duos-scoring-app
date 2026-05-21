@@ -89,10 +89,23 @@
   z-index: 0;
   pointer-events: none;
   background-image: var(--page-hero-image);
-  background-size: cover;
+  background-size: var(--page-hero-size, cover);
   background-position: var(--page-hero-position, center center);
   background-repeat: no-repeat;
   opacity: var(--page-hero-opacity, 0.25);
+}
+
+/* Welcome + group hub: show more of the portrait on phones (less crop than cover) */
+.page-shell__hero[data-page-background="welcome"] {
+  --page-hero-size: contain;
+  --page-hero-position: center center;
+}
+
+@media (min-width: 768px) {
+  .page-shell__hero[data-page-background="welcome"] {
+    --page-hero-size: 88% auto;
+    --page-hero-position: center 38%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
