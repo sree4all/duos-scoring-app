@@ -10,9 +10,11 @@ export type EventDraft = {
 export function EventsStep({
   events,
   onChange,
+  worldCupMode = false,
 }: {
   events: EventDraft[];
   onChange: (events: EventDraft[]) => void;
+  worldCupMode?: boolean;
 }) {
   function updateRow(index: number, patch: Partial<EventDraft>) {
     const next = [...events];
@@ -23,10 +25,18 @@ export function EventsStep({
   return (
     <section className="space-y-4 rounded-lg border p-4">
       <h2 className="font-medium">Step 2: Events and lock schedule</h2>
-      <p className="text-sm text-muted-foreground">
-        Link each event to a match id so owner scoring can run after results are entered.
-      </p>
-      {events.map((ev, index) => (
+      {worldCupMode ? (
+        <p className="text-sm text-muted-foreground">
+          Skip manual events for World Cup. After you publish, use{" "}
+          <strong>Import schedule</strong> to load all 104 matches from the CSV files.
+        </p>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Link each event to a match id so owner scoring can run after results are entered.
+        </p>
+      )}
+      {!worldCupMode
+        ? events.map((ev, index) => (
         <div key={index} className="space-y-2 rounded border p-3">
           <input
             className="w-full rounded-md border px-3 py-2 text-sm"
@@ -55,19 +65,22 @@ export function EventsStep({
             />
           </div>
         </div>
-      ))}
-      <button
-        type="button"
-        className="text-sm underline"
-        onClick={() =>
-          onChange([
-            ...events,
-            { title: "", openAt: "", lockAt: "", sourceMatchId: "" },
-          ])
-        }
-      >
-        Add event
-      </button>
+          ))
+        : null}
+      {!worldCupMode ? (
+        <button
+          type="button"
+          className="text-sm underline"
+          onClick={() =>
+            onChange([
+              ...events,
+              { title: "", openAt: "", lockAt: "", sourceMatchId: "" },
+            ])
+          }
+        >
+          Add event
+        </button>
+      ) : null}
     </section>
   );
 }

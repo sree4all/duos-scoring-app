@@ -2,8 +2,10 @@
 
 export function PublishStep({
   validationErrors,
+  worldCupMode = false,
 }: {
   validationErrors: string[];
+  worldCupMode?: boolean;
 }) {
   return (
     <section className="rounded-lg border p-4">
@@ -11,6 +13,12 @@ export function PublishStep({
       <p className="text-sm text-muted-foreground">
         Only group owners can publish. Members will see the contest after publish.
       </p>
+      {worldCupMode ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          World Cup contests do not need manual events here. Import the schedule after publish,
+          then reveal each round on the stages page.
+        </p>
+      ) : null}
       {validationErrors.length > 0 ? (
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-destructive">
           {validationErrors.map((err) => (

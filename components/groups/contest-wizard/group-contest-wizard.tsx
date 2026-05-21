@@ -68,12 +68,16 @@ export function GroupContestWizard({ groupId }: { groupId: string }) {
           events,
         });
       } else if (step === "publish" && contestId) {
+        const isWorldCup = details.formatLabel === "world_cup_prediction";
         const data = await saveConfiguration({
           action: "publish",
           contestId,
-          hasEvents: events.some((e) => e.title && e.sourceMatchId),
+          hasEvents:
+            isWorldCup || events.some((e) => e.title.trim() && e.sourceMatchId.trim()),
           hasScoringPreset: true,
-          hasValidLockPolicy: events.every((e) => !e.lockAt || e.openAt <= e.lockAt),
+          hasValidLockPolicy:
+            isWorldCup ||
+            events.every((e) => !e.lockAt || !e.openAt || e.openAt <= e.lockAt),
         });
         if (data.errors?.length) {
           setErrors(data.errors);
@@ -96,10 +100,21 @@ export function GroupContestWizard({ groupId }: { groupId: string }) {
       {step === "details" ? (
         <ContestDetailsStep values={details} onChange={setDetails} />
       ) : null}
-      {step === "events" ? <EventsStep events={events} onChange={setEvents} /> : null}
+      {step === "events" ? (
+        <EventsStep
+          events={events}
+          onChange={setEvents}
+          worldCupMode={details.formatLabel === "world_cup_prediction"}
+        />
+      ) : null}
       {step === "prompts" ? <PromptsStep /> : null}
       {step === "scoring" ? <ScoringStep formatLabel={details.formatLabel} /> : null}
-      {step === "publish" ? <PublishStep validationErrors={errors} /> : null}
+      {step === "publish" ? (
+        <PublishStep
+          validationErrors={errors}
+          worldCupMode={details.formatLabel === "world_cup_prediction"}
+        />
+      ) : null}
 
       <div className="flex gap-2">
         <Button
