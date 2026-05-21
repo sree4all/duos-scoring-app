@@ -1,0 +1,11 @@
+{
+  "cases": [
+    { "stageKey": "group_stage", "correct": 2, "incorrect": 0 },
+    { "stageKey": "round_of_32", "correct": 3, "incorrect": -1 },
+    { "stageKey": "round_of_16", "correct": 5, "incorrect": -2 },
+    { "stageKey": "quarter_finals", "correct": 8, "incorrect": -3 },
+    { "stageKey": "semi_finals", "correct": 12, "incorrect": -4 },
+    { "stageKey": "third_place", "correct": 8, "incorrect": -3 },
+    { "stageKey": "final", "correct": 20, "incorrect": -10 }
+  ]
+}

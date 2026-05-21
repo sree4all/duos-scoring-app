@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { setActiveGroupIdCookie } from "@/lib/server/groups/active-context";
+import { applyActiveGroupIdCookie } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { getAuthenticatedSupabaseUser, groupErrorResponse } from "@/lib/server/groups/api-auth";
 
@@ -16,9 +16,10 @@ export async function POST(request: Request) {
     }
 
     await requireGroupMembership(auth.supabase, body.groupId, auth.user.id);
-    await setActiveGroupIdCookie(body.groupId);
 
-    return NextResponse.json({ groupId: body.groupId });
+    const response = NextResponse.json({ groupId: body.groupId });
+    applyActiveGroupIdCookie(response, body.groupId);
+    return response;
   } catch (error) {
     return groupErrorResponse(error);
   }

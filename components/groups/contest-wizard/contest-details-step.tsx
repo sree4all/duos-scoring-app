@@ -2,7 +2,7 @@
 
 export type ContestDetailsValues = {
   name: string;
-  formatLabel: "prediction" | "rummy_points";
+  formatLabel: "prediction" | "rummy_points" | "world_cup_prediction";
 };
 
 export function ContestDetailsStep({
@@ -42,6 +42,7 @@ export function ContestDetailsStep({
             })
           }
         >
+          <option value="world_cup_prediction">World Cup 2026 (prediction)</option>
           <option value="prediction">Prediction league</option>
           <option value="rummy_points">Points rummy</option>
         </select>

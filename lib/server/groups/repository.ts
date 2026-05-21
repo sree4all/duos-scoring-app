@@ -54,29 +54,39 @@ export class GroupRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async createGroup(name: string, createdBy: string): Promise<Group> {
-    const inviteCode = generateInviteCode();
-    const { data, error } = await this.supabase
-      .from("groups")
-      .insert({
-        name: name.trim(),
-        current_invite_code: inviteCode,
-        created_by: createdBy,
-      })
-      .select("*")
-      .single();
+    const trimmed = name.trim();
+    let lastError: unknown = null;
 
-    if (error || !data) throw error ?? new Error("Failed to create group");
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const inviteCode = generateInviteCode();
+      const { data, error } = await this.supabase
+        .from("groups")
+        .insert({
+          name: trimmed,
+          current_invite_code: inviteCode,
+          created_by: createdBy,
+        })
+        .select("*")
+        .single();
 
-    const { error: memberError } = await this.supabase.from("group_memberships").insert({
-      group_id: data.id,
-      user_id: createdBy,
-      is_owner: true,
-      is_scorer: false,
-    });
+      if (!error && data) {
+        const { error: memberError } = await this.supabase.from("group_memberships").insert({
+          group_id: data.id,
+          user_id: createdBy,
+          is_owner: true,
+          is_scorer: false,
+        });
 
-    if (memberError) throw memberError;
+        if (memberError) throw memberError;
+        return mapGroup(data as GroupRow);
+      }
 
-    return mapGroup(data as GroupRow);
+      lastError = error;
+      const code = (error as { code?: string } | null)?.code;
+      if (code !== "23505") break;
+    }
+
+    throw lastError ?? new Error("Failed to create group");
   }
 
   async getGroupById(groupId: string): Promise<Group | null> {

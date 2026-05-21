@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { WorldCupAppNav } from "@/components/layout/world-cup-app-nav";
 
 const links = [
   { href: "/groups", label: "Groups" },
@@ -14,7 +15,7 @@ const links = [
   { href: "/admin", label: "Admin" },
 ];
 
-export function AppNav() {
+function DefaultAppNav() {
   const pathname = usePathname();
   const supabase = createClient();
 
@@ -48,4 +49,17 @@ export function AppNav() {
       </div>
     </header>
   );
+}
+
+export function AppNav({
+  worldCupPrivateMode = false,
+  defaultGroupId = null,
+}: {
+  worldCupPrivateMode?: boolean;
+  defaultGroupId?: string | null;
+}) {
+  if (worldCupPrivateMode) {
+    return <WorldCupAppNav defaultGroupId={defaultGroupId} />;
+  }
+  return <DefaultAppNav />;
 }

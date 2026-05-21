@@ -6,7 +6,13 @@ export interface ScoreProjectionInput {
 export interface LedgerLineProjection {
   label: string;
   points: number;
-  sourceType: "match" | "bonus" | "season_bonus" | "adjustment" | "void_reversal";
+  sourceType:
+    | "match"
+    | "bonus"
+    | "season_bonus"
+    | "adjustment"
+    | "void_reversal"
+    | "match_miss";
 }
 
 export function projectScore(input: ScoreProjectionInput) {
@@ -28,9 +34,14 @@ export function projectLedgerLines(
     } else if (action.includes("bonus")) {
       sourceType = "bonus";
       label = line.reasonText ?? "Bonus";
+    } else if (action.includes("miss") || line.reasonText === "match_winner_miss") {
+      sourceType = "match_miss";
+      label = "Wrong winner pick";
     } else if (action.includes("match") || action.includes("winner")) {
       sourceType = "match";
-      label = line.reasonText ?? "Match winner";
+      label = line.reasonText?.startsWith("match_winner")
+        ? "Correct winner pick"
+        : (line.reasonText ?? "Match winner");
     } else if (action.includes("void")) {
       sourceType = "void_reversal";
       label = line.reasonText ?? "Void reversal";

@@ -97,9 +97,15 @@ export function GroupSettingsPanel({
           </Link>
         </p>
       ) : (
-        <p>
+        <p className="flex flex-wrap gap-3">
           <Link href={`/groups/${groupId}`} className="font-medium underline">
             Group home
+          </Link>
+          <Link
+            href={`/groups/${groupId}/world-cup/import`}
+            className="font-medium underline"
+          >
+            World Cup import
           </Link>
         </p>
       )}

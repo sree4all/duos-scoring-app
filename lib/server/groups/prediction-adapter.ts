@@ -52,7 +52,7 @@ export class GroupPredictionAdapter {
 
     const { data: event, error: evErr } = await this.supabase
       .from("events")
-      .select("id, contest_id, source_match_id, voided")
+      .select("id, contest_id, source_match_id, voided, stage_key")
       .eq("contest_id", bridge.contestId)
       .eq("source_match_id", matchId)
       .maybeSingle();
@@ -65,6 +65,32 @@ export class GroupPredictionAdapter {
       return { ok: false, error: "Event is voided; scoring is blocked" };
     }
 
-    return applyMatchScoring(this.supabase, matchId, seasonYear);
+    const { data: matchMeta } = await this.supabase
+      .from("matches")
+      .select("stage_key")
+      .eq("id", matchId)
+      .maybeSingle();
+
+    const stageKey =
+      (event.stage_key as string | null) ?? (matchMeta?.stage_key as string | null) ?? undefined;
+
+    const outcome = await applyMatchScoring(this.supabase, matchId, seasonYear, {
+      contestId: bridge.contestId,
+      stageKey,
+    });
+
+    if (outcome.ok) {
+      const { mirrorMatchLedgerToContest } = await import(
+        "@/lib/server/world-cup/contest-ledger-mirror"
+      );
+      await mirrorMatchLedgerToContest(
+        this.supabase,
+        bridge.contestId,
+        event.id as string,
+        matchId,
+      );
+    }
+
+    return outcome;
   }
 }

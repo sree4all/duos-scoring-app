@@ -18,7 +18,16 @@ export async function saveGroupContestDraft(
     formatLabel: input.formatLabel,
   });
 
-  return { ok: true as const, contestId: contest.id };
+  const isWorldCup =
+    input.formatLabel === "prediction" &&
+    (input.name.toLowerCase().includes("world cup") ||
+      input.name.toLowerCase().includes("fifa"));
+  if (isWorldCup) {
+    const { seedDefaultStageRules } = await import("@/lib/server/world-cup/seed-stage-rules");
+    await seedDefaultStageRules(supabase, contest.id, groupId);
+  }
+
+  return { ok: true as const, contestId: contest.id, worldCup: isWorldCup };
 }
 
 export async function publishGroupContest(

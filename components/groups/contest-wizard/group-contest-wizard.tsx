@@ -16,8 +16,8 @@ const STEPS = ["details", "events", "prompts", "scoring", "publish"] as const;
 export function GroupContestWizard({ groupId }: { groupId: string }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [details, setDetails] = useState<ContestDetailsValues>({
-    name: "",
-    formatLabel: "prediction",
+    name: "World Cup 2026",
+    formatLabel: "world_cup_prediction",
   });
   const [events, setEvents] = useState<EventDraft[]>([
     { title: "", openAt: "", lockAt: "", sourceMatchId: "" },
@@ -50,10 +50,16 @@ export function GroupContestWizard({ groupId }: { groupId: string }) {
     try {
       const step = STEPS[stepIndex];
       if (step === "details") {
+        const formatLabel =
+          details.formatLabel === "world_cup_prediction" ? "prediction" : details.formatLabel;
+        const name =
+          details.formatLabel === "world_cup_prediction" && !details.name.trim()
+            ? "World Cup 2026"
+            : details.name;
         await saveConfiguration({
           action: "create_draft",
-          name: details.name,
-          formatLabel: details.formatLabel,
+          name,
+          formatLabel,
         });
       } else if (step === "events" && contestId) {
         await saveConfiguration({

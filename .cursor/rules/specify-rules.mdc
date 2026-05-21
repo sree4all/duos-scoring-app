@@ -5,10 +5,13 @@ alwaysApply: true
 ---
 # Duos Scoring App Development Guidelines
 
-Auto-generated guidance. Canonical feature: **004-generalized-scoring-platform** (`specs/004-generalized-scoring-platform`). Last updated: 2026-05-19.
+Auto-generated guidance. Canonical feature: **004-generalized-scoring-platform** (`specs/004-generalized-scoring-platform`). Last updated: 2026-05-21.
 
 ## Active technologies
 - Supabase PostgreSQL (additive migrations: `groups`, memberships, `group_id` on contests, `rummy_hands`) (005-prediction-rummy-groups)
+- TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Supabase JS/SSR, Tailwind CSS, shadcn/ui, `csv-parse` (import script) (006-fifa-world-cup-predictions)
+- Supabase PostgreSQL (additive: `contest_stage_scoring_rules`, `worldcup_import_runs`, `matches` WC columns) (006-fifa-world-cup-predictions)
+- Supabase PostgreSQL (additive: `contest_stage_scoring_rules`, `worldcup_import_runs`, `matches` WC columns, `events.lock_at` overrides) (006-fifa-world-cup-predictions)
 
 - TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Supabase JS/SSR, Tailwind CSS, shadcn/ui
 - Supabase PostgreSQL (existing schema + additive migrations; generalized scoring tables per 004)

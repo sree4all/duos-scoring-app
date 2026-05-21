@@ -38,11 +38,19 @@ export async function POST(request: Request, context: RouteContext) {
       if (!body.name?.trim()) {
         return NextResponse.json({ error: "Contest name is required" }, { status: 400 });
       }
+      const name = body.name.trim();
       const contest = await contests.createDraftContest(groupId, {
-        name: body.name.trim(),
+        name,
         formatLabel: body.formatLabel ?? "prediction",
       });
-      return NextResponse.json({ ok: true, contestId: contest.id });
+      const isWorldCup =
+        (body.formatLabel ?? "prediction") === "prediction" &&
+        (name.toLowerCase().includes("world cup") || name.toLowerCase().includes("fifa"));
+      if (isWorldCup) {
+        const { seedDefaultStageRules } = await import("@/lib/server/world-cup/seed-stage-rules");
+        await seedDefaultStageRules(auth.supabase, contest.id, groupId);
+      }
+      return NextResponse.json({ ok: true, contestId: contest.id, worldCup: isWorldCup });
     }
 
     if (body.action === "save_events" && body.contestId && body.events) {

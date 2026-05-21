@@ -7,9 +7,11 @@ type GroupOption = { id: string; name: string };
 export function GroupSwitcher({
   groups,
   activeGroupId,
+  hideWhenSingle = false,
 }: {
   groups: GroupOption[];
   activeGroupId: string | null;
+  hideWhenSingle?: boolean;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -33,6 +35,7 @@ export function GroupSwitcher({
   }
 
   if (groups.length === 0) return null;
+  if (hideWhenSingle && groups.length <= 1) return null;
 
   return (
     <label className="flex items-center gap-2 text-sm">
