@@ -29,4 +29,4 @@ path = kagglehub.dataset_download("areezvisram12/fifa-world-cup-2026-match-data-
 npm run import:worldcup -- --group-id <GROUP_UUID> --contest-id <CONTEST_UUID>
 ```
 
-Or use the owner **Import schedule** page under the group.
+Or use the owner **Import schedule** page and **upload all four CSV files** (required on Vercel; the server does not have your local `data/worldcup-2026/` folder).

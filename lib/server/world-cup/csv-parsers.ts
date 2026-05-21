@@ -34,8 +34,7 @@ export function normalizeStageKey(stageName: string): StageKey {
   return STAGE_NAME_TO_KEY[k] ?? "group_stage";
 }
 
-function readCsv(path: string): Record<string, string>[] {
-  const raw = fs.readFileSync(path, "utf8");
+export function parseCsvRecords(raw: string): Record<string, string>[] {
   const firstLine = raw.split(/\r?\n/)[0] ?? "";
   const delimiter = firstLine.includes("\t") ? "\t" : ",";
   return parse(raw, {
@@ -46,24 +45,48 @@ function readCsv(path: string): Record<string, string>[] {
   }) as Record<string, string>[];
 }
 
+function readCsvFile(path: string): Record<string, string>[] {
+  return parseCsvRecords(fs.readFileSync(path, "utf8"));
+}
+
 export function parseTeamsCsv(path: string): ParsedTeam[] {
-  return readCsv(path).map((row) => ({
+  return parseTeamsFromRecords(readCsvFile(path));
+}
+
+export function parseTeamsFromRecords(rows: Record<string, string>[]): ParsedTeam[] {
+  return rows.map((row) => ({
     id: String(row.id ?? row.team_id ?? ""),
     name: worldCupCopy.placeholderTeam(String(row.name ?? row.team_name ?? "TBD")),
     groupLetter: row.group_letter ?? row.group ?? undefined,
   }));
 }
 
+export function parseTeamsCsvContent(content: string): ParsedTeam[] {
+  return parseTeamsFromRecords(parseCsvRecords(content));
+}
+
 export function parseCitiesCsv(path: string): ParsedCity[] {
-  return readCsv(path).map((row) => ({
+  return parseCitiesFromRecords(readCsvFile(path));
+}
+
+export function parseCitiesFromRecords(rows: Record<string, string>[]): ParsedCity[] {
+  return rows.map((row) => ({
     id: String(row.id ?? row.city_id ?? ""),
     venueName: String(row.venue_name ?? ""),
     cityLabel: String(row.city ?? row.name ?? row.host_city ?? ""),
   }));
 }
 
+export function parseCitiesCsvContent(content: string): ParsedCity[] {
+  return parseCitiesFromRecords(parseCsvRecords(content));
+}
+
 export function parseStagesCsv(path: string): ParsedStage[] {
-  return readCsv(path).map((row) => {
+  return parseStagesFromRecords(readCsvFile(path));
+}
+
+export function parseStagesFromRecords(rows: Record<string, string>[]): ParsedStage[] {
+  return rows.map((row) => {
     const stageName = String(row.stage_name ?? row.name ?? "");
     return {
       id: String(row.id ?? row.stage_id ?? ""),
@@ -74,8 +97,16 @@ export function parseStagesCsv(path: string): ParsedStage[] {
   });
 }
 
+export function parseStagesCsvContent(content: string): ParsedStage[] {
+  return parseStagesFromRecords(parseCsvRecords(content));
+}
+
 export function parseMatchesCsv(path: string): ParsedMatch[] {
-  return readCsv(path).map((row) => ({
+  return parseMatchesFromRecords(readCsvFile(path));
+}
+
+export function parseMatchesFromRecords(rows: Record<string, string>[]): ParsedMatch[] {
+  return rows.map((row) => ({
     matchNumber: Number(row.match_number ?? row.match_no ?? 0),
     kickoffAt: String(row.kickoff_at ?? row.match_time ?? ""),
     homeTeamId: String(row.home_team_id ?? ""),
@@ -83,4 +114,8 @@ export function parseMatchesCsv(path: string): ParsedMatch[] {
     cityId: String(row.city_id ?? ""),
     stageId: String(row.stage_id ?? ""),
   }));
+}
+
+export function parseMatchesCsvContent(content: string): ParsedMatch[] {
+  return parseMatchesFromRecords(parseCsvRecords(content));
 }
