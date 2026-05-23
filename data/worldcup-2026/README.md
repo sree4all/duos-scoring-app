@@ -49,4 +49,4 @@ npm run import:worldcup -- --group-id <GROUP_UUID> --contest-id <CONTEST_UUID>
 
 Or use the owner **Import schedule** page and **upload all four CSV files** (required on Vercel; the server does not have your local `data/worldcup-2026/` folder).
 
-**Kickoff times**: `matches.csv` column `kickoff_at` is stadium local time with offset (e.g. `2026-06-12 21:00:00-07`). After changing CSVs or fixing display, **re-import** so `match_time_utc` and `kickoff_tz_offset` in the database stay in sync.
+**Kickoff times**: `kickoff_at` date/time is imported as **US Eastern** (e.g. `2026-06-12 21:00:00-07` → June 12 at 9:00 PM Eastern). The trailing offset is host-city metadata from the dataset and is **not** used for locks or display. Re-import after CSV edits so `match_time_utc` updates.

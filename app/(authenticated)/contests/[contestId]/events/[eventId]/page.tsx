@@ -111,10 +111,7 @@ export default async function EventSubmissionPage({ params }: PageProps) {
         </p>
         <p className="text-sm text-muted-foreground">
           Kickoff:{" "}
-          {formatKickoffDisplay(
-            match.match_time_utc as string,
-            match.kickoff_tz_offset as string | null,
-          )}
+          {formatKickoffDisplay(match.match_time_utc as string)}
         </p>
       </header>
 

@@ -114,7 +114,7 @@ export function parseMatchesFromRecords(rows: Record<string, string>[]): ParsedM
     return {
       matchNumber: Number(row.match_number ?? row.match_no ?? 0),
       kickoffAt: kickoff.isoUtc,
-      kickoffTzOffset: kickoff.tzOffset,
+      kickoffTzOffset: null,
       homeTeamId: String(row.home_team_id ?? ""),
       awayTeamId: String(row.away_team_id ?? ""),
       cityId: String(row.city_id ?? ""),

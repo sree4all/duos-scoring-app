@@ -75,7 +75,7 @@ function MatchCard({
         <p className="text-sm text-muted-foreground">{ev.venueLabel}</p>
       ) : null}
       <p className="mt-1 text-sm text-muted-foreground">
-        Kickoff: {formatKickoffDisplay(ev.kickoffUtc, ev.kickoffTzOffset)}
+        Kickoff: {formatKickoffDisplay(ev.kickoffUtc)}
       </p>
       {hasPrediction ? (
         <p className="mt-1 text-sm">

@@ -17,6 +17,7 @@ export const DEFAULT_STAGE_RULES: {
   { stageKey: "final", stageName: "Final", stageOrder: 7, correctPoints: 20, incorrectPenalty: -10 },
 ];
 
+/** Insert default stage rules only on first import; never overwrite owner edits or revealed rounds. */
 export async function seedDefaultStageRules(
   supabase: SupabaseClient,
   contestId: string,
@@ -35,6 +36,7 @@ export async function seedDefaultStageRules(
 
   const { error } = await supabase.from("contest_stage_scoring_rules").upsert(rows, {
     onConflict: "contest_id,stage_key",
+    ignoreDuplicates: true,
   });
   if (error) throw error;
 }

@@ -1,28 +1,19 @@
 /**
- * Parse World Cup CSV `kickoff_at` values into ISO UTC for `matches.match_time_utc`.
- * CSV uses local wall time + numeric offset, e.g. `2026-06-12 21:00:00-07` (9 PM Pacific).
+ * Parse World Cup CSV `kickoff_at` into ISO UTC for `matches.match_time_utc`.
+ * Wall-clock date/time is treated as US Eastern (spec 006). Trailing offset
+ * (host city) is ignored for scheduling and display.
  */
+
+import { easternWallClockToIsoUtc } from "@/lib/utils/eastern-time";
 
 export type ParsedKickoff = {
   isoUtc: string;
-  /** Normalized offset for storage/display, e.g. `-07:00`, or null for `Z`. */
-  tzOffset: string | null;
+  /** Always null on import; host-city suffix in CSV is not used. */
+  tzOffset: null;
 };
 
-function normalizeOffsetPart(offsetPart: string): string {
-  const offset = offsetPart;
-  if (offset === "Z" || offset === "z") return "Z";
-  if (/^[+-]\d{2}$/.test(offset)) {
-    return `${offset}:00`;
-  }
-  if (/^[+-]\d{4}$/.test(offset)) {
-    return `${offset.slice(0, 3)}:${offset.slice(3)}`;
-  }
-  if (/^[+-]\d{2}:\d{2}$/.test(offset)) {
-    return offset;
-  }
-  return offset;
-}
+const KICKOFF_RE =
+  /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(?:[Zz]|[+-]\d{2}(?::?\d{2})?|[+-]\d{4})?$/;
 
 export function parseKickoffCell(cell: string): ParsedKickoff {
   const raw = cell.trim();
@@ -30,21 +21,16 @@ export function parseKickoffCell(cell: string): ParsedKickoff {
     throw new Error("empty kickoff_at");
   }
 
-  const withOffset = raw.match(
-    /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})([Zz]|[+-]\d{2}(?::?\d{2})?|[+-]\d{4})$/,
-  );
-  if (withOffset) {
-    const [, date, time, offsetPart] = withOffset;
-    const offset = normalizeOffsetPart(offsetPart);
-    const iso =
-      offset === "Z" ? `${date}T${time}Z` : `${date}T${time}${offset}`;
-    const d = new Date(iso);
-    if (!Number.isNaN(d.getTime())) {
-      return {
-        isoUtc: d.toISOString(),
-        tzOffset: offset === "Z" ? null : offset,
-      };
+  const m = raw.match(KICKOFF_RE);
+  if (m) {
+    const [, date, time] = m;
+    if (raw.endsWith("Z") || raw.endsWith("z")) {
+      const d = new Date(`${date}T${time}Z`);
+      if (!Number.isNaN(d.getTime())) {
+        return { isoUtc: d.toISOString(), tzOffset: null };
+      }
     }
+    return { isoUtc: easternWallClockToIsoUtc(date, time), tzOffset: null };
   }
 
   const d = new Date(raw);

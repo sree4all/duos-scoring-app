@@ -75,7 +75,7 @@ export function PredictionStatsPanel({
       {selected ? (
         <p className="break-words text-sm text-muted-foreground">
           {selected.homeTeam} vs {selected.awayTeam} · Kickoff{" "}
-          {formatKickoffDisplay(selected.kickoffUtc, selected.kickoffTzOffset)}
+          {formatKickoffDisplay(selected.kickoffUtc)}
         </p>
       ) : null}
 

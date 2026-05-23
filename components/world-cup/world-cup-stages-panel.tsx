@@ -75,23 +75,29 @@ export function WorldCupStagesPanel({
             <label>
               Correct
               <input
+                key={`${r.stageKey}-correct-${r.correctPoints}`}
                 type="number"
                 className="ml-2 w-16 rounded border px-2"
                 defaultValue={r.correctPoints}
-                onBlur={(e) =>
-                  patchStage(r.stageKey, { correctPoints: Number(e.target.value) })
-                }
+                onBlur={(e) => {
+                  const v = e.target.value.trim();
+                  if (v === "") return;
+                  patchStage(r.stageKey, { correctPoints: Number(v) });
+                }}
               />
             </label>
             <label>
               Wrong
               <input
+                key={`${r.stageKey}-wrong-${r.incorrectPenalty}`}
                 type="number"
                 className="ml-2 w-16 rounded border px-2"
                 defaultValue={r.incorrectPenalty}
-                onBlur={(e) =>
-                  patchStage(r.stageKey, { incorrectPenalty: Number(e.target.value) })
-                }
+                onBlur={(e) => {
+                  const v = e.target.value.trim();
+                  if (v === "") return;
+                  patchStage(r.stageKey, { incorrectPenalty: Number(v) });
+                }}
               />
             </label>
           </div>
