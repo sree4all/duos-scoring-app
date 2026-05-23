@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { formatEasternDateTime } from "@/lib/utils/eastern-time";
+import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
 import type { ScheduleEventRow } from "@/lib/server/world-cup/schedule-query";
@@ -75,7 +75,7 @@ function MatchCard({
         <p className="text-sm text-muted-foreground">{ev.venueLabel}</p>
       ) : null}
       <p className="mt-1 text-sm text-muted-foreground">
-        Kickoff: {formatEasternDateTime(ev.kickoffUtc)}
+        Kickoff: {formatKickoffDisplay(ev.kickoffUtc, ev.kickoffTzOffset)}
       </p>
       {hasPrediction ? (
         <p className="mt-1 text-sm">

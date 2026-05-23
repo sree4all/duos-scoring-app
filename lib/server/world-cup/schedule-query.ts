@@ -11,6 +11,7 @@ export type ScheduleEventRow = {
   awayTeam: string;
   venueLabel: string | null;
   kickoffUtc: string;
+  kickoffTzOffset: string | null;
   lockAt: string | null;
   stageKey: string | null;
   matchStatus: string;
@@ -60,7 +61,7 @@ export async function listRevealedScheduleEvents(
     const { data: matchRows } = await supabase
       .from("matches")
       .select(
-        "id, match_number, home_team, away_team, venue_label, match_time_utc, status, stage_key",
+        "id, match_number, home_team, away_team, venue_label, match_time_utc, kickoff_tz_offset, status, stage_key",
       )
       .in("id", matchIds);
     for (const m of matchRows ?? []) {
@@ -87,6 +88,7 @@ export async function listRevealedScheduleEvents(
       awayTeam: match.away_team as string,
       venueLabel: (match.venue_label as string | null) ?? null,
       kickoffUtc: (match.match_time_utc as string) ?? (ev.lock_at as string),
+      kickoffTzOffset: (match.kickoff_tz_offset as string | null) ?? null,
       lockAt: (ev.lock_at as string | null) ?? null,
       stageKey,
       matchStatus: match.status as string,

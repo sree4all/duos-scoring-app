@@ -34,6 +34,7 @@ export async function upsertWorldCupMatches(
       season_year: 2026,
       stage_key: stage?.stageKey ?? null,
       match_time_utc: m.kickoffAt,
+      kickoff_tz_offset: m.kickoffTzOffset,
       home_team: home?.name ?? "TBD",
       away_team: away?.name ?? "TBD",
       home_team_display: home?.name ?? "TBD",
@@ -51,6 +52,7 @@ export async function upsertWorldCupMatches(
           .from("matches")
           .update({
             match_time_utc: row.match_time_utc,
+            kickoff_tz_offset: row.kickoff_tz_offset,
             home_team: row.home_team,
             away_team: row.away_team,
             home_team_display: row.home_team_display,

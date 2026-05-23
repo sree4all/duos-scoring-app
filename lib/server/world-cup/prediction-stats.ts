@@ -17,6 +17,7 @@ export async function loadPredictionStatsForContest(
     eventId: e.eventId,
     label: `Match ${e.matchNumber ?? "—"}: ${e.homeTeam} vs ${e.awayTeam}`,
     kickoffUtc: e.kickoffUtc,
+    kickoffTzOffset: e.kickoffTzOffset,
     homeTeam: e.homeTeam,
     awayTeam: e.awayTeam,
   }));

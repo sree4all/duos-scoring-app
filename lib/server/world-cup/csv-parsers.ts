@@ -2,6 +2,7 @@ import { parse } from "csv-parse/sync";
 import * as fs from "fs";
 import type { StageKey } from "@/lib/domain/world-cup/types";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { parseKickoffCell } from "@/lib/server/world-cup/kickoff-time";
 
 export type ParsedTeam = { id: string; name: string; groupLetter?: string };
 export type ParsedCity = { id: string; venueName: string; cityLabel: string };
@@ -9,6 +10,7 @@ export type ParsedStage = { id: string; stageKey: StageKey; stageName: string; s
 export type ParsedMatch = {
   matchNumber: number;
   kickoffAt: string;
+  kickoffTzOffset: string | null;
   homeTeamId: string;
   awayTeamId: string;
   cityId: string;
@@ -106,14 +108,19 @@ export function parseMatchesCsv(path: string): ParsedMatch[] {
 }
 
 export function parseMatchesFromRecords(rows: Record<string, string>[]): ParsedMatch[] {
-  return rows.map((row) => ({
-    matchNumber: Number(row.match_number ?? row.match_no ?? 0),
-    kickoffAt: String(row.kickoff_at ?? row.match_time ?? ""),
-    homeTeamId: String(row.home_team_id ?? ""),
-    awayTeamId: String(row.away_team_id ?? ""),
-    cityId: String(row.city_id ?? ""),
-    stageId: String(row.stage_id ?? ""),
-  }));
+  return rows.map((row) => {
+    const kickoffRaw = String(row.kickoff_at ?? row.match_time ?? "").trim();
+    const kickoff = parseKickoffCell(kickoffRaw);
+    return {
+      matchNumber: Number(row.match_number ?? row.match_no ?? 0),
+      kickoffAt: kickoff.isoUtc,
+      kickoffTzOffset: kickoff.tzOffset,
+      homeTeamId: String(row.home_team_id ?? ""),
+      awayTeamId: String(row.away_team_id ?? ""),
+      cityId: String(row.city_id ?? ""),
+      stageId: String(row.stage_id ?? ""),
+    };
+  });
 }
 
 export function parseMatchesCsvContent(content: string): ParsedMatch[] {

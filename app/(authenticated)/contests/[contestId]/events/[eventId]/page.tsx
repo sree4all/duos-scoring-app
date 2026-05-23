@@ -10,7 +10,7 @@ import {
 } from "@/lib/server/world-cup/schedule-query";
 import { allowsDrawPick } from "@/lib/domain/world-cup/match-outcome";
 import { OwnerMatchResultForm } from "@/components/world-cup/owner-match-result-form";
-import { formatEasternDateTime } from "@/lib/utils/eastern-time";
+import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
 import { MatchPickForm } from "@/components/world-cup/match-pick-form";
 import { MatchBonusAnswerForm } from "@/components/world-cup/match-bonus-answer-form";
 import { OwnerEventResultsForm } from "@/components/groups/owner-event-results-form";
@@ -62,7 +62,9 @@ export default async function EventSubmissionPage({ params }: PageProps) {
   const matchId = event.source_match_id as string;
   const { data: match } = await supabase
     .from("matches")
-    .select("home_team, away_team, match_time_utc, status, winner, stage_key")
+    .select(
+      "home_team, away_team, match_time_utc, kickoff_tz_offset, status, winner, stage_key",
+    )
     .eq("id", matchId)
     .maybeSingle();
 
@@ -108,7 +110,11 @@ export default async function EventSubmissionPage({ params }: PageProps) {
           {match.home_team as string} vs {match.away_team as string}
         </p>
         <p className="text-sm text-muted-foreground">
-          Kickoff (Eastern): {formatEasternDateTime(match.match_time_utc as string)}
+          Kickoff:{" "}
+          {formatKickoffDisplay(
+            match.match_time_utc as string,
+            match.kickoff_tz_offset as string | null,
+          )}
         </p>
       </header>
 

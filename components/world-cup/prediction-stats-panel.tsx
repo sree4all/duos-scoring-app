@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatEasternDateTime } from "@/lib/utils/eastern-time";
+import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
 import { MOBILE_LIST_INITIAL, MOBILE_LIST_STEP } from "@/lib/world-cup/mobile-list";
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
 import { formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
@@ -10,6 +10,7 @@ export type PredictionStatsEvent = {
   eventId: string;
   label: string;
   kickoffUtc: string;
+  kickoffTzOffset?: string | null;
   homeTeam: string;
   awayTeam: string;
 };
@@ -74,7 +75,7 @@ export function PredictionStatsPanel({
       {selected ? (
         <p className="break-words text-sm text-muted-foreground">
           {selected.homeTeam} vs {selected.awayTeam} · Kickoff{" "}
-          {formatEasternDateTime(selected.kickoffUtc)}
+          {formatKickoffDisplay(selected.kickoffUtc, selected.kickoffTzOffset)}
         </p>
       ) : null}
 
