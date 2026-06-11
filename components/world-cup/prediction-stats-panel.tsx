@@ -83,10 +83,10 @@ export function PredictionStatsPanel({
         {shownRows.map((row) => (
           <li
             key={row.displayName}
-            className="flex flex-col gap-1 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+            className="flex min-w-0 items-center gap-3 px-4 py-3 text-sm"
           >
-            <span className="font-medium">{row.displayName}</span>
-            <span className="break-words text-muted-foreground sm:text-right">
+            <span className="min-w-0 flex-1 truncate font-medium">{row.displayName}</span>
+            <span className="min-w-0 max-w-[48%] truncate text-right text-muted-foreground">
               {row.predictedWinner
                 ? formatMatchPickLabel(row.predictedWinner)
                 : "— Not yet"}
