@@ -1,4 +1,5 @@
 import { LEADERBOARD_MAX_ROWS } from "@/lib/world-cup/mobile-list";
+import { standingPlaceEmoji } from "@/lib/utils/standing-place";
 
 export type LeaderboardEntry = {
   participantId: string;
@@ -25,7 +26,12 @@ export function LeaderboardList({ entries }: { entries: LeaderboardEntry[] }) {
             className="neon-glass-card flex items-center justify-between gap-3 p-3 text-sm"
           >
             <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 font-semibold">#{index + 1}</span>
+              <span
+                className="shrink-0 text-base leading-none"
+                aria-label={`Rank ${index + 1}`}
+              >
+                {standingPlaceEmoji(index + 1)}
+              </span>
               <span className="truncate font-medium">{entry.displayName}</span>
             </div>
             <span
