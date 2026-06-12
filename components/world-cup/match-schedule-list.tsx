@@ -6,7 +6,10 @@ import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
 import type { ScheduleEventRow } from "@/lib/server/world-cup/schedule-query";
-import { MOBILE_LIST_INITIAL, MOBILE_LIST_STEP } from "@/lib/world-cup/mobile-list";
+import {
+  PREDICTION_SCHEDULE_INITIAL,
+  PREDICTION_SCHEDULE_STEP,
+} from "@/lib/world-cup/mobile-list";
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
 import { cn } from "@/lib/utils";
 
@@ -107,7 +110,7 @@ export function MatchScheduleList({
   userPickByEventId?: Record<string, string | null>;
   bonusNotPredictedByEventId?: Record<string, boolean>;
 }) {
-  const [visibleCount, setVisibleCount] = useState(MOBILE_LIST_INITIAL);
+  const [visibleCount, setVisibleCount] = useState(PREDICTION_SCHEDULE_INITIAL);
 
   if (events.length === 0) {
     return (
@@ -139,11 +142,11 @@ export function MatchScheduleList({
       <SeeMoreFooter
         remaining={remaining}
         onShowMore={() =>
-          setVisibleCount((n) => Math.min(n + MOBILE_LIST_STEP, events.length))
+          setVisibleCount((n) => Math.min(n + PREDICTION_SCHEDULE_STEP, events.length))
         }
         label={
           remaining > 0
-            ? `See more matches (${Math.min(remaining, MOBILE_LIST_STEP)} of ${remaining})`
+            ? `See more matches (${Math.min(remaining, PREDICTION_SCHEDULE_STEP)} of ${remaining})`
             : undefined
         }
       />

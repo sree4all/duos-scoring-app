@@ -4,7 +4,10 @@ import { requireUser } from "@/lib/auth/require-user";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
-import { listRevealedScheduleEvents } from "@/lib/server/world-cup/schedule-query";
+import {
+  listRevealedScheduleEvents,
+  listUpcomingScheduleEvents,
+} from "@/lib/server/world-cup/schedule-query";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { loadPredictionStatsForContest } from "@/lib/server/world-cup/prediction-stats";
 import { pickDefaultStatsEventId } from "@/lib/server/world-cup/pick-default-event";
@@ -34,10 +37,11 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   const isOwner = membership.isOwner;
   /** Predictions page always uses member view (revealed rounds only), including for owners. */
   const memberView = true;
-  const events = await listRevealedScheduleEvents(supabase, contestId, memberView);
+  const allEvents = await listRevealedScheduleEvents(supabase, contestId, memberView);
+  const upcomingEvents = listUpcomingScheduleEvents(allEvents);
   const rules = await new StageRulesRepository(supabase).listForContest(contestId, memberView);
 
-  const matchIds = events.map((e) => e.matchId);
+  const matchIds = upcomingEvents.map((e) => e.matchId);
   const userPickByEventId: Record<string, string | null> = {};
   const bonusNotPredictedByEventId: Record<string, boolean> = {};
   if (matchIds.length > 0) {
@@ -76,7 +80,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
       (bonusAnswerRows ?? []).map((a) => a.prompt_id as string),
     );
 
-    for (const ev of events) {
+    for (const ev of upcomingEvents) {
       userPickByEventId[ev.eventId] = pickByMatch.get(ev.matchId) ?? null;
       const promptIds = promptIdsByMatch.get(ev.matchId) ?? [];
       const hasWinnerPick = Boolean(userPickByEventId[ev.eventId]);
@@ -89,11 +93,11 @@ export default async function ContestMatchesPage({ params }: PageProps) {
 
   const { events: statsEvents, predictionsByEventId } =
     await loadPredictionStatsForContest(supabase, contestId, activeGroupId, memberView);
-  const defaultStatsEventId = pickDefaultStatsEventId(events);
+  const defaultStatsEventId = pickDefaultStatsEventId(upcomingEvents);
 
   const schedulePanel = (
     <div className="space-y-6">
-      {memberView && events.length === 0 ? (
+      {memberView && upcomingEvents.length === 0 ? (
         <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
           {worldCupCopy.errors.notOpenYet}
         </div>
@@ -114,7 +118,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
         <div className="mt-2">
           <MatchScheduleList
             contestId={contestId}
-            events={events}
+            events={upcomingEvents}
             userPickByEventId={userPickByEventId}
             bonusNotPredictedByEventId={bonusNotPredictedByEventId}
           />

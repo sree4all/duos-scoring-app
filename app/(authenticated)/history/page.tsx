@@ -53,7 +53,7 @@ export default async function ParticipantHistoryPage() {
     id: item.id,
     label: projected[index]?.label ?? item.actionType,
     pointsDelta: item.pointsDelta,
-    createdAt: item.createdAt,
+    matchNumber: item.matchNumber,
     voided: Boolean(item.voided),
     provisional: Boolean(item.provisional),
   }));
