@@ -25,6 +25,13 @@ export function mapGroupError(error: unknown): string {
     if (message.includes("bonus_prompt")) {
       return "You do not have permission to manage bonus questions for this match. Confirm you are the group owner and migrations through 202605220002 are applied.";
     }
+    if (
+      message.includes("points_ledger") ||
+      message.includes("profiles") ||
+      message.includes("matches")
+    ) {
+      return "Could not apply match scoring (permissions). Confirm you are the group owner, the match is linked to this contest, and migration 0026_group_owner_match_scoring_rls is applied.";
+    }
     return "Could not create the group (permissions). Ensure group migrations are applied, then try again.";
   }
   if (
