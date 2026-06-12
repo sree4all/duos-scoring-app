@@ -34,15 +34,7 @@ export function LeaderboardList({ entries }: { entries: LeaderboardEntry[] }) {
               </span>
               <span className="truncate font-medium">{entry.displayName}</span>
             </div>
-            <span
-              className={`shrink-0 font-semibold tabular-nums ${
-                entry.totalPoints > 0
-                  ? "text-score-positive"
-                  : entry.totalPoints < 0
-                    ? "text-score-negative"
-                    : "text-score-neutral"
-              }`}
-            >
+            <span className="shrink-0 font-semibold tabular-nums text-white">
               {entry.totalPoints} pts
             </span>
           </li>
