@@ -60,6 +60,14 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
     totalPoints: entry.totalPoints,
   }));
 
+  entries.sort((a, b) => {
+    const pointsDiff = isRummy
+      ? a.totalPoints - b.totalPoints
+      : b.totalPoints - a.totalPoints;
+    if (pointsDiff !== 0) return pointsDiff;
+    return a.displayName.localeCompare(b.displayName, undefined, { sensitivity: "base" });
+  });
+
   const pageBackground = resolveContestPageBackground(
     contest,
     `/contests/${contestId}/leaderboard`,
