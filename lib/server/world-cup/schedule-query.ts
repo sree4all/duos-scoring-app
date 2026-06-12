@@ -98,6 +98,15 @@ export async function listRevealedScheduleEvents(
   return rows;
 }
 
+/** Non-completed matches in kickoff order for the predictions schedule. */
+export function listUpcomingScheduleEvents(events: ScheduleEventRow[]): ScheduleEventRow[] {
+  return events
+    .filter((e) => e.matchStatus !== "completed")
+    .sort(
+      (a, b) => new Date(a.kickoffUtc).getTime() - new Date(b.kickoffUtc).getTime(),
+    );
+}
+
 export async function assertEventRevealedForMember(
   supabase: SupabaseClient,
   contestId: string,

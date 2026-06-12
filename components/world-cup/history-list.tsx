@@ -8,7 +8,7 @@ export type HistoryLine = {
   id: string;
   label: string;
   pointsDelta: number;
-  createdAt: string;
+  matchNumber: number | null;
   voided: boolean;
   provisional: boolean;
 };
@@ -46,9 +46,9 @@ export function HistoryList({ items }: { items: HistoryLine[] }) {
                 </span>
               ) : null}
             </div>
-            <p className="mt-1 text-muted-foreground">
-              {new Date(item.createdAt).toLocaleString()}
-            </p>
+            {item.matchNumber != null ? (
+              <p className="mt-1 text-muted-foreground">Match {item.matchNumber}</p>
+            ) : null}
           </li>
         ))}
       </ul>

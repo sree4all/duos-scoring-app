@@ -8,6 +8,7 @@ export type HistoryLineItem = {
   actionType: string;
   pointsDelta: number;
   reasonText: string | null;
+  matchNumber: number | null;
   createdAt: string;
   voided?: boolean;
   provisional?: boolean;
@@ -45,26 +46,66 @@ export async function listGroupHistoryForUser(
   ] as string[];
 
   const voidedByEvent = new Map<string, boolean>();
+  const matchNumberByEventId = new Map<string, number | null>();
   if (eventIds.length > 0) {
     const { data: events } = await supabase
       .from("events")
-      .select("id, voided")
+      .select("id, voided, source_match_id")
       .in("id", eventIds);
+
+    const matchIds = [
+      ...new Set(
+        (events ?? [])
+          .map((ev) => ev.source_match_id as string | null)
+          .filter(Boolean),
+      ),
+    ] as string[];
+
+    const matchNumberById = new Map<string, number | null>();
+    if (matchIds.length > 0) {
+      const { data: matches } = await supabase
+        .from("matches")
+        .select("id, match_number")
+        .in("id", matchIds);
+      for (const match of matches ?? []) {
+        matchNumberById.set(
+          match.id as string,
+          (match.match_number as number | null) ?? null,
+        );
+      }
+    }
+
     for (const ev of events ?? []) {
-      voidedByEvent.set(ev.id as string, Boolean(ev.voided));
+      const eventId = ev.id as string;
+      voidedByEvent.set(eventId, Boolean(ev.voided));
+      const matchId = ev.source_match_id as string | null;
+      matchNumberByEventId.set(
+        eventId,
+        matchId ? (matchNumberById.get(matchId) ?? null) : null,
+      );
     }
   }
 
-  return (ledger ?? []).map((row) => ({
-    id: row.id as string,
-    contestId: row.contest_id as string,
-    eventId: (row.event_id as string | null) ?? null,
-    participantId: row.participant_id as string,
-    actionType: row.action_type as string,
-    pointsDelta: Number(row.points_delta ?? 0),
-    reasonText: (row.reason_text as string | null) ?? null,
-    createdAt: row.created_at as string,
-    voided: row.event_id ? voidedByEvent.get(row.event_id as string) : false,
-    provisional: row.action_type === "provisional",
-  }));
+  const rows = (ledger ?? []).map((row) => {
+    const eventId = (row.event_id as string | null) ?? null;
+    return {
+      id: row.id as string,
+      contestId: row.contest_id as string,
+      eventId,
+      participantId: row.participant_id as string,
+      actionType: row.action_type as string,
+      pointsDelta: Number(row.points_delta ?? 0),
+      reasonText: (row.reason_text as string | null) ?? null,
+      matchNumber: eventId ? (matchNumberByEventId.get(eventId) ?? null) : null,
+      createdAt: row.created_at as string,
+      voided: eventId ? voidedByEvent.get(eventId) : false,
+      provisional: row.action_type === "provisional",
+    };
+  });
+
+  return rows.sort((a, b) => {
+    const matchDiff = (b.matchNumber ?? -1) - (a.matchNumber ?? -1);
+    if (matchDiff !== 0) return matchDiff;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 }
