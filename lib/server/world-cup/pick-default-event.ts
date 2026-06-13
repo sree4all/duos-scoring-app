@@ -8,7 +8,7 @@ export function pickDefaultStatsEventId(events: ScheduleEventRow[]): string | nu
   const upcoming = events
     .filter((e) => {
       if (e.matchStatus === "completed") return false;
-      if (e.lockAt && new Date(e.lockAt).getTime() <= now) return false;
+      if (e.lockAt && now > new Date(e.lockAt).getTime()) return false;
       return true;
     })
     .sort(

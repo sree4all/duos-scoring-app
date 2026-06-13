@@ -11,6 +11,11 @@ import {
 import { allowsDrawPick } from "@/lib/domain/world-cup/match-outcome";
 import { OwnerMatchResultForm } from "@/components/world-cup/owner-match-result-form";
 import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
+import { formatEasternDateTime } from "@/lib/utils/eastern-time";
+import {
+  isPredictionsLocked,
+  resolvePredictionLockAtIso,
+} from "@/lib/utils/match-lock";
 import { MatchPickForm } from "@/components/world-cup/match-pick-form";
 import { MatchBonusAnswerForm } from "@/components/world-cup/match-bonus-answer-form";
 import { OwnerEventResultsForm } from "@/components/groups/owner-event-results-form";
@@ -76,8 +81,9 @@ export default async function EventSubmissionPage({ params }: PageProps) {
   });
   const allowDraw = allowsDrawPick(stageKey);
 
-  const lockAt = event.lock_at as string | null;
-  const locked = Boolean(lockAt && new Date(lockAt).getTime() <= Date.now());
+  const kickoffUtc = match.match_time_utc as string;
+  const lockAt = resolvePredictionLockAtIso(kickoffUtc, event.lock_at as string | null);
+  const locked = isPredictionsLocked(kickoffUtc, event.lock_at as string | null);
 
   const { data: existingPick } = await supabase
     .from("predictions")
@@ -111,7 +117,10 @@ export default async function EventSubmissionPage({ params }: PageProps) {
         </p>
         <p className="text-sm text-muted-foreground">
           Kickoff:{" "}
-          {formatKickoffDisplay(match.match_time_utc as string)}
+          {formatKickoffDisplay(kickoffUtc)}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Predictions lock: {formatEasternDateTime(lockAt)} Eastern
         </p>
       </header>
 

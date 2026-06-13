@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { isPredictionsLocked } from "@/lib/utils/match-lock";
 import { formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
 import type { ScheduleEventRow } from "@/lib/server/world-cup/schedule-query";
 import {
@@ -13,10 +14,9 @@ import {
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
 import { cn } from "@/lib/utils";
 
-function statusLabel(status: string, lockAt: string | null): string {
-  const now = Date.now();
+function statusLabel(status: string, kickoffUtc: string, lockAt: string | null): string {
   if (status === "completed") return worldCupCopy.matchStatus.done;
-  if (lockAt && new Date(lockAt).getTime() <= now) return worldCupCopy.matchStatus.locked;
+  if (isPredictionsLocked(kickoffUtc, lockAt)) return worldCupCopy.matchStatus.locked;
   if (status === "scheduled") return worldCupCopy.matchStatus.open;
   return worldCupCopy.matchStatus.scheduled;
 }
@@ -32,8 +32,7 @@ function MatchCard({
   savedPick: string | null;
   showBonusNotPredicted: boolean;
 }) {
-  const now = Date.now();
-  const locked = Boolean(ev.lockAt && new Date(ev.lockAt).getTime() <= now);
+  const locked = isPredictionsLocked(ev.kickoffUtc, ev.lockAt);
   const hasPrediction = Boolean(savedPick);
 
   return (
@@ -43,7 +42,7 @@ function MatchCard({
           Match {ev.matchNumber ?? "—"}
         </span>
         <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs">
-          {statusLabel(ev.matchStatus, ev.lockAt)}
+          {statusLabel(ev.matchStatus, ev.kickoffUtc, ev.lockAt)}
         </span>
       </div>
 

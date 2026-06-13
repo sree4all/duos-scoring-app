@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { defaultMatchLockAtIso } from "@/lib/utils/match-lock";
 
 export async function linkContestEventsFromMatches(
   supabase: SupabaseClient,
@@ -19,12 +20,22 @@ export async function linkContestEventsFromMatches(
     const matchId = match.id as string;
     const title = `Match ${match.match_number}: ${match.home_team} vs ${match.away_team}`;
 
+    const kickoffUtc = match.match_time_utc as string;
+    const defaultLockAt = defaultMatchLockAtIso(kickoffUtc);
+
     const { data: existing } = await supabase
       .from("events")
-      .select("id")
+      .select("id, lock_at")
       .eq("contest_id", contestId)
       .eq("source_match_id", matchId)
       .maybeSingle();
+
+    const existingLockAt = (existing?.lock_at as string | null) ?? null;
+    const lockAt =
+      existingLockAt &&
+      new Date(existingLockAt).getTime() < new Date(defaultLockAt).getTime()
+        ? existingLockAt
+        : defaultLockAt;
 
     if (existing) {
       const { error } = await supabase
@@ -32,7 +43,7 @@ export async function linkContestEventsFromMatches(
         .update({
           title,
           stage_key: match.stage_key as string | null,
-          lock_at: match.match_time_utc as string,
+          lock_at: lockAt,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existing.id as string);
@@ -43,7 +54,7 @@ export async function linkContestEventsFromMatches(
         title,
         source_match_id: matchId,
         stage_key: match.stage_key as string | null,
-        lock_at: match.match_time_utc as string,
+        lock_at: defaultLockAt,
         state: "scheduled_open",
       });
       if (error) throw error;
