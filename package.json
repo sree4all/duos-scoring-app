@@ -13,6 +13,7 @@
     "import:worldcup": "tsx scripts/import-worldcup-2026.ts",
     "db:link": "npx supabase link",
     "db:push": "npx supabase db push",
+    "db:run-lock-sql": "tsx scripts/run-lock-migration.ts",
     "db:migration-list": "npx supabase migration list"
   },
   "dependencies": {
