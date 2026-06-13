@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { resolvePredictionLockAtIso } from "@/lib/utils/match-lock";
 
 export type ScheduleEventRow = {
   eventId: string;
@@ -89,7 +90,10 @@ export async function listRevealedScheduleEvents(
       venueLabel: (match.venue_label as string | null) ?? null,
       kickoffUtc: (match.match_time_utc as string) ?? (ev.lock_at as string),
       kickoffTzOffset: (match.kickoff_tz_offset as string | null) ?? null,
-      lockAt: (ev.lock_at as string | null) ?? null,
+      lockAt: resolvePredictionLockAtIso(
+        (match.match_time_utc as string) ?? (ev.lock_at as string),
+        ev.lock_at as string | null,
+      ),
       stageKey,
       matchStatus: match.status as string,
     });

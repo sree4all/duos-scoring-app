@@ -12,6 +12,7 @@ import {
 } from "@/lib/server/world-cup/schedule-query";
 import { validateMatchPick } from "@/lib/domain/world-cup/match-outcome";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { isPredictionsLocked } from "@/lib/utils/match-lock";
 
 export async function saveMatchPick(
   contestId: string,
@@ -48,18 +49,22 @@ export async function saveMatchPick(
   );
   if (!reveal.ok) return { ok: false as const, error: reveal.message };
 
-  const lockAt = event.lock_at as string | null;
-  if (lockAt && new Date(lockAt).getTime() <= Date.now()) {
-    return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
-  }
-
   const { data: match } = await supabase
     .from("matches")
-    .select("home_team, away_team")
+    .select("home_team, away_team, match_time_utc")
     .eq("id", matchId)
     .maybeSingle();
 
   if (!match) return { ok: false as const, error: "Match not found." };
+
+  if (
+    isPredictionsLocked(
+      match.match_time_utc as string,
+      event.lock_at as string | null,
+    )
+  ) {
+    return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
+  }
 
   const stageKey = await resolveEventStageKey(supabase, {
     stage_key: event.stage_key as string | null,
@@ -124,8 +129,20 @@ export async function saveMatchBonusAnswer(
   );
   if (!reveal.ok) return { ok: false as const, error: reveal.message };
 
-  const lockAt = event.lock_at as string | null;
-  if (lockAt && new Date(lockAt).getTime() <= Date.now()) {
+  const { data: match } = await supabase
+    .from("matches")
+    .select("match_time_utc")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (!match) return { ok: false as const, error: "Match not found." };
+
+  if (
+    isPredictionsLocked(
+      match.match_time_utc as string,
+      event.lock_at as string | null,
+    )
+  ) {
     return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
   }
 
