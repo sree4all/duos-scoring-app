@@ -61,8 +61,8 @@ export function OwnerMatchLockForm({
     <section className="rounded-lg border p-4">
       <h2 className="font-medium">Pick lock time</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Members cannot save predictions after this time. By default, picks lock 30 minutes before
-        kickoff (shown in Eastern Time on the schedule). You can set an earlier lock.
+        Members cannot save predictions after this time. By default, picks lock at kickoff (shown in
+        Eastern Time on the schedule). You can set an earlier lock.
       </p>
       {lockAt ? (
         <p className="mt-2 text-sm">

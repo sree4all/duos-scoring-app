@@ -15,10 +15,9 @@ function assert(condition: boolean, message: string) {
 }
 
 const KICKOFF = "2026-06-15T23:00:00.000Z";
-const DEFAULT_LOCK = "2026-06-15T22:30:00.000Z";
 
 function run() {
-  assert(defaultMatchLockAtIso(KICKOFF) === DEFAULT_LOCK, "default lock is 30m before kickoff");
+  assert(defaultMatchLockAtIso(KICKOFF) === KICKOFF, "default lock is kickoff");
 
   const ownerLock = "2026-06-15T20:00:00.000Z";
   assert(
@@ -26,10 +25,10 @@ function run() {
     "owner earlier lock is honored",
   );
 
-  const lateOwnerLock = "2026-06-15T22:45:00.000Z";
+  const lateOwnerLock = "2026-06-15T23:30:00.000Z";
   assert(
-    resolvePredictionLockAtIso(KICKOFF, lateOwnerLock) === DEFAULT_LOCK,
-    "owner lock capped at kickoff minus 30m",
+    resolvePredictionLockAtIso(KICKOFF, lateOwnerLock) === KICKOFF,
+    "owner lock capped at kickoff",
   );
 
   const boundary = defaultMatchLockAt(KICKOFF);
