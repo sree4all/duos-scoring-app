@@ -1,8 +1,5 @@
-export const MATCH_LOCK_LEAD_MS = 30 * 60 * 1000;
-
 export function defaultMatchLockAt(kickoffUtc: Date | string): Date {
-  const kickoff = typeof kickoffUtc === "string" ? new Date(kickoffUtc) : kickoffUtc;
-  return new Date(kickoff.getTime() - MATCH_LOCK_LEAD_MS);
+  return typeof kickoffUtc === "string" ? new Date(kickoffUtc) : kickoffUtc;
 }
 
 export function defaultMatchLockAtIso(kickoffUtc: Date | string): string {
@@ -10,7 +7,7 @@ export function defaultMatchLockAtIso(kickoffUtc: Date | string): string {
 }
 
 /**
- * Effective prediction lock: owner MAY close earlier; never later than kickoff − 30 minutes.
+ * Effective prediction lock: owner MAY close earlier; never later than kickoff.
  */
 export function resolvePredictionLockAt(
   kickoffUtc: Date | string,

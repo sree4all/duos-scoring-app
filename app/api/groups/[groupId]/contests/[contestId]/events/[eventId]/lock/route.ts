@@ -48,7 +48,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "Lock time cannot be later than 30 minutes before kickoff. Choose an earlier time.",
+            "Lock time cannot be later than kickoff. Choose an earlier time.",
         },
         { status: 400 },
       );
