@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isPredictionsLocked } from "@/lib/utils/match-lock";
-import { allowsDrawPick, formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
+import { allowsDrawPick } from "@/lib/domain/world-cup/match-outcome";
 import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
+import type { StageScoringRule } from "@/lib/domain/world-cup/types";
 import type { ScheduleEventRow } from "@/lib/server/world-cup/schedule-query";
 import {
   PREDICTION_SCHEDULE_INITIAL,
@@ -14,6 +15,7 @@ import {
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
 import { MatchPickForm } from "@/components/world-cup/match-pick-form";
 import { MatchBonusAnswerForm } from "@/components/world-cup/match-bonus-answer-form";
+import { MatchOrganizerTools } from "@/components/world-cup/match-organizer-tools";
 import { cn } from "@/lib/utils";
 
 function statusLabel(status: string, kickoffUtc: string, lockAt: string | null): string {
@@ -21,6 +23,19 @@ function statusLabel(status: string, kickoffUtc: string, lockAt: string | null):
   if (isPredictionsLocked(kickoffUtc, lockAt)) return worldCupCopy.matchStatus.locked;
   if (status === "scheduled") return worldCupCopy.matchStatus.open;
   return worldCupCopy.matchStatus.scheduled;
+}
+
+function formatMatchHeading(ev: ScheduleEventRow): string {
+  if (ev.title.toLowerCase().includes(" vs ")) return ev.title;
+  const code = ev.title || `Match ${ev.matchNumber ?? "—"}`;
+  return `${code} — ${ev.homeTeam} vs ${ev.awayTeam}`;
+}
+
+function formatStagePointsLine(rule: StageScoringRule | undefined): string | null {
+  if (!rule) return null;
+  const wrong =
+    rule.incorrectPenalty === 0 ? "0" : String(rule.incorrectPenalty);
+  return `${rule.stageName}: +${rule.correctPoints} correct, ${wrong} wrong`;
 }
 
 function formatShowingRange(visibleEnd: number, total: number): string {
@@ -38,107 +53,101 @@ function formatShowMoreLabel(
 
 function MatchCard({
   contestId,
+  groupId,
+  isOwner,
   ev,
   savedPick: initialSavedPick,
   showBonusNotPredicted,
   bonusPrompts,
   bonusAnswers,
+  stageRule,
+  matchWinner,
 }: {
   contestId: string;
+  groupId: string;
+  isOwner: boolean;
   ev: ScheduleEventRow;
   savedPick: string | null;
   showBonusNotPredicted: boolean;
   bonusPrompts: MatchBonusPrompt[];
   bonusAnswers: Record<string, string>;
+  stageRule?: StageScoringRule;
+  matchWinner: string | null;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [savedPick, setSavedPick] = useState(initialSavedPick);
   const locked = isPredictionsLocked(ev.kickoffUtc, ev.lockAt);
+  const hasPrediction = Boolean(savedPick);
+  const allowDraw = allowsDrawPick(ev.stageKey);
+  const openStatus = statusLabel(ev.matchStatus, ev.kickoffUtc, ev.lockAt);
+  const stagePointsLine = formatStagePointsLine(stageRule);
 
   useEffect(() => {
     setSavedPick(initialSavedPick);
   }, [initialSavedPick]);
-  const hasPrediction = Boolean(savedPick);
-  const allowDraw = allowsDrawPick(ev.stageKey);
 
   return (
-    <li className="neon-glass-card p-4">
+    <li className="neon-glass-card p-3 sm:p-4">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground">
-          Match {ev.matchNumber ?? "—"}
-        </span>
-        <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs">
-          {statusLabel(ev.matchStatus, ev.kickoffUtc, ev.lockAt)}
-        </span>
-      </div>
-
-      <div className="mt-2 flex flex-wrap gap-2">
-        <span
-          className={cn(
-            "inline-block rounded-md px-2 py-0.5 text-xs font-semibold",
-            hasPrediction
-              ? "bg-neon-score-green/20 text-score-positive"
-              : !locked
-                ? "bg-neon-score-red/20 text-score-negative"
+        <h3 className="min-w-0 flex-1 text-sm font-semibold leading-snug sm:text-base">
+          {formatMatchHeading(ev)}
+        </h3>
+        <div className="flex shrink-0 flex-wrap justify-end gap-1">
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[10px] font-semibold sm:text-xs",
+              openStatus === worldCupCopy.matchStatus.open
+                ? "bg-neon-score-green/20 text-score-positive"
                 : "bg-white/10 text-muted-foreground",
-          )}
-        >
-          {hasPrediction
-            ? worldCupCopy.prediction.alreadyPredicted
-            : !locked
-              ? worldCupCopy.prediction.duePrediction
-              : "No prediction saved"}
-        </span>
-        {hasPrediction && showBonusNotPredicted ? (
-          <span className="inline-block rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-            {worldCupCopy.prediction.bonusNotPredicted}
+            )}
+          >
+            {openStatus}
           </span>
-        ) : null}
+          {!locked ? (
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10px] font-semibold sm:text-xs",
+                hasPrediction
+                  ? "bg-neon-score-green/20 text-score-positive"
+                  : "bg-neon-score-red/20 text-score-negative",
+              )}
+            >
+              {hasPrediction
+                ? worldCupCopy.prediction.alreadyPredicted
+                : worldCupCopy.prediction.duePrediction}
+            </span>
+          ) : null}
+          {hasPrediction && showBonusNotPredicted ? (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-200 sm:text-xs">
+              {worldCupCopy.prediction.bonusNotPredicted}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <p className="mt-2 break-words text-base font-semibold leading-snug sm:text-lg">
-        {ev.homeTeam} vs {ev.awayTeam}
+      <p className="mt-1 text-xs text-muted-foreground">
+        {worldCupCopy.prediction.startLabel}: {formatKickoffDisplay(ev.kickoffUtc)}
       </p>
-      {ev.venueLabel ? (
-        <p className="text-sm text-muted-foreground">{ev.venueLabel}</p>
-      ) : null}
-      <p className="mt-1 text-sm text-muted-foreground">
-        Kickoff: {formatKickoffDisplay(ev.kickoffUtc)}
-      </p>
-      {hasPrediction && !expanded ? (
-        <p className="mt-1 text-sm">
-          Your prediction:{" "}
-          <strong className="break-words">{formatMatchPickLabel(savedPick!)}</strong>
-        </p>
+      {stagePointsLine ? (
+        <p className="mt-0.5 text-xs font-medium text-score-positive">{stagePointsLine}</p>
       ) : null}
 
-      <button
-        type="button"
-        className="mt-3 flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-foreground touch-manipulation sm:min-h-10 sm:w-auto sm:inline-flex"
-        onClick={() => setExpanded((open) => !open)}
-        aria-expanded={expanded}
-      >
-        {expanded
-          ? "Close"
-          : hasPrediction
-            ? worldCupCopy.prediction.viewOrUpdate
-            : worldCupCopy.prediction.makePrediction}
-      </button>
+      <div className="mt-3 border-t border-white/10 pt-3">
+        <MatchPickForm
+          contestId={contestId}
+          eventId={ev.eventId}
+          matchId={ev.matchId}
+          homeTeam={ev.homeTeam}
+          awayTeam={ev.awayTeam}
+          allowDraw={allowDraw}
+          initialPick={savedPick}
+          locked={locked}
+          compact
+          onSaved={setSavedPick}
+        />
+      </div>
 
-      {expanded ? (
-        <div className="mt-4 space-y-4 border-t border-white/10 pt-4">
-          <MatchPickForm
-            contestId={contestId}
-            eventId={ev.eventId}
-            matchId={ev.matchId}
-            homeTeam={ev.homeTeam}
-            awayTeam={ev.awayTeam}
-            allowDraw={allowDraw}
-            initialPick={savedPick}
-            locked={locked}
-            embedded
-            onSaved={setSavedPick}
-          />
+      {bonusPrompts.length > 0 ? (
+        <div className="mt-3 border-t border-white/10 pt-3">
           <MatchBonusAnswerForm
             contestId={contestId}
             eventId={ev.eventId}
@@ -146,6 +155,27 @@ function MatchCard({
             prompts={bonusPrompts}
             initialAnswers={bonusAnswers}
             locked={locked}
+            compact
+          />
+        </div>
+      ) : (
+        <p className="mt-2 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+          {worldCupCopy.prediction.bonusWatchHint}
+        </p>
+      )}
+
+      {isOwner ? (
+        <div className="mt-3">
+          <MatchOrganizerTools
+            groupId={groupId}
+            contestId={contestId}
+            eventId={ev.eventId}
+            matchId={ev.matchId}
+            homeTeam={ev.homeTeam}
+            awayTeam={ev.awayTeam}
+            allowDraw={allowDraw}
+            lockAt={ev.lockAt}
+            initialWinner={matchWinner}
           />
         </div>
       ) : null}
@@ -155,18 +185,26 @@ function MatchCard({
 
 export function MatchScheduleList({
   contestId,
+  groupId,
+  isOwner = false,
   events,
   userPickByEventId = {},
   bonusNotPredictedByEventId = {},
   bonusPromptsByMatchId = {},
   bonusAnswersByMatchId = {},
+  stageRulesByKey = {},
+  matchWinnerByMatchId = {},
 }: {
   contestId: string;
+  groupId: string;
+  isOwner?: boolean;
   events: ScheduleEventRow[];
   userPickByEventId?: Record<string, string | null>;
   bonusNotPredictedByEventId?: Record<string, boolean>;
   bonusPromptsByMatchId?: Record<string, MatchBonusPrompt[]>;
   bonusAnswersByMatchId?: Record<string, Record<string, string>>;
+  stageRulesByKey?: Record<string, StageScoringRule>;
+  matchWinnerByMatchId?: Record<string, string | null>;
 }) {
   const [visibleCount, setVisibleCount] = useState(PREDICTION_SCHEDULE_INITIAL);
 
@@ -192,11 +230,15 @@ export function MatchScheduleList({
           <MatchCard
             key={ev.eventId}
             contestId={contestId}
+            groupId={groupId}
+            isOwner={isOwner}
             ev={ev}
             savedPick={userPickByEventId[ev.eventId] ?? null}
             showBonusNotPredicted={bonusNotPredictedByEventId[ev.eventId] ?? false}
             bonusPrompts={bonusPromptsByMatchId[ev.matchId] ?? []}
             bonusAnswers={bonusAnswersByMatchId[ev.matchId] ?? {}}
+            stageRule={ev.stageKey ? stageRulesByKey[ev.stageKey] : undefined}
+            matchWinner={matchWinnerByMatchId[ev.matchId] ?? null}
           />
         ))}
       </ul>

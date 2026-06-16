@@ -21,6 +21,10 @@ export const worldCupCopy = {
       "Group stage matches can end in a tie. Knockout matches always have a winner after extra time or penalties.",
     makePrediction: "Make your prediction",
     viewOrUpdate: "View or update",
+    bonusWatchHint:
+      "Watch for bonus prompts—organizers may post questions on this match before kickoff.",
+    yourPick: "Your pick",
+    startLabel: "Start",
   },
   organizer: {
     officialResult: "Official result (90 minutes)",

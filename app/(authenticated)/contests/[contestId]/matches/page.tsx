@@ -17,6 +17,7 @@ import { ContestMatchesTabs } from "@/components/world-cup/contest-matches-tabs"
 import { PredictionStatsPanel } from "@/components/world-cup/prediction-stats-panel";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
 import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
+import type { StageScoringRule } from "@/lib/domain/world-cup/types";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
@@ -48,10 +49,14 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   const bonusNotPredictedByEventId: Record<string, boolean> = {};
   const bonusPromptsByMatchId: Record<string, MatchBonusPrompt[]> = {};
   const bonusAnswersByMatchId: Record<string, Record<string, string>> = {};
+  const matchWinnerByMatchId: Record<string, string | null> = {};
+  const stageRulesByKey = Object.fromEntries(
+    rules.map((r) => [r.stageKey, r]),
+  ) as Record<string, StageScoringRule>;
 
   if (matchIds.length > 0) {
     const bonusRepo = new MatchBonusRepository(supabase);
-    const [{ data: myPicks }, bonusPromptsMap, { data: bonusAnswerRows }] =
+    const [{ data: myPicks }, bonusPromptsMap, { data: bonusAnswerRows }, { data: matchRows }] =
       await Promise.all([
         supabase
           .from("predictions")
@@ -64,7 +69,12 @@ export default async function ContestMatchesPage({ params }: PageProps) {
           .select("prompt_id, match_id, answer_text")
           .eq("user_id", user.id)
           .in("match_id", matchIds),
+        supabase.from("matches").select("id, winner").in("id", matchIds),
       ]);
+
+    for (const row of matchRows ?? []) {
+      matchWinnerByMatchId[row.id as string] = (row.winner as string | null) ?? null;
+    }
 
     for (const [matchId, prompts] of bonusPromptsMap) {
       bonusPromptsByMatchId[matchId] = prompts;
@@ -126,11 +136,15 @@ export default async function ContestMatchesPage({ params }: PageProps) {
         <div className="mt-2">
           <MatchScheduleList
             contestId={contestId}
+            groupId={activeGroupId}
+            isOwner={isOwner}
             events={upcomingEvents}
             userPickByEventId={userPickByEventId}
             bonusNotPredictedByEventId={bonusNotPredictedByEventId}
             bonusPromptsByMatchId={bonusPromptsByMatchId}
             bonusAnswersByMatchId={bonusAnswersByMatchId}
+            stageRulesByKey={stageRulesByKey}
+            matchWinnerByMatchId={matchWinnerByMatchId}
           />
         </div>
       </div>

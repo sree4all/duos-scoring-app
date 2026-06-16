@@ -15,6 +15,7 @@ export function MatchBonusAnswerForm({
   prompts,
   initialAnswers,
   locked,
+  compact = false,
 }: {
   contestId: string;
   eventId: string;
@@ -22,13 +23,14 @@ export function MatchBonusAnswerForm({
   prompts: MatchBonusPrompt[];
   initialAnswers: Record<string, string>;
   locked: boolean;
+  compact?: boolean;
 }) {
   const router = useRouter();
 
   if (prompts.length === 0) return null;
 
   return (
-    <div className="space-y-4">
+    <div className={compact ? "space-y-3" : "space-y-4"}>
       {prompts.map((prompt) => (
         <BonusPromptCard
           key={prompt.id}
@@ -38,6 +40,7 @@ export function MatchBonusAnswerForm({
           prompt={prompt}
           initialAnswer={initialAnswers[prompt.id] ?? ""}
           locked={locked}
+          compact={compact}
           onSaved={() => router.refresh()}
         />
       ))}
@@ -52,6 +55,7 @@ function BonusPromptCard({
   prompt,
   initialAnswer,
   locked,
+  compact,
   onSaved,
 }: {
   contestId: string;
@@ -60,6 +64,7 @@ function BonusPromptCard({
   prompt: MatchBonusPrompt;
   initialAnswer: string;
   locked: boolean;
+  compact: boolean;
   onSaved: () => void;
 }) {
   const [answer, setAnswer] = useState(initialAnswer);
@@ -91,22 +96,33 @@ function BonusPromptCard({
   }
 
   return (
-    <section className="rounded-xl border-2 border-dashed border-primary/30 bg-card p-4">
+    <section
+      className={cn(
+        compact
+          ? "rounded-lg border border-dashed border-primary/30 bg-card/50 p-3"
+          : "rounded-xl border-2 border-dashed border-primary/30 bg-card p-4",
+      )}
+    >
       <p className="text-xs font-medium uppercase tracking-wide text-primary">
         {worldCupCopy.bonus.sectionTitle}
       </p>
-      <p className="mt-2 text-base font-medium">{prompt.promptText}</p>
+      <p className={cn("font-medium", compact ? "mt-1 text-sm" : "mt-2 text-base")}>
+        {prompt.promptText}
+      </p>
       <p className="mt-1 text-xs text-muted-foreground">
         +{prompt.correctPoints} if correct
         {prompt.incorrectPenalty !== 0 ? ` · ${prompt.incorrectPenalty} if wrong` : ""}
       </p>
 
-      <div className="mt-3 flex flex-col gap-2">
+      <div className={cn(compact ? "mt-2 flex flex-wrap gap-2" : "mt-3 flex flex-col gap-2")}>
         {prompt.options.map((opt) => (
           <label
             key={opt.id}
             className={cn(
-              "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border-2 px-3 py-2.5 touch-manipulation",
+              "flex cursor-pointer items-center gap-2 rounded-lg border-2 touch-manipulation",
+              compact
+                ? "min-h-9 min-w-0 flex-1 basis-[calc(50%-0.25rem)] justify-center px-2 py-1.5"
+                : "min-h-11 gap-3 px-3 py-2.5",
               answer === opt.value && !locked
                 ? "border-primary bg-primary/5"
                 : "border-border",
@@ -120,9 +136,11 @@ function BonusPromptCard({
               checked={answer === opt.value}
               disabled={locked}
               onChange={() => setAnswer(opt.value)}
-              className="h-4 w-4"
+              className="h-4 w-4 shrink-0"
             />
-            <span className="text-sm font-medium">{opt.label}</span>
+            <span className={cn("font-medium", compact ? "truncate text-xs" : "text-sm")}>
+              {opt.label}
+            </span>
           </label>
         ))}
       </div>
@@ -131,7 +149,10 @@ function BonusPromptCard({
         <Button
           type="button"
           variant="secondary"
-          className="mt-3 h-11 w-full touch-manipulation sm:w-auto"
+          className={cn(
+            "touch-manipulation",
+            compact ? "mt-2 h-9 w-full text-xs sm:w-auto" : "mt-3 h-11 w-full sm:w-auto",
+          )}
           disabled={pending || !answer}
           onClick={save}
         >

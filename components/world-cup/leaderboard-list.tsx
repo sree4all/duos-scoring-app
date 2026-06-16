@@ -1,5 +1,8 @@
 import { LEADERBOARD_MAX_ROWS } from "@/lib/world-cup/mobile-list";
-import { standingPlaceEmoji } from "@/lib/utils/standing-place";
+import {
+  computeStandingPlaces,
+  standingPlaceEmoji,
+} from "@/lib/utils/standing-place";
 
 export type LeaderboardEntry = {
   participantId: string;
@@ -16,6 +19,7 @@ export function LeaderboardList({ entries }: { entries: LeaderboardEntry[] }) {
 
   const visible = entries.slice(0, LEADERBOARD_MAX_ROWS);
   const truncated = entries.length > LEADERBOARD_MAX_ROWS;
+  const places = computeStandingPlaces(visible.map((entry) => entry.totalPoints));
 
   return (
     <div>
@@ -28,9 +32,9 @@ export function LeaderboardList({ entries }: { entries: LeaderboardEntry[] }) {
             <div className="flex min-w-0 items-center gap-2">
               <span
                 className="shrink-0 text-base leading-none"
-                aria-label={`Rank ${index + 1}`}
+                aria-label={`Rank ${places[index]}`}
               >
-                {standingPlaceEmoji(index + 1)}
+                {standingPlaceEmoji(places[index])}
               </span>
               <span className="truncate font-medium">{entry.displayName}</span>
             </div>
