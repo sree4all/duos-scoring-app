@@ -20,6 +20,59 @@ function mapPrompt(
 export class MatchBonusRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
+  async listForMatches(
+    matchIds: string[],
+    seasonYear = 2026,
+  ): Promise<Map<string, MatchBonusPrompt[]>> {
+    const result = new Map<string, MatchBonusPrompt[]>();
+    if (matchIds.length === 0) return result;
+
+    const { data: prompts, error } = await this.supabase
+      .from("bonus_prompts")
+      .select("*")
+      .eq("season_year", seasonYear)
+      .eq("scope", "match")
+      .in("match_id", matchIds)
+      .eq("is_active", true)
+      .order("display_order", { ascending: true });
+
+    if (error) throw error;
+    if (!prompts?.length) return result;
+
+    const ids = prompts.map((p) => p.id as string);
+    const { data: optRows, error: optErr } = await this.supabase
+      .from("bonus_prompt_options")
+      .select("id, prompt_id, label, value, sort_order")
+      .in("prompt_id", ids)
+      .order("sort_order", { ascending: true });
+
+    if (optErr) throw optErr;
+
+    const optsByPrompt = new Map<string, MatchBonusPrompt["options"]>();
+    for (const o of optRows ?? []) {
+      const pid = o.prompt_id as string;
+      const list = optsByPrompt.get(pid) ?? [];
+      list.push({
+        id: o.id as string,
+        label: o.label as string,
+        value: o.value as string,
+        sortOrder: Number(o.sort_order ?? 0),
+      });
+      optsByPrompt.set(pid, list);
+    }
+
+    for (const p of prompts) {
+      const matchId = p.match_id as string;
+      const list = result.get(matchId) ?? [];
+      list.push(
+        mapPrompt(p as Record<string, unknown>, optsByPrompt.get(p.id as string) ?? []),
+      );
+      result.set(matchId, list);
+    }
+
+    return result;
+  }
+
   async listForMatch(matchId: string, seasonYear = 2026): Promise<MatchBonusPrompt[]> {
     const { data: prompts, error } = await this.supabase
       .from("bonus_prompts")

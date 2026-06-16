@@ -15,6 +15,8 @@ import { MatchScheduleList } from "@/components/world-cup/match-schedule-list";
 import { StagePointsPanel } from "@/components/world-cup/stage-points-panel";
 import { ContestMatchesTabs } from "@/components/world-cup/contest-matches-tabs";
 import { PredictionStatsPanel } from "@/components/world-cup/prediction-stats-panel";
+import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
+import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
@@ -44,46 +46,52 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   const matchIds = upcomingEvents.map((e) => e.matchId);
   const userPickByEventId: Record<string, string | null> = {};
   const bonusNotPredictedByEventId: Record<string, boolean> = {};
+  const bonusPromptsByMatchId: Record<string, MatchBonusPrompt[]> = {};
+  const bonusAnswersByMatchId: Record<string, Record<string, string>> = {};
+
   if (matchIds.length > 0) {
-    const [{ data: myPicks }, { data: bonusPromptRows }, { data: bonusAnswerRows }] =
+    const bonusRepo = new MatchBonusRepository(supabase);
+    const [{ data: myPicks }, bonusPromptsMap, { data: bonusAnswerRows }] =
       await Promise.all([
         supabase
           .from("predictions")
           .select("match_id, predicted_winner")
           .eq("user_id", user.id)
           .in("match_id", matchIds),
-        supabase
-          .from("bonus_prompts")
-          .select("id, match_id")
-          .eq("scope", "match")
-          .eq("is_active", true)
-          .eq("season_year", 2026)
-          .in("match_id", matchIds),
+        bonusRepo.listForMatches(matchIds),
         supabase
           .from("prediction_bonus_answers")
-          .select("prompt_id, match_id")
+          .select("prompt_id, match_id, answer_text")
           .eq("user_id", user.id)
           .in("match_id", matchIds),
       ]);
 
+    for (const [matchId, prompts] of bonusPromptsMap) {
+      bonusPromptsByMatchId[matchId] = prompts;
+    }
+
+    const answersByMatch = new Map<string, Record<string, string>>();
+    for (const row of bonusAnswerRows ?? []) {
+      const matchId = row.match_id as string;
+      const answers = answersByMatch.get(matchId) ?? {};
+      answers[row.prompt_id as string] = row.answer_text as string;
+      answersByMatch.set(matchId, answers);
+    }
+    for (const [matchId, answers] of answersByMatch) {
+      bonusAnswersByMatchId[matchId] = answers;
+    }
+
     const pickByMatch = new Map(
       (myPicks ?? []).map((p) => [p.match_id as string, p.predicted_winner as string]),
-    );
-    const promptIdsByMatch = new Map<string, string[]>();
-    for (const row of bonusPromptRows ?? []) {
-      const matchId = row.match_id as string;
-      const list = promptIdsByMatch.get(matchId) ?? [];
-      list.push(row.id as string);
-      promptIdsByMatch.set(matchId, list);
-    }
-    const answeredPromptIds = new Set(
-      (bonusAnswerRows ?? []).map((a) => a.prompt_id as string),
     );
 
     for (const ev of upcomingEvents) {
       userPickByEventId[ev.eventId] = pickByMatch.get(ev.matchId) ?? null;
-      const promptIds = promptIdsByMatch.get(ev.matchId) ?? [];
+      const promptIds = (bonusPromptsByMatchId[ev.matchId] ?? []).map((p) => p.id);
       const hasWinnerPick = Boolean(userPickByEventId[ev.eventId]);
+      const answeredPromptIds = new Set(
+        Object.keys(bonusAnswersByMatchId[ev.matchId] ?? {}),
+      );
       const allBonusAnswered =
         promptIds.length > 0 && promptIds.every((id) => answeredPromptIds.has(id));
       bonusNotPredictedByEventId[ev.eventId] =
@@ -121,6 +129,8 @@ export default async function ContestMatchesPage({ params }: PageProps) {
             events={upcomingEvents}
             userPickByEventId={userPickByEventId}
             bonusNotPredictedByEventId={bonusNotPredictedByEventId}
+            bonusPromptsByMatchId={bonusPromptsByMatchId}
+            bonusAnswersByMatchId={bonusAnswersByMatchId}
           />
         </div>
       </div>

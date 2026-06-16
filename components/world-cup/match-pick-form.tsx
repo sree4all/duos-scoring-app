@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { worldCupCopy } from "@/lib/copy/world-cup";
@@ -17,6 +17,8 @@ export function MatchPickForm({
   allowDraw,
   initialPick,
   locked,
+  embedded = false,
+  onSaved,
 }: {
   contestId: string;
   eventId: string;
@@ -26,14 +28,22 @@ export function MatchPickForm({
   allowDraw: boolean;
   initialPick: string | null;
   locked: boolean;
+  embedded?: boolean;
+  onSaved?: (pick: string) => void;
 }) {
   const router = useRouter();
   const [pick, setPick] = useState(initialPick ?? "");
+  const [savedPick, setSavedPick] = useState(initialPick);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const hasSavedPick = Boolean(initialPick);
+  useEffect(() => {
+    setPick(initialPick ?? "");
+    setSavedPick(initialPick);
+  }, [initialPick]);
+
+  const hasSavedPick = Boolean(savedPick);
   const statusLabel = hasSavedPick
     ? worldCupCopy.prediction.alreadyPredicted
     : worldCupCopy.prediction.duePrediction;
@@ -51,14 +61,16 @@ export function MatchPickForm({
     if (!result.ok) {
       setError(result.error);
     } else {
+      setSavedPick(pick);
       setMessage(worldCupCopy.prediction.saved);
+      onSaved?.(pick);
       router.refresh();
     }
     setPending(false);
   }
 
   return (
-    <section className="neon-glass-card space-y-4 p-5">
+    <section className={embedded ? "space-y-4" : "neon-glass-card space-y-4 p-5"}>
       <div
         className={cn(
           "rounded-xl px-3 py-2 text-center text-sm font-semibold",
