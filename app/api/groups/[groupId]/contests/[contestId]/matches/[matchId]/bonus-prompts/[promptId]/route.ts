@@ -3,6 +3,7 @@ import { getAuthenticatedSupabaseUser, groupErrorResponse } from "@/lib/server/g
 import { requireWorldCupOwner } from "@/lib/server/world-cup/guards";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
+import { normalizeIncorrectPenalty } from "@/lib/domain/world-cup/match-bonus";
 
 type RouteContext = {
   params: Promise<{ groupId: string; contestId: string; matchId: string; promptId: string }>;
@@ -30,7 +31,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     await repo.updatePrompt(promptId, {
       promptText: body.promptText,
       correctPoints: body.correctPoints,
-      incorrectPenalty: body.incorrectPenalty,
+      incorrectPenalty:
+        body.incorrectPenalty !== undefined
+          ? normalizeIncorrectPenalty(Number(body.incorrectPenalty))
+          : undefined,
       correctAnswer: body.correctAnswer,
       isActive: body.isActive,
       options: body.options

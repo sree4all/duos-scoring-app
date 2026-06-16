@@ -3,6 +3,7 @@ import { getAuthenticatedSupabaseUser, groupErrorResponse } from "@/lib/server/g
 import { requireWorldCupOwner } from "@/lib/server/world-cup/guards";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
+import { normalizeIncorrectPenalty } from "@/lib/domain/world-cup/match-bonus";
 
 type RouteContext = {
   params: Promise<{ groupId: string; contestId: string; matchId: string }>;
@@ -59,7 +60,7 @@ export async function POST(request: Request, context: RouteContext) {
       promptText: body.promptText,
       options,
       correctPoints: Number(body.correctPoints ?? 2),
-      incorrectPenalty: Number(body.incorrectPenalty ?? 0),
+      incorrectPenalty: normalizeIncorrectPenalty(Number(body.incorrectPenalty ?? 0)),
       correctAnswer: body.correctAnswer ?? null,
     });
 

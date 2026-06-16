@@ -15,3 +15,9 @@ export type MatchBonusPrompt = {
   isActive: boolean;
   options: MatchBonusOption[];
 };
+
+/** Wrong-answer penalties are stored as zero or a negative delta. */
+export function normalizeIncorrectPenalty(value: number): number {
+  if (!Number.isFinite(value) || value === 0) return 0;
+  return value > 0 ? -value : value;
+}

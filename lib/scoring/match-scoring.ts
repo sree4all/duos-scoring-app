@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normAnswer } from "@/lib/scoring/normalize";
+import {
+  bonusPointsForAnswer,
+  mergeScoringUserIds,
+} from "@/lib/scoring/match-bonus-scoring";
 
 export type ScoringConfigRow = {
   season_year: number;
@@ -156,11 +160,19 @@ export async function applyMatchScoring(
   const now = new Date().toISOString();
   const toInsert: LedgerInsert[] = [];
 
-  for (const pred of predictions ?? []) {
-    const userId = pred.user_id as string;
-    const predictedWinner = pred.predicted_winner as string;
+  const predByUser = new Map(
+    (predictions ?? []).map((p) => [p.user_id as string, p]),
+  );
+  const scoringUserIds = mergeScoringUserIds(
+    predByUser.keys(),
+    bonusAnswers.map((b) => b.user_id as string),
+  );
 
-    if (actualWinner) {
+  for (const userId of scoringUserIds) {
+    const pred = predByUser.get(userId);
+    const predictedWinner = pred?.predicted_winner as string | undefined;
+
+    if (predictedWinner && actualWinner) {
       const correct = normAnswer(predictedWinner) === normAnswer(actualWinner);
       if (correct && winnerPts !== 0) {
         toInsert.push({
@@ -186,35 +198,28 @@ export async function applyMatchScoring(
     if (usePerPromptBonus) {
       for (const pr of promptsOrdered) {
         const pid = pr.id as string;
-        const official = (pr.correct_answer as string | null)?.trim();
-        if (!official) continue;
+        const official = (pr.correct_answer as string | null)?.trim() ?? "";
         const userAns = answersByUserPrompt.get(`${userId}\t${pid}`)?.trim() ?? "";
-        if (!userAns) continue;
         const promptCorrectPts = Number(pr.correct_points ?? bonusPts);
         const promptMissPts = Number(pr.incorrect_penalty ?? 0);
-        if (normAnswer(userAns) === normAnswer(official)) {
-          if (promptCorrectPts !== 0) {
-            toInsert.push({
-              user_id: userId,
-              source_type: "bonus",
-              source_id: matchId,
-              points_delta: promptCorrectPts,
-              reason: `match_bonus:${pid}`,
-              awarded_at: now,
-            });
-          }
-        } else if (promptMissPts !== 0) {
-          toInsert.push({
-            user_id: userId,
-            source_type: "bonus",
-            source_id: matchId,
-            points_delta: promptMissPts,
-            reason: `match_bonus_miss:${pid}`,
-            awarded_at: now,
-          });
-        }
+        const delta = bonusPointsForAnswer(
+          userAns,
+          official,
+          promptCorrectPts,
+          promptMissPts,
+        );
+        if (delta === null) continue;
+        const correct = normAnswer(userAns) === normAnswer(official);
+        toInsert.push({
+          user_id: userId,
+          source_type: "bonus",
+          source_id: matchId,
+          points_delta: delta,
+          reason: correct ? `match_bonus:${pid}` : `match_bonus_miss:${pid}`,
+          awarded_at: now,
+        });
       }
-    } else if (matchBonusResult) {
+    } else if (matchBonusResult && pred) {
       const singleBonusPick = (pred.bonus_pick as string | null)?.trim();
       let fromPrompts = "";
       if (promptIds.length > 0) {

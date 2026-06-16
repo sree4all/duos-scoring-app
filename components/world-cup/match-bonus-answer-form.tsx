@@ -106,7 +106,7 @@ function BonusPromptCard({
       <p className="text-xs font-medium uppercase tracking-wide text-primary">
         {worldCupCopy.bonus.sectionTitle}
       </p>
-      <p className={cn("font-medium", compact ? "mt-1 text-sm" : "mt-2 text-base")}>
+      <p className={cn("font-medium text-white", compact ? "mt-1 text-sm" : "mt-2 text-base")}>
         {prompt.promptText}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
@@ -138,7 +138,7 @@ function BonusPromptCard({
               onChange={() => setAnswer(opt.value)}
               className="h-4 w-4 shrink-0"
             />
-            <span className={cn("font-medium", compact ? "truncate text-xs" : "text-sm")}>
+            <span className={cn("font-medium text-white", compact ? "truncate text-xs" : "text-sm")}>
               {opt.label}
             </span>
           </label>
