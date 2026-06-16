@@ -114,7 +114,7 @@ export function OwnerMatchBonusPanel({
                 <label className="flex-1 text-xs">
                   {worldCupCopy.bonus.setOfficial}
                   <select
-                    className="mt-1 h-10 w-full rounded-md border px-2"
+                    className="neon-input mt-1 h-10 py-1"
                     value={p.correctAnswer ?? ""}
                     disabled={pending}
                     onChange={(e) => void setOfficial(p.id, e.target.value)}
@@ -146,7 +146,7 @@ export function OwnerMatchBonusPanel({
         <label className="block">
           <span className="font-medium">{worldCupCopy.bonus.questionLabel}</span>
           <input
-            className="mt-1 h-11 w-full rounded-md border px-3"
+            className="neon-input mt-1"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="e.g. Will there be a penalty shootout?"
@@ -155,7 +155,7 @@ export function OwnerMatchBonusPanel({
         <label className="block">
           <span className="font-medium">{worldCupCopy.bonus.choicesLabel}</span>
           <textarea
-            className="mt-1 min-h-[80px] w-full rounded-md border px-3 py-2"
+            className="neon-input mt-1 min-h-[80px] !h-auto py-2"
             value={choicesText}
             onChange={(e) => setChoicesText(e.target.value)}
           />
@@ -165,7 +165,7 @@ export function OwnerMatchBonusPanel({
             <span className="font-medium">{worldCupCopy.bonus.correctPoints}</span>
             <input
               type="number"
-              className="mt-1 h-11 w-full rounded-md border px-3"
+              className="neon-input mt-1"
               value={correctPoints}
               onChange={(e) => setCorrectPoints(Number(e.target.value))}
             />
@@ -174,7 +174,7 @@ export function OwnerMatchBonusPanel({
             <span className="font-medium">{worldCupCopy.bonus.wrongPoints}</span>
             <input
               type="number"
-              className="mt-1 h-11 w-full rounded-md border px-3"
+              className="neon-input mt-1"
               value={incorrectPenalty}
               onChange={(e) => setIncorrectPenalty(Number(e.target.value))}
             />
