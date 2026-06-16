@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MemberPredictionRow } from "@/components/world-cup/prediction-stats-panel";
 import type { PredictionStatsEvent } from "@/components/world-cup/prediction-stats-panel";
 import { listRevealedScheduleEvents } from "@/lib/server/world-cup/schedule-query";
+import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
 
 export async function loadPredictionStatsForContest(
   supabase: SupabaseClient,
@@ -13,6 +14,23 @@ export async function loadPredictionStatsForContest(
   predictionsByEventId: Record<string, MemberPredictionRow[]>;
 }> {
   const schedule = await listRevealedScheduleEvents(supabase, contestId, memberView);
+  const matchIds = schedule.map((e) => e.matchId);
+
+  const bonusPromptsByMatchId = new Map<
+    string,
+    { id: string; promptText: string }[]
+  >();
+  if (matchIds.length > 0) {
+    const bonusRepo = new MatchBonusRepository(supabase);
+    const promptsMap = await bonusRepo.listForMatches(matchIds);
+    for (const [matchId, prompts] of promptsMap) {
+      bonusPromptsByMatchId.set(
+        matchId,
+        prompts.map((p) => ({ id: p.id, promptText: p.promptText })),
+      );
+    }
+  }
+
   const events: PredictionStatsEvent[] = schedule.map((e) => ({
     eventId: e.eventId,
     label: `Match ${e.matchNumber ?? "—"}: ${e.homeTeam} vs ${e.awayTeam}`,
@@ -20,9 +38,8 @@ export async function loadPredictionStatsForContest(
     kickoffTzOffset: e.kickoffTzOffset,
     homeTeam: e.homeTeam,
     awayTeam: e.awayTeam,
+    bonusPrompts: bonusPromptsByMatchId.get(e.matchId) ?? [],
   }));
-
-  const matchIds = schedule.map((e) => e.matchId);
 
   const { data: memberRows } = await supabase
     .from("group_memberships")
@@ -47,15 +64,30 @@ export async function loadPredictionStatsForContest(
   }
 
   const pickByMatchAndUser = new Map<string, string>();
+  const bonusAnswerByPromptAndUser = new Map<string, string>();
   if (matchIds.length > 0) {
-    const { data: predictions } = await supabase
-      .from("predictions")
-      .select("user_id, match_id, predicted_winner")
-      .in("match_id", matchIds);
+    const [{ data: predictions }, { data: bonusAnswers }] = await Promise.all([
+      supabase
+        .from("predictions")
+        .select("user_id, match_id, predicted_winner")
+        .in("match_id", matchIds),
+      supabase
+        .from("prediction_bonus_answers")
+        .select("user_id, prompt_id, answer_text")
+        .in("match_id", matchIds),
+    ]);
     for (const p of predictions ?? []) {
       pickByMatchAndUser.set(
         `${p.match_id as string}:${p.user_id as string}`,
         p.predicted_winner as string,
+      );
+    }
+    for (const row of bonusAnswers ?? []) {
+      const answer = (row.answer_text as string)?.trim();
+      if (!answer) continue;
+      bonusAnswerByPromptAndUser.set(
+        `${row.prompt_id as string}:${row.user_id as string}`,
+        answer,
       );
     }
   }
@@ -63,9 +95,19 @@ export async function loadPredictionStatsForContest(
   const predictionsByEventId: Record<string, MemberPredictionRow[]> = {};
 
   for (const ev of schedule) {
+    const bonusPrompts = bonusPromptsByMatchId.get(ev.matchId) ?? [];
     const rows: MemberPredictionRow[] = memberIds.map((uid) => ({
       displayName: displayNameByUserId.get(uid) ?? `Player ${uid.slice(0, 6)}`,
       predictedWinner: pickByMatchAndUser.get(`${ev.matchId}:${uid}`) ?? null,
+      bonusAnswers:
+        bonusPrompts.length > 0
+          ? Object.fromEntries(
+              bonusPrompts.map((prompt) => [
+                prompt.id,
+                bonusAnswerByPromptAndUser.get(`${prompt.id}:${uid}`) ?? null,
+              ]),
+            )
+          : undefined,
     }));
     rows.sort((a, b) => a.displayName.localeCompare(b.displayName));
     predictionsByEventId[ev.eventId] = rows;
