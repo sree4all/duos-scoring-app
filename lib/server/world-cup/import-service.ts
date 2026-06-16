@@ -11,6 +11,7 @@ import {
 import { upsertWorldCupMatches } from "@/lib/server/world-cup/match-upsert";
 import { linkContestEventsFromMatches } from "@/lib/server/world-cup/event-linker";
 import { seedDefaultStageRules } from "@/lib/server/world-cup/seed-stage-rules";
+import { seedPredefinedMatchBonusPrompts } from "@/lib/server/world-cup/seed-match-bonus-prompts";
 
 const DATASET_SLUG = "areezvisram12/fifa-world-cup-2026-match-data-unofficial";
 
@@ -135,6 +136,7 @@ export async function runWorldCupImport(
     summary.matchesUpdated = upsert.updated;
 
     await seedDefaultStageRules(supabase, contestId, groupId);
+    await seedPredefinedMatchBonusPrompts(supabase);
     summary.eventsLinked = await linkContestEventsFromMatches(supabase, contestId);
 
     await supabase
