@@ -6,9 +6,6 @@ import { worldCupCopy } from "@/lib/copy/world-cup";
 import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
 import { cn } from "@/lib/utils";
 
-const FIELD_CLASS =
-  "mt-1 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/50";
-
 function parseChoices(choices: string[]): { label: string; value: string }[] {
   return choices
     .map((label) => label.trim())
@@ -207,7 +204,7 @@ export function OwnerMatchBonusPanel({
         <label className="block">
           <span className="font-medium text-white">{worldCupCopy.bonus.questionLabel}</span>
           <input
-            className={FIELD_CLASS}
+            className="neon-input mt-1"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="e.g. Will there be a penalty shootout?"
@@ -221,7 +218,7 @@ export function OwnerMatchBonusPanel({
             {choices.map((choice, index) => (
               <li key={index} className="flex items-center gap-2">
                 <input
-                  className={cn(FIELD_CLASS, "mt-0")}
+                  className="neon-input mt-0"
                   value={choice}
                   onChange={(e) => updateChoice(index, e.target.value)}
                   placeholder={`Choice ${index + 1}`}
@@ -268,7 +265,7 @@ export function OwnerMatchBonusPanel({
             <span className="font-medium text-white">{worldCupCopy.bonus.correctPoints}</span>
             <input
               type="number"
-              className={FIELD_CLASS}
+              className="neon-input mt-1"
               value={correctPoints}
               onChange={(e) => setCorrectPoints(Number(e.target.value))}
             />
@@ -277,7 +274,7 @@ export function OwnerMatchBonusPanel({
             <span className="font-medium text-white">{worldCupCopy.bonus.wrongPoints}</span>
             <input
               type="number"
-              className={FIELD_CLASS}
+              className="neon-input mt-1"
               value={incorrectPenalty}
               onChange={(e) => setIncorrectPenalty(Number(e.target.value))}
             />
