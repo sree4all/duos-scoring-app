@@ -32,7 +32,6 @@ export function MatchOrganizerTools({
         Organizer tools
       </summary>
       <div className="space-y-4 border-t border-white/10 p-3">
-        <OwnerMatchBonusPanel groupId={groupId} contestId={contestId} matchId={matchId} />
         <OwnerMatchLockForm
           groupId={groupId}
           contestId={contestId}
@@ -54,6 +53,7 @@ export function MatchOrganizerTools({
           matchId={matchId}
           eventId={eventId}
         />
+        <OwnerMatchBonusPanel groupId={groupId} contestId={contestId} matchId={matchId} />
       </div>
     </details>
   );

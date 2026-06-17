@@ -131,16 +131,48 @@ export function OwnerMatchBonusPanel({
   async function setOfficial(promptId: string, correctAnswer: string) {
     setPending(true);
     setError(null);
+    setMessage(null);
     const res = await fetch(`${base}/${promptId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correctAnswer }),
     });
-    const data = (await res.json()) as { error?: string };
-    if (!res.ok) setError(data.error ?? "Update failed");
-    else {
-      setMessage("Official answer saved.");
+    const data = (await res.json()) as {
+      error?: string;
+      scored?: boolean;
+      ledgerRows?: number;
+    };
+    if (!res.ok) {
+      setError(data.error ?? "Update failed");
+    } else {
+      if (data.scored) {
+        setMessage(
+          `Official answer saved and bonus scoring applied (${data.ledgerRows ?? 0} ledger rows).`,
+        );
+      } else {
+        setMessage(
+          "Official answer saved. Apply winner scoring first if the match result is not scored yet.",
+        );
+      }
       await load();
+    }
+    setPending(false);
+  }
+
+  async function applyBonusScoring() {
+    setPending(true);
+    setError(null);
+    setMessage(null);
+    const res = await fetch(`/api/groups/${groupId}/contests/${contestId}/results`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchId }),
+    });
+    const data = (await res.json()) as { error?: string; ledgerRows?: number };
+    if (!res.ok) {
+      setError(data.error ?? "Bonus scoring failed");
+    } else {
+      setMessage(`Bonus scoring applied (${data.ledgerRows ?? 0} ledger rows).`);
     }
     setPending(false);
   }
@@ -198,6 +230,24 @@ export function OwnerMatchBonusPanel({
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {prompts.some((p) => p.correctAnswer) ? (
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <p className="text-xs text-muted-foreground">
+            Re-run bonus scoring if you changed the official answer or winner points were applied
+            before the bonus was set.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            className="mt-2"
+            disabled={pending}
+            onClick={() => void applyBonusScoring()}
+          >
+            {worldCupCopy.bonus.applyBonusScore}
+          </Button>
+        </div>
       ) : null}
 
       <div className="mt-4 space-y-3 border-t border-white/10 pt-4">

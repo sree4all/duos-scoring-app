@@ -52,6 +52,8 @@ export const worldCupCopy = {
     addQuestion: "Add bonus question",
     removeQuestion: "Remove",
     setOfficial: "Set official answer for scoring",
+    applyBonusScore: "Apply bonus score",
+    bonusScored: "Bonus scoring applied.",
     pointsHint: "Use 0 for wrong if you only want to reward correct answers. Enter a positive number to subtract that many points.",
   },
   matchStatus: {
