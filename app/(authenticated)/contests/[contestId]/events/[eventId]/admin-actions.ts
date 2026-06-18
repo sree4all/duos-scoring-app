@@ -9,6 +9,7 @@ import {
   saveMatchBonusAnswerForUser,
   saveMatchPickForUser,
 } from "@/lib/server/world-cup/prediction-submission";
+import { createServiceClient } from "@/lib/supabase/service";
 
 async function requireAdminContext() {
   const { supabase, user } = await requireUser();
@@ -72,14 +73,19 @@ export async function adminSaveMatchPickForUser(
   const ctx = await requireAdminContext();
   if (!ctx.ok) return ctx;
 
-  return saveMatchPickForUser(ctx.supabase, {
-    userId: targetUserId,
-    contestId,
-    eventId,
-    matchId,
-    predictedWinner,
-    activeGroupId: ctx.activeGroupId,
-  });
+  const serviceSupabase = createServiceClient();
+  return saveMatchPickForUser(
+    ctx.supabase,
+    {
+      userId: targetUserId,
+      contestId,
+      eventId,
+      matchId,
+      predictedWinner,
+      activeGroupId: ctx.activeGroupId,
+    },
+    serviceSupabase,
+  );
 }
 
 export async function adminSaveMatchBonusAnswerForUser(
@@ -93,13 +99,18 @@ export async function adminSaveMatchBonusAnswerForUser(
   const ctx = await requireAdminContext();
   if (!ctx.ok) return ctx;
 
-  return saveMatchBonusAnswerForUser(ctx.supabase, {
-    userId: targetUserId,
-    contestId,
-    eventId,
-    matchId,
-    promptId,
-    answerText,
-    activeGroupId: ctx.activeGroupId,
-  });
+  const serviceSupabase = createServiceClient();
+  return saveMatchBonusAnswerForUser(
+    ctx.supabase,
+    {
+      userId: targetUserId,
+      contestId,
+      eventId,
+      matchId,
+      promptId,
+      answerText,
+      activeGroupId: ctx.activeGroupId,
+    },
+    serviceSupabase,
+  );
 }

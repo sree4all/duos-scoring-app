@@ -11,16 +11,19 @@ import {
 
 type Result = { ok: true } | { ok: false; error: string };
 
+type SaveMatchPickParams = {
+  userId: string;
+  contestId: string;
+  eventId: string;
+  matchId: string;
+  predictedWinner: string;
+  activeGroupId: string;
+};
+
 export async function saveMatchPickForUser(
   supabase: SupabaseClient,
-  params: {
-    userId: string;
-    contestId: string;
-    eventId: string;
-    matchId: string;
-    predictedWinner: string;
-    activeGroupId: string;
-  },
+  params: SaveMatchPickParams,
+  writeSupabase?: SupabaseClient,
 ): Promise<Result> {
   const { userId, contestId, eventId, matchId, predictedWinner, activeGroupId } = params;
 
@@ -77,7 +80,8 @@ export async function saveMatchPickForUser(
   );
   if (!pickCheck.ok) return { ok: false, error: pickCheck.error };
 
-  const { error } = await supabase.from("predictions").upsert(
+  const writer = writeSupabase ?? supabase;
+  const { error } = await writer.from("predictions").upsert(
     {
       user_id: userId,
       match_id: matchId,
@@ -102,6 +106,7 @@ export async function saveMatchBonusAnswerForUser(
     answerText: string;
     activeGroupId: string;
   },
+  writeSupabase?: SupabaseClient,
 ): Promise<Result> {
   const { userId, contestId, eventId, matchId, promptId, answerText, activeGroupId } = params;
 
@@ -162,7 +167,8 @@ export async function saveMatchBonusAnswerForUser(
     return { ok: false, error: "Bonus question not found for this match." };
   }
 
-  const { error } = await supabase.from("prediction_bonus_answers").upsert(
+  const writer = writeSupabase ?? supabase;
+  const { error } = await writer.from("prediction_bonus_answers").upsert(
     {
       user_id: userId,
       match_id: matchId,
