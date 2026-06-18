@@ -26,6 +26,19 @@ export const worldCupCopy = {
     yourPick: "Your pick",
     startLabel: "Start",
   },
+  admin: {
+    panelTitle: "Admin tools",
+    panelHint: "Enter a member's prediction on their behalf before lock time.",
+    memberLabel: "Member",
+    chooseMember: "Choose a member…",
+    loadingMember: "Loading member predictions…",
+    winnerPickLabel: "Winner pick",
+    savePrediction: "Save member prediction",
+    updatePrediction: "Update member prediction",
+    predictionSaved: "Member prediction saved.",
+    saveBonus: "Save member bonus",
+    updateBonus: "Update member bonus",
+  },
   organizer: {
     officialResult: "Official result (90 minutes)",
     officialResultKnockout:

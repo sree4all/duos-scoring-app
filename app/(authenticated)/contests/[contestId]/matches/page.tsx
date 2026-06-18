@@ -22,6 +22,10 @@ import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
 import { PageHeroLayer } from "@/components/layout/page-hero-layer";
+import {
+  isPlatformAdmin,
+  loadAdminGroupMembers,
+} from "@/lib/server/auth/admin-context";
 
 type PageProps = { params: Promise<{ contestId: string }> };
 
@@ -38,6 +42,8 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   );
 
   const isOwner = membership.isOwner;
+  const isAdmin = await isPlatformAdmin(supabase, user.id);
+  const adminMembers = isAdmin ? await loadAdminGroupMembers(supabase, activeGroupId) : [];
   /** Predictions page always uses member view (revealed rounds only), including for owners. */
   const memberView = true;
   const allEvents = await listRevealedScheduleEvents(supabase, contestId, memberView);
@@ -138,6 +144,8 @@ export default async function ContestMatchesPage({ params }: PageProps) {
             contestId={contestId}
             groupId={activeGroupId}
             isOwner={isOwner}
+            isAdmin={isAdmin}
+            adminMembers={adminMembers}
             events={upcomingEvents}
             userPickByEventId={userPickByEventId}
             bonusNotPredictedByEventId={bonusNotPredictedByEventId}

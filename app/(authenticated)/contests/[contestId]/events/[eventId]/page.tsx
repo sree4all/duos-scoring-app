@@ -21,8 +21,13 @@ import { MatchBonusAnswerForm } from "@/components/world-cup/match-bonus-answer-
 import { OwnerEventResultsForm } from "@/components/groups/owner-event-results-form";
 import { OwnerMatchLockForm } from "@/components/world-cup/owner-match-lock-form";
 import { OwnerMatchBonusPanel } from "@/components/world-cup/owner-match-bonus-panel";
+import { AdminProxyPredictionPanel } from "@/components/world-cup/admin-proxy-prediction-panel";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import {
+  isPlatformAdmin,
+  loadAdminGroupMembers,
+} from "@/lib/server/auth/admin-context";
 
 type PageProps = { params: Promise<{ contestId: string; eventId: string }> };
 
@@ -33,6 +38,8 @@ export default async function EventSubmissionPage({ params }: PageProps) {
   if (!activeGroupId) notFound();
 
   const membership = await requireGroupMembership(supabase, activeGroupId, user.id);
+  const isAdmin = await isPlatformAdmin(supabase, user.id);
+  const adminMembers = isAdmin ? await loadAdminGroupMembers(supabase, activeGroupId) : [];
   await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
 
   const { data: event } = await supabase
@@ -143,6 +150,20 @@ export default async function EventSubmissionPage({ params }: PageProps) {
         initialAnswers={bonusAnswers}
         locked={locked}
       />
+
+      {isAdmin ? (
+        <AdminProxyPredictionPanel
+          contestId={contestId}
+          eventId={eventId}
+          matchId={matchId}
+          homeTeam={match.home_team as string}
+          awayTeam={match.away_team as string}
+          allowDraw={allowDraw}
+          locked={locked}
+          members={adminMembers}
+          bonusPrompts={bonusPrompts}
+        />
+      ) : null}
 
       {membership.isOwner ? (
         <details className="rounded-lg border p-4 text-sm">

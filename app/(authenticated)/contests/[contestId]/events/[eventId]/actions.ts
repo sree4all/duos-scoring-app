@@ -7,12 +7,9 @@ import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
 import {
-  assertEventRevealedForMember,
-  resolveEventStageKey,
-} from "@/lib/server/world-cup/schedule-query";
-import { validateMatchPick } from "@/lib/domain/world-cup/match-outcome";
-import { worldCupCopy } from "@/lib/copy/world-cup";
-import { isPredictionsLocked } from "@/lib/utils/match-lock";
+  saveMatchBonusAnswerForUser,
+  saveMatchPickForUser,
+} from "@/lib/server/world-cup/prediction-submission";
 
 export async function saveMatchPick(
   contestId: string,
@@ -27,70 +24,15 @@ export async function saveMatchPick(
   }
 
   await requireGroupMembership(supabase, activeGroupId, user.id);
-  await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("stage_key, lock_at, source_match_id")
-    .eq("id", eventId)
-    .eq("contest_id", contestId)
-    .maybeSingle();
-
-  if (!event) return { ok: false as const, error: "Match not found." };
-
-  const reveal = await assertEventRevealedForMember(
-    supabase,
+  return saveMatchPickForUser(supabase, {
+    userId: user.id,
     contestId,
-    event.stage_key as string | null,
-    {
-      stage_key: event.stage_key as string | null,
-      source_match_id: event.source_match_id as string | null,
-    },
-  );
-  if (!reveal.ok) return { ok: false as const, error: reveal.message };
-
-  const { data: match } = await supabase
-    .from("matches")
-    .select("home_team, away_team, match_time_utc")
-    .eq("id", matchId)
-    .maybeSingle();
-
-  if (!match) return { ok: false as const, error: "Match not found." };
-
-  if (
-    isPredictionsLocked(
-      match.match_time_utc as string,
-      event.lock_at as string | null,
-    )
-  ) {
-    return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
-  }
-
-  const stageKey = await resolveEventStageKey(supabase, {
-    stage_key: event.stage_key as string | null,
-    source_match_id: event.source_match_id as string | null,
-  });
-
-  const pickCheck = validateMatchPick(
-    stageKey,
+    eventId,
+    matchId,
     predictedWinner,
-    match.home_team as string,
-    match.away_team as string,
-  );
-  if (!pickCheck.ok) return { ok: false as const, error: pickCheck.error };
-
-  const { error } = await supabase.from("predictions").upsert(
-    {
-      user_id: user.id,
-      match_id: matchId,
-      predicted_winner: pickCheck.value,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id,match_id" },
-  );
-
-  if (error) return { ok: false as const, error: error.message };
-  return { ok: true as const };
+    activeGroupId,
+  });
 }
 
 export async function saveMatchBonusAnswer(
@@ -107,75 +49,16 @@ export async function saveMatchBonusAnswer(
   }
 
   await requireGroupMembership(supabase, activeGroupId, user.id);
-  await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("stage_key, lock_at, source_match_id")
-    .eq("id", eventId)
-    .eq("contest_id", contestId)
-    .maybeSingle();
-
-  if (!event) return { ok: false as const, error: "Match not found." };
-
-  const reveal = await assertEventRevealedForMember(
-    supabase,
+  return saveMatchBonusAnswerForUser(supabase, {
+    userId: user.id,
     contestId,
-    event.stage_key as string | null,
-    {
-      stage_key: event.stage_key as string | null,
-      source_match_id: event.source_match_id as string | null,
-    },
-  );
-  if (!reveal.ok) return { ok: false as const, error: reveal.message };
-
-  const { data: match } = await supabase
-    .from("matches")
-    .select("match_time_utc")
-    .eq("id", matchId)
-    .maybeSingle();
-
-  if (!match) return { ok: false as const, error: "Match not found." };
-
-  if (
-    isPredictionsLocked(
-      match.match_time_utc as string,
-      event.lock_at as string | null,
-    )
-  ) {
-    return { ok: false as const, error: worldCupCopy.errors.predictionsClosed };
-  }
-
-  const trimmed = answerText.trim();
-  if (!trimmed) {
-    return { ok: false as const, error: "Choose an answer." };
-  }
-
-  const { data: prompt } = await supabase
-    .from("bonus_prompts")
-    .select("id, match_id, is_active")
-    .eq("id", promptId)
-    .eq("match_id", matchId)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (!prompt) {
-    return { ok: false as const, error: "Bonus question not found for this match." };
-  }
-
-  const { error } = await supabase.from("prediction_bonus_answers").upsert(
-    {
-      user_id: user.id,
-      match_id: matchId,
-      prompt_id: promptId,
-      answer_text: trimmed,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id,prompt_id" },
-  );
-
-  if (error) return { ok: false as const, error: error.message };
-  return { ok: true as const };
+    eventId,
+    matchId,
+    promptId,
+    answerText,
+    activeGroupId,
+  });
 }
 
 export async function submitParticipantEntry(contestId: string, locked: boolean) {
