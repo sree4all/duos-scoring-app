@@ -16,6 +16,10 @@ import { SeeMoreFooter } from "@/components/ui/see-more-footer";
 import { MatchPickForm } from "@/components/world-cup/match-pick-form";
 import { MatchBonusAnswerForm } from "@/components/world-cup/match-bonus-answer-form";
 import { MatchOrganizerTools } from "@/components/world-cup/match-organizer-tools";
+import {
+  AdminProxyPredictionPanel,
+  type AdminGroupMemberOption,
+} from "@/components/world-cup/admin-proxy-prediction-panel";
 import { cn } from "@/lib/utils";
 
 function statusLabel(status: string, kickoffUtc: string, lockAt: string | null): string {
@@ -55,6 +59,8 @@ function MatchCard({
   contestId,
   groupId,
   isOwner,
+  isAdmin,
+  adminMembers,
   ev,
   savedPick: initialSavedPick,
   showBonusNotPredicted,
@@ -66,6 +72,8 @@ function MatchCard({
   contestId: string;
   groupId: string;
   isOwner: boolean;
+  isAdmin: boolean;
+  adminMembers: AdminGroupMemberOption[];
   ev: ScheduleEventRow;
   savedPick: string | null;
   showBonusNotPredicted: boolean;
@@ -164,6 +172,22 @@ function MatchCard({
         </p>
       )}
 
+      {isAdmin ? (
+        <div className="mt-3">
+          <AdminProxyPredictionPanel
+            contestId={contestId}
+            eventId={ev.eventId}
+            matchId={ev.matchId}
+            homeTeam={ev.homeTeam}
+            awayTeam={ev.awayTeam}
+            allowDraw={allowDraw}
+            locked={locked}
+            members={adminMembers}
+            bonusPrompts={bonusPrompts}
+          />
+        </div>
+      ) : null}
+
       {isOwner ? (
         <div className="mt-3">
           <MatchOrganizerTools
@@ -187,6 +211,8 @@ export function MatchScheduleList({
   contestId,
   groupId,
   isOwner = false,
+  isAdmin = false,
+  adminMembers = [],
   events,
   userPickByEventId = {},
   bonusNotPredictedByEventId = {},
@@ -198,6 +224,8 @@ export function MatchScheduleList({
   contestId: string;
   groupId: string;
   isOwner?: boolean;
+  isAdmin?: boolean;
+  adminMembers?: AdminGroupMemberOption[];
   events: ScheduleEventRow[];
   userPickByEventId?: Record<string, string | null>;
   bonusNotPredictedByEventId?: Record<string, boolean>;
@@ -232,6 +260,8 @@ export function MatchScheduleList({
             contestId={contestId}
             groupId={groupId}
             isOwner={isOwner}
+            isAdmin={isAdmin}
+            adminMembers={adminMembers}
             ev={ev}
             savedPick={userPickByEventId[ev.eventId] ?? null}
             showBonusNotPredicted={bonusNotPredictedByEventId[ev.eventId] ?? false}
