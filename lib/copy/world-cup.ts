@@ -38,6 +38,14 @@ export const worldCupCopy = {
     predictionSaved: "Member prediction saved.",
     saveBonus: "Save member bonus",
     updateBonus: "Update member bonus",
+    unlockPredictions: "Unlock predictions",
+    unlockHint:
+      "Predictions are locked. Unlock to reset the lock time to kickoff so you can enter member picks.",
+    unlockSuccess: "Predictions unlocked until kickoff.",
+    unlockKickoffPassed: "Kickoff has passed; predictions cannot be unlocked.",
+    unlocking: "Unlocking…",
+    postKickoffHint:
+      "Kickoff has passed. You can still enter or update member picks using admin override.",
   },
   organizer: {
     officialResult: "Official result (90 minutes)",

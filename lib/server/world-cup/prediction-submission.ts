@@ -18,6 +18,7 @@ type SaveMatchPickParams = {
   matchId: string;
   predictedWinner: string;
   activeGroupId: string;
+  bypassLock?: boolean;
 };
 
 export async function saveMatchPickForUser(
@@ -25,7 +26,8 @@ export async function saveMatchPickForUser(
   params: SaveMatchPickParams,
   writeSupabase?: SupabaseClient,
 ): Promise<Result> {
-  const { userId, contestId, eventId, matchId, predictedWinner, activeGroupId } = params;
+  const { userId, contestId, eventId, matchId, predictedWinner, activeGroupId, bypassLock } =
+    params;
 
   await requireGroupMembership(supabase, activeGroupId, userId);
   await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
@@ -59,6 +61,7 @@ export async function saveMatchPickForUser(
   if (!match) return { ok: false, error: "Match not found." };
 
   if (
+    !bypassLock &&
     isPredictionsLocked(
       match.match_time_utc as string,
       event.lock_at as string | null,
@@ -81,6 +84,17 @@ export async function saveMatchPickForUser(
   if (!pickCheck.ok) return { ok: false, error: pickCheck.error };
 
   const writer = writeSupabase ?? supabase;
+
+  if (bypassLock) {
+    const { error } = await writer.rpc("admin_upsert_prediction", {
+      p_user_id: userId,
+      p_match_id: matchId,
+      p_predicted_winner: pickCheck.value,
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+
   const { error } = await writer.from("predictions").upsert(
     {
       user_id: userId,
@@ -105,10 +119,20 @@ export async function saveMatchBonusAnswerForUser(
     promptId: string;
     answerText: string;
     activeGroupId: string;
+    bypassLock?: boolean;
   },
   writeSupabase?: SupabaseClient,
 ): Promise<Result> {
-  const { userId, contestId, eventId, matchId, promptId, answerText, activeGroupId } = params;
+  const {
+    userId,
+    contestId,
+    eventId,
+    matchId,
+    promptId,
+    answerText,
+    activeGroupId,
+    bypassLock,
+  } = params;
 
   await requireGroupMembership(supabase, activeGroupId, userId);
   await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
@@ -142,6 +166,7 @@ export async function saveMatchBonusAnswerForUser(
   if (!match) return { ok: false, error: "Match not found." };
 
   if (
+    !bypassLock &&
     isPredictionsLocked(
       match.match_time_utc as string,
       event.lock_at as string | null,

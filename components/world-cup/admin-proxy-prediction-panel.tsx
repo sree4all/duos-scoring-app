@@ -9,8 +9,10 @@ import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
 import {
   adminSaveMatchBonusAnswerForUser,
   adminSaveMatchPickForUser,
+  adminUnlockPredictions,
   loadMemberPredictionsForMatch,
 } from "@/app/(authenticated)/contests/[contestId]/events/[eventId]/admin-actions";
+import { isPredictionsLocked } from "@/lib/utils/match-lock";
 import { cn } from "@/lib/utils";
 
 export type AdminGroupMemberOption = {
@@ -26,6 +28,7 @@ export function AdminProxyPredictionPanel({
   awayTeam,
   allowDraw,
   locked,
+  kickoffUtc,
   members,
   bonusPrompts,
 }: {
@@ -36,10 +39,16 @@ export function AdminProxyPredictionPanel({
   awayTeam: string;
   allowDraw: boolean;
   locked: boolean;
+  kickoffUtc: string;
   members: AdminGroupMemberOption[];
   bonusPrompts: MatchBonusPrompt[];
 }) {
   const router = useRouter();
+  const kickoffPassed = isPredictionsLocked(kickoffUtc, null);
+  const adminCanEdit = !locked || kickoffPassed;
+  const [unlockPending, setUnlockPending] = useState(false);
+  const [unlockMessage, setUnlockMessage] = useState<string | null>(null);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
   const [targetUserId, setTargetUserId] = useState("");
   const [pick, setPick] = useState("");
   const [savedPick, setSavedPick] = useState<string | null>(null);
@@ -87,8 +96,22 @@ export function AdminProxyPredictionPanel({
     };
   }, [contestId, matchId, targetUserId]);
 
+  async function unlockPredictions() {
+    setUnlockPending(true);
+    setUnlockError(null);
+    setUnlockMessage(null);
+    const result = await adminUnlockPredictions(contestId, eventId);
+    if (!result.ok) {
+      setUnlockError(result.error);
+    } else {
+      setUnlockMessage(worldCupCopy.admin.unlockSuccess);
+      router.refresh();
+    }
+    setUnlockPending(false);
+  }
+
   async function savePick() {
-    if (locked || !targetUserId || !pick) return;
+    if (!adminCanEdit || !targetUserId || !pick) return;
     setPickPending(true);
     setPickError(null);
     setPickMessage(null);
@@ -110,7 +133,7 @@ export function AdminProxyPredictionPanel({
   }
 
   async function saveBonus(promptId: string, answer: string) {
-    if (locked || !targetUserId || !answer) return;
+    if (!adminCanEdit || !targetUserId || !answer) return;
     setBonusPendingByPrompt((prev) => ({ ...prev, [promptId]: true }));
     setBonusErrorByPrompt((prev) => ({ ...prev, [promptId]: "" }));
     setBonusMessageByPrompt((prev) => ({ ...prev, [promptId]: "" }));
@@ -146,6 +169,34 @@ export function AdminProxyPredictionPanel({
       <div className="space-y-4 border-t border-amber-400/20 p-3">
         <p className="text-xs text-muted-foreground">{worldCupCopy.admin.panelHint}</p>
 
+        {locked && !kickoffPassed ? (
+          <div className="space-y-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-3">
+            <p className="text-xs text-muted-foreground">{worldCupCopy.admin.unlockHint}</p>
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-9 w-full touch-manipulation sm:w-auto"
+              disabled={unlockPending}
+              onClick={unlockPredictions}
+            >
+              {unlockPending
+                ? worldCupCopy.admin.unlocking
+                : worldCupCopy.admin.unlockPredictions}
+            </Button>
+            {unlockMessage ? (
+              <p className="text-xs font-medium text-status-success">{unlockMessage}</p>
+            ) : null}
+            {unlockError ? <p className="text-xs text-destructive">{unlockError}</p> : null}
+          </div>
+        ) : null}
+
+        {locked && kickoffPassed ? (
+          <p className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 text-xs text-muted-foreground">
+            {worldCupCopy.admin.postKickoffHint}
+          </p>
+        ) : null}
+
+        {adminCanEdit ? (
         <label className="block space-y-1">
           <span className="text-xs font-medium">{worldCupCopy.admin.memberLabel}</span>
           <select
@@ -161,8 +212,9 @@ export function AdminProxyPredictionPanel({
             ))}
           </select>
         </label>
+        ) : null}
 
-        {targetUserId ? (
+        {targetUserId && adminCanEdit ? (
           loadingMember ? (
             <p className="text-xs text-muted-foreground">{worldCupCopy.admin.loadingMember}</p>
           ) : (
@@ -177,10 +229,10 @@ export function AdminProxyPredictionPanel({
                       key={team}
                       className={cn(
                         "flex min-h-10 min-w-0 flex-1 basis-[calc(33.333%-0.5rem)] cursor-pointer items-center justify-center gap-2 rounded-lg border-2 px-2 py-2 text-sm touch-manipulation",
-                        pick === team && !locked
+                        pick === team && adminCanEdit
                           ? "border-primary bg-primary/5"
                           : "border-white/10 hover:bg-white/10",
-                        locked && "cursor-not-allowed opacity-70",
+                        !adminCanEdit && "cursor-not-allowed opacity-70",
                       )}
                     >
                       <input
@@ -188,7 +240,7 @@ export function AdminProxyPredictionPanel({
                         name={`admin-winner-${eventId}`}
                         value={team}
                         checked={pick === team}
-                        disabled={locked}
+                        disabled={!adminCanEdit}
                         onChange={() => setPick(team)}
                         className="h-4 w-4 shrink-0"
                       />
@@ -196,23 +248,17 @@ export function AdminProxyPredictionPanel({
                     </label>
                   ))}
                 </div>
-                {!locked ? (
-                  <Button
-                    type="button"
-                    className="h-10 w-full touch-manipulation sm:w-auto"
-                    size="cta-compact"
-                    disabled={pickPending || !pick}
-                    onClick={savePick}
-                  >
-                    {savedPick
-                      ? worldCupCopy.admin.updatePrediction
-                      : worldCupCopy.admin.savePrediction}
-                  </Button>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    {worldCupCopy.matchStatus.locked}
-                  </p>
-                )}
+                <Button
+                  type="button"
+                  className="h-10 w-full touch-manipulation sm:w-auto"
+                  size="cta-compact"
+                  disabled={pickPending || !pick}
+                  onClick={savePick}
+                >
+                  {savedPick
+                    ? worldCupCopy.admin.updatePrediction
+                    : worldCupCopy.admin.savePrediction}
+                </Button>
                 {pickMessage ? (
                   <p className="text-xs font-medium text-status-success">{pickMessage}</p>
                 ) : null}
@@ -237,10 +283,10 @@ export function AdminProxyPredictionPanel({
                           key={opt.id}
                           className={cn(
                             "flex min-h-9 min-w-0 flex-1 basis-[calc(50%-0.25rem)] cursor-pointer items-center justify-center gap-2 rounded-lg border-2 px-2 py-1.5 touch-manipulation",
-                            answer === opt.value && !locked
+                            answer === opt.value && adminCanEdit
                               ? "border-primary bg-primary/5"
                               : "border-border",
-                            locked && "cursor-not-allowed opacity-70",
+                            !adminCanEdit && "cursor-not-allowed opacity-70",
                           )}
                         >
                           <input
@@ -248,7 +294,7 @@ export function AdminProxyPredictionPanel({
                             name={`admin-bonus-${prompt.id}`}
                             value={opt.value}
                             checked={answer === opt.value}
-                            disabled={locked}
+                            disabled={!adminCanEdit}
                             onChange={() =>
                               setBonusAnswers((prev) => ({
                                 ...prev,
@@ -263,19 +309,17 @@ export function AdminProxyPredictionPanel({
                         </label>
                       ))}
                     </div>
-                    {!locked ? (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        className="h-9 w-full text-xs touch-manipulation sm:w-auto"
-                        disabled={pending || !answer}
-                        onClick={() => saveBonus(prompt.id, answer)}
-                      >
-                        {bonusAnswers[prompt.id]
-                          ? worldCupCopy.admin.updateBonus
-                          : worldCupCopy.admin.saveBonus}
-                      </Button>
-                    ) : null}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="h-9 w-full text-xs touch-manipulation sm:w-auto"
+                      disabled={pending || !answer}
+                      onClick={() => saveBonus(prompt.id, answer)}
+                    >
+                      {bonusAnswers[prompt.id]
+                        ? worldCupCopy.admin.updateBonus
+                        : worldCupCopy.admin.saveBonus}
+                    </Button>
                     {bonusMessageByPrompt[prompt.id] ? (
                       <p className="text-xs text-status-success">
                         {bonusMessageByPrompt[prompt.id]}

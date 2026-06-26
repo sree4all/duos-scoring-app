@@ -9,6 +9,8 @@ import {
   saveMatchBonusAnswerForUser,
   saveMatchPickForUser,
 } from "@/lib/server/world-cup/prediction-submission";
+import { worldCupCopy } from "@/lib/copy/world-cup";
+import { isPredictionsLocked } from "@/lib/utils/match-lock";
 import { createServiceClient } from "@/lib/supabase/service";
 
 async function requireAdminContext() {
@@ -83,9 +85,58 @@ export async function adminSaveMatchPickForUser(
       matchId,
       predictedWinner,
       activeGroupId: ctx.activeGroupId,
+      bypassLock: true,
     },
     serviceSupabase,
   );
+}
+
+export async function adminUnlockPredictions(contestId: string, eventId: string) {
+  const ctx = await requireAdminContext();
+  if (!ctx.ok) return ctx;
+
+  const { supabase, activeGroupId } = ctx;
+  await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("source_match_id, lock_at")
+    .eq("id", eventId)
+    .eq("contest_id", contestId)
+    .maybeSingle();
+
+  if (!event?.source_match_id) {
+    return { ok: false as const, error: "Match not found." };
+  }
+
+  const { data: match } = await supabase
+    .from("matches")
+    .select("match_time_utc")
+    .eq("id", event.source_match_id as string)
+    .maybeSingle();
+
+  if (!match?.match_time_utc) {
+    return { ok: false as const, error: "Match not found." };
+  }
+
+  const kickoffUtc = match.match_time_utc as string;
+  if (isPredictionsLocked(kickoffUtc, null)) {
+    return { ok: false as const, error: worldCupCopy.admin.unlockKickoffPassed };
+  }
+
+  if (!isPredictionsLocked(kickoffUtc, event.lock_at as string | null)) {
+    return { ok: true as const, lockAt: kickoffUtc };
+  }
+
+  const serviceSupabase = createServiceClient();
+  const { error } = await serviceSupabase
+    .from("events")
+    .update({ lock_at: kickoffUtc, updated_at: new Date().toISOString() })
+    .eq("id", eventId)
+    .eq("contest_id", contestId);
+
+  if (error) return { ok: false as const, error: error.message };
+  return { ok: true as const, lockAt: kickoffUtc };
 }
 
 export async function adminSaveMatchBonusAnswerForUser(
@@ -110,6 +161,7 @@ export async function adminSaveMatchBonusAnswerForUser(
       promptId,
       answerText,
       activeGroupId: ctx.activeGroupId,
+      bypassLock: true,
     },
     serviceSupabase,
   );

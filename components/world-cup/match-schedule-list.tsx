@@ -182,6 +182,7 @@ function MatchCard({
             awayTeam={ev.awayTeam}
             allowDraw={allowDraw}
             locked={locked}
+            kickoffUtc={ev.kickoffUtc}
             members={adminMembers}
             bonusPrompts={bonusPrompts}
           />

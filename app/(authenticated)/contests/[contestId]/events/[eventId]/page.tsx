@@ -160,6 +160,7 @@ export default async function EventSubmissionPage({ params }: PageProps) {
           awayTeam={match.away_team as string}
           allowDraw={allowDraw}
           locked={locked}
+          kickoffUtc={kickoffUtc}
           members={adminMembers}
           bonusPrompts={bonusPrompts}
         />
