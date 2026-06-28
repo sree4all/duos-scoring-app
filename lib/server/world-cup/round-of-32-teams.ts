@@ -31,9 +31,9 @@ export async function loadKnockoutBracket(
 ): Promise<KnockoutBracket> {
   const { data, error } = await supabase
     .from("matches")
-    .select("match_number, home_team, away_team")
+    .select("match_number, external_key, home_team, away_team")
     .eq("season_year", seasonYear)
-    .eq("stage_key", "round_of_32")
+    .in("match_number", [...ROUND_OF_32_MATCH_NUMBERS])
     .order("match_number", { ascending: true });
 
   if (error) throw error;
