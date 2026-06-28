@@ -18,21 +18,22 @@ export type ScheduleEventRow = {
   matchStatus: string;
 };
 
-/** Prefer event.stage_key; fall back to linked match when import left events without stage_key. */
+/** Prefer linked match stage_key (source of truth); fall back to denormalized event row. */
 export async function resolveEventStageKey(
   supabase: SupabaseClient,
   event: { stage_key: string | null; source_match_id: string | null },
 ): Promise<string | null> {
-  const fromEvent = event.stage_key as string | null;
-  if (fromEvent) return fromEvent;
   const matchId = event.source_match_id as string | null;
-  if (!matchId) return null;
-  const { data: match } = await supabase
-    .from("matches")
-    .select("stage_key")
-    .eq("id", matchId)
-    .maybeSingle();
-  return (match?.stage_key as string | null) ?? null;
+  if (matchId) {
+    const { data: match } = await supabase
+      .from("matches")
+      .select("stage_key")
+      .eq("id", matchId)
+      .maybeSingle();
+    const fromMatch = (match?.stage_key as string | null) ?? null;
+    if (fromMatch) return fromMatch;
+  }
+  return (event.stage_key as string | null) ?? null;
 }
 
 export async function listRevealedScheduleEvents(
@@ -77,7 +78,7 @@ export async function listRevealedScheduleEvents(
     if (!match) continue;
 
     const stageKey =
-      (ev.stage_key as string | null) ?? (match.stage_key as string | null) ?? null;
+      (match.stage_key as string | null) ?? (ev.stage_key as string | null) ?? null;
     if (memberView && (!stageKey || !revealedKeys.has(stageKey))) continue;
 
     rows.push({

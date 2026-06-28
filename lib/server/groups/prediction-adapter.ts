@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyMatchScoring, type MatchScoreOutcome } from "@/lib/scoring/match-scoring";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { requireGroupMembership, requireGroupOwner } from "@/lib/server/groups/guards";
+import { resolveEventStageKey } from "@/lib/server/world-cup/schedule-query";
 
 export type GroupPredictionBridge = {
   groupId: string;
@@ -65,14 +66,11 @@ export class GroupPredictionAdapter {
       return { ok: false, error: "Event is voided; scoring is blocked" };
     }
 
-    const { data: matchMeta } = await this.supabase
-      .from("matches")
-      .select("stage_key")
-      .eq("id", matchId)
-      .maybeSingle();
-
     const stageKey =
-      (event.stage_key as string | null) ?? (matchMeta?.stage_key as string | null) ?? undefined;
+      (await resolveEventStageKey(this.supabase, {
+        stage_key: event.stage_key as string | null,
+        source_match_id: matchId,
+      })) ?? undefined;
 
     const outcome = await applyMatchScoring(this.supabase, matchId, seasonYear, {
       contestId: bridge.contestId,
