@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyMatchScoring } from "@/lib/scoring/match-scoring";
+import { mirrorMatchLedgerToContest } from "@/lib/server/world-cup/contest-ledger-mirror";
 
 export async function recalculateStageScoring(
   supabase: SupabaseClient,
@@ -10,9 +11,8 @@ export async function recalculateStageScoring(
 ): Promise<{ rescored: number; errors: string[] }> {
   const { data: events, error } = await supabase
     .from("events")
-    .select("source_match_id, matches!inner(status, stage_key)")
+    .select("id, source_match_id, stage_key, matches!inner(status, stage_key)")
     .eq("contest_id", contestId)
-    .eq("stage_key", stageKey)
     .eq("voided", false);
 
   if (error) throw error;
@@ -27,14 +27,23 @@ export async function recalculateStageScoring(
       | null;
     const match = Array.isArray(joined) ? joined[0] : joined;
     if (!match || match.status !== "completed") continue;
+
+    const matchStageKey = (match.stage_key as string | null) ?? (ev.stage_key as string | null);
+    if (matchStageKey !== stageKey) continue;
+
     const matchId = ev.source_match_id as string;
+    const eventId = ev.id as string;
     const outcome = await applyMatchScoring(supabase, matchId, seasonYear, {
       contestId,
-      stageKey,
+      stageKey: matchStageKey,
       auditReason: `recalculate_stage:${stageKey}:${reason}`,
     });
-    if (outcome.ok) rescored++;
-    else errors.push(`${matchId}: ${outcome.error}`);
+    if (outcome.ok) {
+      await mirrorMatchLedgerToContest(supabase, contestId, eventId, matchId);
+      rescored++;
+    } else {
+      errors.push(`${matchId}: ${outcome.error}`);
+    }
   }
 
   return { rescored, errors };
