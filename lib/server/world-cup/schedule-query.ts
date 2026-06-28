@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  parseMatchNumberFromExternalKey,
+  resolveScoringStageKey,
+} from "@/lib/domain/world-cup/match-stage";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { resolvePredictionLockAtIso } from "@/lib/utils/match-lock";
@@ -27,11 +31,19 @@ export async function resolveEventStageKey(
   if (matchId) {
     const { data: match } = await supabase
       .from("matches")
-      .select("stage_key")
+      .select("stage_key, match_number, external_key")
       .eq("id", matchId)
       .maybeSingle();
-    const fromMatch = (match?.stage_key as string | null) ?? null;
-    if (fromMatch) return fromMatch;
+    if (match) {
+      const matchNumber =
+        (match.match_number as number | null) ??
+        parseMatchNumberFromExternalKey(match.external_key as string | null);
+      const resolved = resolveScoringStageKey(
+        match.stage_key as string | null,
+        matchNumber,
+      );
+      if (resolved) return resolved;
+    }
   }
   return (event.stage_key as string | null) ?? null;
 }
@@ -63,7 +75,7 @@ export async function listRevealedScheduleEvents(
     const { data: matchRows } = await supabase
       .from("matches")
       .select(
-        "id, match_number, home_team, away_team, venue_label, match_time_utc, kickoff_tz_offset, status, stage_key",
+        "id, match_number, external_key, home_team, away_team, venue_label, match_time_utc, kickoff_tz_offset, status, stage_key",
       )
       .in("id", matchIds);
     for (const m of matchRows ?? []) {
@@ -77,8 +89,13 @@ export async function listRevealedScheduleEvents(
     const match = matchById.get(matchId);
     if (!match) continue;
 
+    const matchNumber =
+      (match.match_number as number | null) ??
+      parseMatchNumberFromExternalKey(match.external_key as string | null);
     const stageKey =
-      (match.stage_key as string | null) ?? (ev.stage_key as string | null) ?? null;
+      resolveScoringStageKey(match.stage_key as string | null, matchNumber) ??
+      (ev.stage_key as string | null) ??
+      null;
     if (memberView && (!stageKey || !revealedKeys.has(stageKey))) continue;
 
     rows.push({
