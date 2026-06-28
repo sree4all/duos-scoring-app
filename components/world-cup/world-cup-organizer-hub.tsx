@@ -123,6 +123,9 @@ export function WorldCupOrganizerHub({
         >
           Rounds &amp; points
         </Link>
+        <Link href={`/contests/${contestId}/advanced-predictions`} className="font-medium underline">
+          Bracket picks &amp; scoring
+        </Link>
         <Link href={`/groups/${groupId}/settings`} className="font-medium underline">
           Invite code
         </Link>
