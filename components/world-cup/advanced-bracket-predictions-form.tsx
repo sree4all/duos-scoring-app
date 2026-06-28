@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import {
   ADVANCED_BRACKET_PICKS,
+  reconcileCascadingPicks,
   type AdvancedBracketPicks,
 } from "@/lib/domain/world-cup/advanced-bracket";
 import { saveAdvancedBracketPicks } from "@/app/(authenticated)/contests/[contestId]/advanced-predictions/actions";
@@ -34,6 +35,10 @@ function TeamCheckboxGrid({
     }
     if (selected.length >= max) return;
     onChange([...selected, team]);
+  }
+
+  if (teams.length === 0) {
+    return null;
   }
 
   return (
@@ -77,6 +82,10 @@ function WinnerRadioList({
   locked: boolean;
   onChange: (team: string) => void;
 }) {
+  if (teams.length === 0) {
+    return null;
+  }
+
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {teams.map((team) => (
@@ -124,13 +133,35 @@ export function AdvancedBracketPredictionsForm({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
+  useEffect(() => {
+    setSemiFinalists(initialPicks?.semiFinalistTeams ?? []);
+    setFinalists(initialPicks?.finalistTeams ?? []);
+    setWinner(initialPicks?.winnerTeam ?? null);
+  }, [initialPicks]);
+
+  const semiComplete = semiFinalists.length === ADVANCED_BRACKET_PICKS.semiFinalists;
+  const finalistsComplete = finalists.length === ADVANCED_BRACKET_PICKS.finalists;
+
+  const finalistPool = useMemo(() => [...semiFinalists].sort((a, b) => a.localeCompare(b)), [semiFinalists]);
+  const winnerPool = useMemo(() => [...finalists].sort((a, b) => a.localeCompare(b)), [finalists]);
+
+  function handleSemiChange(next: string[]) {
+    setSemiFinalists(next);
+    const reconciled = reconcileCascadingPicks(next, finalists, winner);
+    setFinalists(reconciled.finalistTeams);
+    setWinner(reconciled.winnerTeam);
+  }
+
+  function handleFinalistsChange(next: string[]) {
+    setFinalists(next);
+    const reconciled = reconcileCascadingPicks(semiFinalists, next, winner);
+    setWinner(reconciled.winnerTeam);
+  }
+
   const hasSaved = Boolean(initialPicks);
   const canSave = useMemo(
-    () =>
-      semiFinalists.length === ADVANCED_BRACKET_PICKS.semiFinalists &&
-      finalists.length === ADVANCED_BRACKET_PICKS.finalists &&
-      Boolean(winner),
-    [semiFinalists, finalists, winner],
+    () => semiComplete && finalistsComplete && Boolean(winner),
+    [semiComplete, finalistsComplete, winner],
   );
 
   async function save() {
@@ -173,41 +204,71 @@ export function AdvancedBracketPredictionsForm({
           max={ADVANCED_BRACKET_PICKS.semiFinalists}
           locked={locked}
           name="semi"
-          onChange={setSemiFinalists}
+          onChange={handleSemiChange}
         />
       </section>
 
-      <section className="neon-glass-card space-y-4 p-5">
+      <section
+        className={cn(
+          "neon-glass-card space-y-4 p-5 transition-opacity",
+          !semiComplete && "opacity-60",
+        )}
+      >
         <div>
           <h2 className="text-base font-semibold">{worldCupCopy.advancedBracket.finalists}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {worldCupCopy.advancedBracket.finalistsHint}
           </p>
-          <p className="mt-2 text-xs font-medium text-muted-foreground">
-            {worldCupCopy.advancedBracket.teamsSelected(
-              finalists.length,
-              ADVANCED_BRACKET_PICKS.finalists,
-            )}
-          </p>
+          {!semiComplete ? (
+            <p className="mt-2 text-xs font-medium text-muted-foreground">
+              {worldCupCopy.advancedBracket.pickSemiFirst}
+            </p>
+          ) : (
+            <p className="mt-2 text-xs font-medium text-muted-foreground">
+              {worldCupCopy.advancedBracket.teamsSelected(
+                finalists.length,
+                ADVANCED_BRACKET_PICKS.finalists,
+              )}
+            </p>
+          )}
         </div>
-        <TeamCheckboxGrid
-          teams={teams}
-          selected={finalists}
-          max={ADVANCED_BRACKET_PICKS.finalists}
-          locked={locked}
-          name="final"
-          onChange={setFinalists}
-        />
+        {semiComplete ? (
+          <TeamCheckboxGrid
+            teams={finalistPool}
+            selected={finalists}
+            max={ADVANCED_BRACKET_PICKS.finalists}
+            locked={locked}
+            name="final"
+            onChange={handleFinalistsChange}
+          />
+        ) : null}
       </section>
 
-      <section className="neon-glass-card space-y-4 p-5">
+      <section
+        className={cn(
+          "neon-glass-card space-y-4 p-5 transition-opacity",
+          !finalistsComplete && "opacity-60",
+        )}
+      >
         <div>
           <h2 className="text-base font-semibold">{worldCupCopy.advancedBracket.winner}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {worldCupCopy.advancedBracket.winnerHint}
           </p>
+          {!finalistsComplete ? (
+            <p className="mt-2 text-xs font-medium text-muted-foreground">
+              {worldCupCopy.advancedBracket.pickFinalistsFirst}
+            </p>
+          ) : null}
         </div>
-        <WinnerRadioList teams={teams} selected={winner} locked={locked} onChange={setWinner} />
+        {finalistsComplete ? (
+          <WinnerRadioList
+            teams={winnerPool}
+            selected={winner}
+            locked={locked}
+            onChange={setWinner}
+          />
+        ) : null}
       </section>
 
       {!locked ? (
