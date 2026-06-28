@@ -4,7 +4,7 @@ export const ADVANCED_BRACKET_PICKS = {
   winner: 1,
 } as const;
 
-/** Bracket picks lock at kickoff of this Round of 32 match (July 3, 2026 9:30 PM ET). */
+/** Tournament forecast locks at kickoff of this Round of 32 match (July 3, 2026 9:30 PM ET). */
 export const ADVANCED_BRACKET_LOCK_MATCH_NUMBER = 88;
 
 export const ADVANCED_BRACKET_POINTS = {

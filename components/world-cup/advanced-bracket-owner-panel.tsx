@@ -51,9 +51,9 @@ export function AdvancedBracketOwnerPanel({
 
   return (
     <section className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-      <h2 className="text-sm font-semibold">Organizer — bracket scoring</h2>
+      <h2 className="text-sm font-semibold">Organizer — tournament forecast scoring</h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        Run after each stage ends. Scoring is separate from match predictions.
+        Run after each stage ends. Scoring is separate from match-by-match predictions.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
