@@ -14,6 +14,7 @@ import {
 } from "@/lib/server/world-cup/advanced-bracket-official";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { getAdvancedBracketLockKickoffUtc } from "@/lib/server/world-cup/advanced-bracket-lock";
+import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isPredictionsLocked } from "@/lib/utils/match-lock";
 
 export type AdvancedBracketAccess = {
@@ -30,7 +31,7 @@ export async function getAdvancedBracketAccess(
   const repo = new StageRulesRepository(supabase);
   const roundOf32Revealed = await repo.isStageRevealed(contestId, "round_of_32");
   if (!roundOf32Revealed) {
-    return { open: false, locked: true, message: "Advanced predictions open when Round of 32 is revealed." };
+    return { open: false, locked: true, message: worldCupCopy.advancedBracket.notOpenYet };
   }
 
   const kickoff = await getAdvancedBracketLockKickoffUtc(supabase, seasonYear);
@@ -40,7 +41,7 @@ export async function getAdvancedBracketAccess(
     open: true,
     locked,
     message: locked
-      ? "Bracket picks are locked — Match 88 kickoff has passed."
+      ? worldCupCopy.advancedBracket.locked
       : undefined,
   };
 }
@@ -102,7 +103,7 @@ export async function saveUserAdvancedBracketPicks(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const access = await getAdvancedBracketAccess(supabase, contestId, seasonYear);
   if (!access.open) return { ok: false, error: access.message ?? "Not open yet." };
-  if (access.locked) return { ok: false, error: "Advanced predictions are locked." };
+  if (access.locked) return { ok: false, error: worldCupCopy.advancedBracket.locked };
 
   const { validateAdvancedBracketPicks } = await import("@/lib/domain/world-cup/advanced-bracket");
   const validationError = validateAdvancedBracketPicks(picks, eligibleTeams);
