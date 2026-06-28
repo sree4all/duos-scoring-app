@@ -4,14 +4,16 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 
-type Tab = "schedule" | "stats";
+type Tab = "schedule" | "stats" | "advanced";
 
 export function ContestMatchesTabs({
   schedule,
   stats,
+  advanced,
 }: {
   schedule: React.ReactNode;
   stats: React.ReactNode;
+  advanced?: React.ReactNode;
 }) {
   const [tab, setTab] = useState<Tab>("schedule");
 
@@ -26,6 +28,9 @@ export function ContestMatchesTabs({
           [
             ["schedule", worldCupCopy.nav.worldCupPredictions],
             ["stats", worldCupCopy.nav.predictionStats],
+            ...(advanced
+              ? [["advanced", worldCupCopy.nav.advancedPredictions] as const]
+              : []),
           ] as const
         ).map(([id, label]) => (
           <button
@@ -45,7 +50,9 @@ export function ContestMatchesTabs({
           </button>
         ))}
       </div>
-      <div role="tabpanel">{tab === "schedule" ? schedule : stats}</div>
+      <div role="tabpanel">
+        {tab === "schedule" ? schedule : tab === "stats" ? stats : advanced}
+      </div>
     </div>
   );
 }

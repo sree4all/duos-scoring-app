@@ -15,12 +15,18 @@ import { MatchScheduleList } from "@/components/world-cup/match-schedule-list";
 import { StagePointsPanel } from "@/components/world-cup/stage-points-panel";
 import { ContestMatchesTabs } from "@/components/world-cup/contest-matches-tabs";
 import { PredictionStatsPanel } from "@/components/world-cup/prediction-stats-panel";
+import { AdvancedBracketPredictionsForm } from "@/components/world-cup/advanced-bracket-predictions-form";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
 import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
 import type { StageScoringRule } from "@/lib/domain/world-cup/types";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
+import {
+  getAdvancedBracketAccess,
+  loadUserAdvancedBracketPicks,
+} from "@/lib/server/world-cup/advanced-bracket-service";
+import { listRoundOf32Teams } from "@/lib/server/world-cup/round-of-32-teams";
 import { PageHeroLayer } from "@/components/layout/page-hero-layer";
 import {
   isPlatformAdmin,
@@ -119,6 +125,12 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     await loadPredictionStatsForContest(supabase, contestId, activeGroupId, memberView);
   const defaultStatsEventId = pickDefaultStatsEventId(upcomingEvents);
 
+  const [bracketAccess, bracketTeams, bracketPicks] = await Promise.all([
+    getAdvancedBracketAccess(supabase, contestId),
+    listRoundOf32Teams(supabase),
+    loadUserAdvancedBracketPicks(supabase, contestId, user.id),
+  ]);
+
   const schedulePanel = (
     <div className="space-y-6">
       {memberView && upcomingEvents.length === 0 ? (
@@ -167,6 +179,26 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     />
   );
 
+  const advancedPanel = !bracketAccess.open ? (
+    <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+      {bracketAccess.message ?? worldCupCopy.advancedBracket.notOpenYet}
+    </div>
+  ) : bracketTeams.length === 0 ? (
+    <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+      Round of 32 teams are not available yet.
+    </div>
+  ) : (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">{worldCupCopy.advancedBracket.subtitle}</p>
+      <AdvancedBracketPredictionsForm
+        contestId={contestId}
+        teams={bracketTeams}
+        initialPicks={bracketPicks}
+        locked={bracketAccess.locked}
+      />
+    </div>
+  );
+
   const pageBackground = resolveContestPageBackground(
     contest,
     `/contests/${contestId}/matches`,
@@ -193,7 +225,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
         </p>
       ) : null}
 
-      <ContestMatchesTabs schedule={schedulePanel} stats={statsPanel} />
+      <ContestMatchesTabs schedule={schedulePanel} stats={statsPanel} advanced={advancedPanel} />
 
       <div className="flex flex-wrap gap-3 border-t pt-4 text-sm">
         <Link href={`/contests/${contestId}/leaderboard`} className="underline">
