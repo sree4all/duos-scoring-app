@@ -13,6 +13,7 @@ import {
   isStageFullyCompleted,
 } from "@/lib/server/world-cup/advanced-bracket-official";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
+import { getAdvancedBracketLockKickoffUtc } from "@/lib/server/world-cup/advanced-bracket-lock";
 import { isPredictionsLocked } from "@/lib/utils/match-lock";
 
 export type AdvancedBracketAccess = {
@@ -32,19 +33,16 @@ export async function getAdvancedBracketAccess(
     return { open: false, locked: true, message: "Advanced predictions open when Round of 32 is revealed." };
   }
 
-  const { data: firstKo } = await supabase
-    .from("matches")
-    .select("match_time_utc")
-    .eq("season_year", seasonYear)
-    .eq("stage_key", "round_of_32")
-    .order("match_time_utc", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  const kickoff = await getAdvancedBracketLockKickoffUtc(supabase, seasonYear);
+  const locked = isPredictionsLocked(kickoff, null);
 
-  const kickoff = (firstKo?.match_time_utc as string | null) ?? null;
-  const locked = kickoff ? isPredictionsLocked(kickoff, null) : false;
-
-  return { open: true, locked, message: locked ? "Advanced predictions are locked." : undefined };
+  return {
+    open: true,
+    locked,
+    message: locked
+      ? "Bracket picks are locked — Match 88 kickoff has passed."
+      : undefined,
+  };
 }
 
 export async function loadUserAdvancedBracketPicks(

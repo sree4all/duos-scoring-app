@@ -4,9 +4,11 @@
 import assert from "node:assert/strict";
 import {
   ADVANCED_BRACKET_POINTS,
+  ADVANCED_BRACKET_LOCK_MATCH_NUMBER,
   countCorrectPicks,
   validateAdvancedBracketPicks,
 } from "@/lib/domain/world-cup/advanced-bracket";
+import { ADVANCED_BRACKET_LOCK_FALLBACK_UTC } from "@/lib/server/world-cup/advanced-bracket-lock";
 
 const teams = [
   "Argentina",
@@ -65,5 +67,8 @@ const semiHits = countCorrectPicks(
   ["France", "Spain", "Germany", "Portugal"],
 );
 assert.equal(semiHits * ADVANCED_BRACKET_POINTS.semiFinalist, 20);
+
+assert.equal(ADVANCED_BRACKET_LOCK_MATCH_NUMBER, 88);
+assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, "2026-07-04T01:30:00.000Z");
 
 console.log("advanced-bracket: OK");

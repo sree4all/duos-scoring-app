@@ -29,7 +29,7 @@ export const worldCupCopy = {
   },
   advancedBracket: {
     title: "Advanced bracket predictions",
-    subtitle: "Pick semi-finalists, finalists, and the champion before the knockouts begin.",
+    subtitle: "Pick semi-finalists, finalists, and the champion before Match 88 kickoff (July 3, 9:30 PM ET).",
     semiFinalists: "Semi-finalists",
     semiFinalistsHint: "Choose 4 teams you think will reach the semi-finals (10 points each, no penalty for misses).",
     finalists: "Finalists",
@@ -40,7 +40,7 @@ export const worldCupCopy = {
     save: "Save bracket picks",
     update: "Update bracket picks",
     saved: "Bracket picks saved!",
-    locked: "Bracket picks are locked — knockouts have started.",
+    locked: "Bracket picks are locked — Match 88 kickoff (July 3, 9:30 PM ET) has passed.",
     notOpenYet: "Bracket picks open when your organizer reveals the Round of 32.",
     pointsTitle: "How bracket scoring works",
     pointsSemi: "10 points per correct semi-finalist (up to 4)",
