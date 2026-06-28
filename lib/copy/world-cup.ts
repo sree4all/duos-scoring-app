@@ -33,7 +33,7 @@ export const worldCupCopy = {
       "Predict the semi-finalists, finalists, and champion before Match 88 kickoff (July 3, 9:30 PM ET).",
     semiFinalists: "Semi-finalists",
     semiFinalistsHint:
-      "Choose 4 teams you think will reach the semi-finals (10 points each, no penalty for misses).",
+      "Choose 4 teams you think will reach the semi-finals (10 points each). Opponents on the same knockout path are hidden once you pick a team — e.g. South Africa and Canada cannot both be selected.",
     finalists: "Finalists",
     finalistsHint:
       "Choose 2 of your semi-finalists to reach the final (15 points each). Only your semi-finalist picks are shown.",

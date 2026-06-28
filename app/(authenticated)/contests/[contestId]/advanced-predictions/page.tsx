@@ -12,7 +12,11 @@ import {
   loadAdvancedBracketOfficial,
   loadUserAdvancedBracketPicks,
 } from "@/lib/server/world-cup/advanced-bracket-service";
-import { listRoundOf32Teams } from "@/lib/server/world-cup/round-of-32-teams";
+import {
+  loadKnockoutBracket,
+  listRoundOf32Teams,
+  serializeKnockoutFixtures,
+} from "@/lib/server/world-cup/round-of-32-teams";
 import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
 import { PageHeroLayer } from "@/components/layout/page-hero-layer";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
@@ -31,12 +35,14 @@ export default async function AdvancedPredictionsPage({ params }: PageProps) {
     activeGroupId,
   );
 
-  const [access, teams, initialPicks, official] = await Promise.all([
+  const [access, teams, bracket, initialPicks, official] = await Promise.all([
     getAdvancedBracketAccess(supabase, contestId),
     listRoundOf32Teams(supabase),
+    loadKnockoutBracket(supabase),
     loadUserAdvancedBracketPicks(supabase, contestId, user.id),
     loadAdvancedBracketOfficial(supabase, contestId),
   ]);
+  const knockoutFixtures = serializeKnockoutFixtures(bracket);
 
   const pageBackground = resolveContestPageBackground(
     contest,
@@ -127,6 +133,7 @@ export default async function AdvancedPredictionsPage({ params }: PageProps) {
           <AdvancedBracketPredictionsForm
             contestId={contestId}
             teams={teams}
+            knockoutFixtures={knockoutFixtures}
             initialPicks={initialPicks}
             locked={access.locked}
           />

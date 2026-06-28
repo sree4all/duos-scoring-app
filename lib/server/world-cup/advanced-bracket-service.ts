@@ -14,6 +14,8 @@ import {
 } from "@/lib/server/world-cup/advanced-bracket-official";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { getAdvancedBracketLockKickoffUtc } from "@/lib/server/world-cup/advanced-bracket-lock";
+import { validateAdvancedBracketPicks } from "@/lib/domain/world-cup/advanced-bracket";
+import type { KnockoutBracket } from "@/lib/domain/world-cup/knockout-bracket";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { isPredictionsLocked } from "@/lib/utils/match-lock";
 
@@ -99,14 +101,14 @@ export async function saveUserAdvancedBracketPicks(
   userId: string,
   picks: AdvancedBracketPicks,
   eligibleTeams: string[],
+  bracket: KnockoutBracket,
   seasonYear = 2026,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const access = await getAdvancedBracketAccess(supabase, contestId, seasonYear);
   if (!access.open) return { ok: false, error: access.message ?? "Not open yet." };
   if (access.locked) return { ok: false, error: worldCupCopy.advancedBracket.locked };
 
-  const { validateAdvancedBracketPicks } = await import("@/lib/domain/world-cup/advanced-bracket");
-  const validationError = validateAdvancedBracketPicks(picks, eligibleTeams);
+  const validationError = validateAdvancedBracketPicks(picks, eligibleTeams, bracket);
   if (validationError) return { ok: false, error: validationError };
 
   const now = new Date().toISOString();

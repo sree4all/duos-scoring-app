@@ -1,3 +1,6 @@
+import type { KnockoutBracket } from "@/lib/domain/world-cup/knockout-bracket";
+import { validateSemiFinalistBracketPath } from "@/lib/domain/world-cup/knockout-bracket";
+
 export const ADVANCED_BRACKET_PICKS = {
   semiFinalists: 4,
   finalists: 2,
@@ -38,6 +41,7 @@ export function isPlaceholderTeam(name: string): boolean {
 export function validateAdvancedBracketPicks(
   picks: AdvancedBracketPicks,
   eligibleTeams: string[],
+  bracket?: KnockoutBracket | null,
 ): string | null {
   const eligible = new Set(eligibleTeams);
   const semiSet = new Set(picks.semiFinalistTeams);
@@ -50,6 +54,11 @@ export function validateAdvancedBracketPicks(
   }
   for (const team of picks.semiFinalistTeams) {
     if (!eligible.has(team)) return `Invalid semi-finalist team: ${team}`;
+  }
+
+  if (bracket) {
+    const pathError = validateSemiFinalistBracketPath(bracket, picks.semiFinalistTeams);
+    if (pathError) return pathError;
   }
 
   if (picks.finalistTeams.length !== ADVANCED_BRACKET_PICKS.finalists) {

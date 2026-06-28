@@ -26,7 +26,11 @@ import {
   getAdvancedBracketAccess,
   loadUserAdvancedBracketPicks,
 } from "@/lib/server/world-cup/advanced-bracket-service";
-import { listRoundOf32Teams } from "@/lib/server/world-cup/round-of-32-teams";
+import {
+  loadKnockoutBracket,
+  listRoundOf32Teams,
+  serializeKnockoutFixtures,
+} from "@/lib/server/world-cup/round-of-32-teams";
 import { PageHeroLayer } from "@/components/layout/page-hero-layer";
 import {
   isPlatformAdmin,
@@ -125,11 +129,13 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     await loadPredictionStatsForContest(supabase, contestId, activeGroupId, memberView);
   const defaultStatsEventId = pickDefaultStatsEventId(upcomingEvents);
 
-  const [bracketAccess, bracketTeams, bracketPicks] = await Promise.all([
+  const [bracketAccess, bracketTeams, bracket, bracketPicks] = await Promise.all([
     getAdvancedBracketAccess(supabase, contestId),
     listRoundOf32Teams(supabase),
+    loadKnockoutBracket(supabase),
     loadUserAdvancedBracketPicks(supabase, contestId, user.id),
   ]);
+  const knockoutFixtures = serializeKnockoutFixtures(bracket);
 
   const schedulePanel = (
     <div className="space-y-6">
@@ -193,6 +199,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
       <AdvancedBracketPredictionsForm
         contestId={contestId}
         teams={bracketTeams}
+        knockoutFixtures={knockoutFixtures}
         initialPicks={bracketPicks}
         locked={bracketAccess.locked}
       />

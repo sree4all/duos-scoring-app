@@ -5,7 +5,7 @@ import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import type { AdvancedBracketPicks } from "@/lib/domain/world-cup/advanced-bracket";
-import { listRoundOf32Teams } from "@/lib/server/world-cup/round-of-32-teams";
+import { loadKnockoutBracket, listRoundOf32Teams } from "@/lib/server/world-cup/round-of-32-teams";
 import { saveUserAdvancedBracketPicks } from "@/lib/server/world-cup/advanced-bracket-service";
 
 export async function saveAdvancedBracketPicks(contestId: string, picks: AdvancedBracketPicks) {
@@ -18,10 +18,13 @@ export async function saveAdvancedBracketPicks(contestId: string, picks: Advance
   await requireGroupMembership(supabase, activeGroupId, user.id);
   await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
 
-  const eligibleTeams = await listRoundOf32Teams(supabase);
+  const [eligibleTeams, bracket] = await Promise.all([
+    listRoundOf32Teams(supabase),
+    loadKnockoutBracket(supabase),
+  ]);
   if (eligibleTeams.length === 0) {
     return { ok: false as const, error: "Round of 32 teams are not available yet." };
   }
 
-  return saveUserAdvancedBracketPicks(supabase, contestId, user.id, picks, eligibleTeams);
+  return saveUserAdvancedBracketPicks(supabase, contestId, user.id, picks, eligibleTeams, bracket);
 }
