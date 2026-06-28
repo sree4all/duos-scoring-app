@@ -32,11 +32,15 @@ export const worldCupCopy = {
     subtitle:
       "Predict the semi-finalists, finalists, and champion before Match 88 kickoff (July 3, 9:30 PM ET).",
     semiFinalists: "Semi-finalists",
-    semiFinalistsHint: "Choose 4 teams you think will reach the semi-finals (10 points each, no penalty for misses).",
+    semiFinalistsHint:
+      "Choose 4 teams you think will reach the semi-finals (10 points each). Opponents on the same knockout path are hidden once you pick a team — e.g. South Africa and Canada cannot both be selected.",
     finalists: "Finalists",
-    finalistsHint: "Choose 2 teams you think will reach the final (15 points each).",
+    finalistsHint:
+      "Choose 2 of your semi-finalists to reach the final (15 points each). Only your semi-finalist picks are shown.",
     winner: "Champion",
-    winnerHint: "Pick the World Cup winner (20 points).",
+    winnerHint: "Pick the World Cup winner from your two finalists (20 points).",
+    pickSemiFirst: "Pick all 4 semi-finalists first to unlock finalists.",
+    pickFinalistsFirst: "Pick both finalists first to unlock the champion.",
     teamsSelected: (n: number, max: number) => `${n} of ${max} selected`,
     save: "Save tournament forecast",
     update: "Update tournament forecast",
