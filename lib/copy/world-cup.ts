@@ -30,7 +30,7 @@ export const worldCupCopy = {
   advancedBracket: {
     title: "World Cup tournament forecast",
     subtitle:
-      "Predict the semi-finalists, finalists, and champion before Match 88 kickoff (July 3, 9:30 PM ET).",
+      "Predict the semi-finalists, finalists, and champion before Match 88 kickoff (July 3, 2:00 PM ET).",
     semiFinalists: "Semi-finalists",
     semiFinalistsHint:
       "Choose 4 teams you think will reach the semi-finals (10 points each). Opponents on the same knockout path are hidden once you pick a team — e.g. South Africa and Canada cannot both be selected.",
@@ -45,7 +45,7 @@ export const worldCupCopy = {
     save: "Save tournament forecast",
     update: "Update tournament forecast",
     saved: "Tournament forecast saved!",
-    locked: "Tournament forecast is locked — Match 88 kickoff (July 3, 9:30 PM ET) has passed.",
+    locked: "Tournament forecast is locked — Match 88 kickoff (July 3, 2:00 PM ET) has passed.",
     notOpenYet: "Tournament forecast opens when your organizer reveals the Round of 32.",
     pointsTitle: "How tournament forecast scoring works",
     pointsSemi: "10 points per correct semi-finalist (up to 4)",

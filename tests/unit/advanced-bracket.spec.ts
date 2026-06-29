@@ -95,6 +95,6 @@ const semiHits = countCorrectPicks(
 assert.equal(semiHits * ADVANCED_BRACKET_POINTS.semiFinalist, 20);
 
 assert.equal(ADVANCED_BRACKET_LOCK_MATCH_NUMBER, 88);
-assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, "2026-07-04T01:30:00.000Z");
+assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, "2026-07-03T18:00:00.000Z");
 
 console.log("advanced-bracket: OK");
