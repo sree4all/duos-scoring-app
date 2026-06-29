@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createServiceClient } from "@/lib/supabase/service";
 import { aggregateLeaderboardForContest } from "@/lib/server/generalized-scoring/scoring-projection-service";
 import { fetchAllContestLedgerRows } from "@/lib/server/world-cup/contest-ledger-query";
+import { computePredictionContestLeaderboard } from "@/lib/server/world-cup/computed-leaderboard";
 
 export type ContestLeaderboardEntry = {
   participantId: string;
@@ -53,6 +55,14 @@ export async function fetchContestLeaderboard(
   const isRummy = formatLabel === "rummy_points";
   if (isRummy) {
     return fetchContestLedgerLeaderboard(supabase, contestId, options);
+  }
+
+  // Primary: derive match points from predictions + results (immune to ledger drift).
+  try {
+    const service = createServiceClient();
+    return await computePredictionContestLeaderboard(service, contestId);
+  } catch {
+    // fall through
   }
 
   try {

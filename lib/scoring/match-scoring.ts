@@ -6,6 +6,7 @@ import {
 import { DEFAULT_STAGE_RULES } from "@/lib/server/world-cup/seed-stage-rules";
 import { mirrorMatchToLinkedContests } from "@/lib/server/world-cup/contest-ledger-mirror";
 import { resolveStagePointsFromDb } from "@/lib/scoring/stage-points";
+import { winnerPickDelta } from "@/lib/scoring/winner-pick-delta";
 import { normAnswer } from "@/lib/scoring/normalize";
 import {
   bonusPointsForAnswer,
@@ -198,30 +199,26 @@ export async function applyMatchScoring(
 
   for (const userId of scoringUserIds) {
     const pred = predByUser.get(userId);
-    const predictedWinner = pred?.predicted_winner as string | undefined;
-    const trimmedPick = predictedWinner?.trim();
-
-    if (trimmedPick && actualWinner) {
-      const correct = normAnswer(trimmedPick) === normAnswer(actualWinner);
-      if (correct && winnerPts !== 0) {
-        toInsert.push({
-          user_id: userId,
-          source_type: "match",
-          source_id: matchId,
-          points_delta: winnerPts,
-          reason: options?.auditReason ? `match_winner:${options.auditReason}` : "match_winner",
-          awarded_at: now,
-        });
-      } else if (!correct && missPts !== 0) {
-        toInsert.push({
-          user_id: userId,
-          source_type: "match",
-          source_id: matchId,
-          points_delta: missPts,
-          reason: "match_winner_miss",
-          awarded_at: now,
-        });
-      }
+    const trimmedPick = pred?.predicted_winner as string | undefined;
+    const delta = winnerPickDelta(trimmedPick, actualWinner, winnerPts, missPts);
+    if (delta !== 0) {
+      const correct =
+        Boolean(trimmedPick?.trim()) &&
+        Boolean(actualWinner) &&
+        normAnswer(trimmedPick!) === normAnswer(actualWinner);
+      toInsert.push({
+        user_id: userId,
+        source_type: "match",
+        source_id: matchId,
+        points_delta: delta,
+        reason:
+          correct
+            ? options?.auditReason
+              ? `match_winner:${options.auditReason}`
+              : "match_winner"
+            : "match_winner_miss",
+        awarded_at: now,
+      });
     }
 
     if (usePerPromptBonus) {

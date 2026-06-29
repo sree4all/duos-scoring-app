@@ -21,6 +21,15 @@ export async function POST(request: Request, context: RouteContext) {
 
     const serviceSupabase = createServiceClient();
 
+    if (stageKey === "round_of_32") {
+      await serviceSupabase
+        .from("contest_stage_scoring_rules")
+        .update({ incorrect_penalty: -1, updated_at: new Date().toISOString() })
+        .eq("contest_id", contestId)
+        .eq("stage_key", "round_of_32")
+        .or("incorrect_penalty.is.null,incorrect_penalty.eq.0");
+    }
+
     const result = await recalculateStageScoring(
       serviceSupabase,
       contestId,

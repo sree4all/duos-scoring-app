@@ -78,6 +78,56 @@ export function WorldCupStagesPanel({
     setPending(false);
   }
 
+  async function diagnoseMatch(matchNumber: number) {
+    setPending(true);
+    setMessage(null);
+    try {
+      const res = await fetch(
+        `/api/groups/${groupId}/contests/${contestId}/scoring-audit?matchNumber=${matchNumber}`,
+      );
+      const data = (await res.json()) as {
+        error?: string;
+        audit?: {
+          officialWinner: string | null;
+          correctPoints: number;
+          incorrectPenalty: number;
+          rows: {
+            displayName: string;
+            predictedWinner: string | null;
+            expectedDelta: number;
+            seasonLedgerDelta: number | null;
+            contestLedgerDelta: number | null;
+          }[];
+        };
+      };
+      if (!res.ok) throw new Error(data.error ?? "Audit failed");
+      const audit = data.audit;
+      if (!audit) throw new Error("No audit data");
+
+      const mismatches = audit.rows.filter(
+        (r) =>
+          r.expectedDelta !== (r.seasonLedgerDelta ?? 0) ||
+          r.expectedDelta !== (r.contestLedgerDelta ?? 0),
+      );
+      const summary = mismatches.length
+        ? mismatches
+            .map(
+              (r) =>
+                `${r.displayName}: pick=${r.predictedWinner ?? "—"}, expected=${r.expectedDelta}, season=${r.seasonLedgerDelta ?? "—"}, contest=${r.contestLedgerDelta ?? "—"}`,
+            )
+            .join("; ")
+        : "All players match expected scoring for this match.";
+
+      setMessage(
+        `M${matchNumber} winner=${audit.officialWinner ?? "?"} (+${audit.correctPoints}/wrong ${audit.incorrectPenalty}). ${summary}`,
+      );
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Audit failed");
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <section className="space-y-4">
       <p className="text-sm text-muted-foreground">
@@ -142,15 +192,26 @@ export function WorldCupStagesPanel({
               Recalculate round
             </Button>
             {r.stageKey === "round_of_32" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                disabled={pending}
-                onClick={() => repairPenalties(r.stageKey)}
-              >
-                Apply wrong-pick penalties
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={pending}
+                  onClick={() => repairPenalties(r.stageKey)}
+                >
+                  Apply wrong-pick penalties
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => diagnoseMatch(73)}
+                >
+                  Diagnose Match 73
+                </Button>
+              </>
             ) : null}
           </div>
         </div>
