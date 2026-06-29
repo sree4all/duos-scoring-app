@@ -8,8 +8,30 @@ import {
   assertEventRevealedForMember,
   resolveEventStageKey,
 } from "@/lib/server/world-cup/schedule-query";
+import { applyMatchScoring } from "@/lib/scoring/match-scoring";
 
 type Result = { ok: true } | { ok: false; error: string };
+
+async function rescoreCompletedMatchAfterPickChange(
+  writer: SupabaseClient,
+  contestId: string,
+  matchId: string,
+  stageKey: string | null | undefined,
+): Promise<void> {
+  const { data: match } = await writer
+    .from("matches")
+    .select("status")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (match?.status !== "completed") return;
+
+  await applyMatchScoring(writer, matchId, 2026, {
+    contestId,
+    stageKey: stageKey ?? undefined,
+    auditReason: "prediction_updated_after_result",
+  });
+}
 
 type SaveMatchPickParams = {
   userId: string;
@@ -92,6 +114,7 @@ export async function saveMatchPickForUser(
       p_predicted_winner: pickCheck.value,
     });
     if (error) return { ok: false, error: error.message };
+    await rescoreCompletedMatchAfterPickChange(writer, contestId, matchId, stageKey);
     return { ok: true };
   }
 
@@ -106,6 +129,7 @@ export async function saveMatchPickForUser(
   );
 
   if (error) return { ok: false, error: error.message };
+  await rescoreCompletedMatchAfterPickChange(writer, contestId, matchId, stageKey);
   return { ok: true };
 }
 

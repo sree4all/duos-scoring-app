@@ -77,18 +77,6 @@ export class GroupPredictionAdapter {
       stageKey,
     });
 
-    if (outcome.ok) {
-      const { mirrorMatchLedgerToContest } = await import(
-        "@/lib/server/world-cup/contest-ledger-mirror"
-      );
-      await mirrorMatchLedgerToContest(
-        this.supabase,
-        bridge.contestId,
-        event.id as string,
-        matchId,
-      );
-    }
-
     return outcome;
   }
 }
