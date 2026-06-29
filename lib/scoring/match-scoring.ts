@@ -5,7 +5,7 @@ import {
 } from "@/lib/domain/world-cup/match-stage";
 import { DEFAULT_STAGE_RULES } from "@/lib/server/world-cup/seed-stage-rules";
 import { mirrorMatchToLinkedContests } from "@/lib/server/world-cup/contest-ledger-mirror";
-import { resolveIncorrectPenalty, resolveStagePointsFromDb } from "@/lib/scoring/stage-points";
+import { resolveStagePointsFromDb } from "@/lib/scoring/stage-points";
 import { normAnswer } from "@/lib/scoring/normalize";
 import {
   bonusPointsForAnswer,

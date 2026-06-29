@@ -7,6 +7,12 @@ export type ContestLeaderboardEntry = {
   totalPoints: number;
 };
 
+/** Row shape returned by `contest_leaderboard_totals` RPC (migration 202606300007). */
+export type ContestLeaderboardTotalsRow = {
+  participant_id: string;
+  total_points: number | string | null;
+};
+
 /**
  * Prediction contests: sum match/bonus lines from season points_ledger (source of
  * truth) plus non-match contest ledger rows (advanced bracket, voids, etc.).
@@ -21,8 +27,9 @@ export async function fetchPredictionContestLeaderboard(
 
   if (error) throw error;
 
-  return (data ?? []).map((row) => ({
-    participantId: row.participant_id as string,
+  const rows = (data ?? []) as ContestLeaderboardTotalsRow[];
+  return rows.map((row) => ({
+    participantId: row.participant_id,
     totalPoints: Number(row.total_points ?? 0),
   }));
 }
