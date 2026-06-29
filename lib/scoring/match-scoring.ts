@@ -4,6 +4,7 @@ import {
   resolveMatchScoringStageKey,
 } from "@/lib/domain/world-cup/match-stage";
 import { DEFAULT_STAGE_RULES } from "@/lib/server/world-cup/seed-stage-rules";
+import { mirrorMatchToLinkedContests } from "@/lib/server/world-cup/contest-ledger-mirror";
 import { normAnswer } from "@/lib/scoring/normalize";
 import {
   bonusPointsForAnswer,
@@ -62,21 +63,23 @@ async function resolveWinnerPoints(
   stageKey: string | undefined,
   fallbackWinnerPts: number,
 ): Promise<{ correct: number; incorrect: number }> {
-  if (contestId && stageKey) {
-    const { data } = await supabase
-      .from("contest_stage_scoring_rules")
-      .select("correct_points, incorrect_penalty")
-      .eq("contest_id", contestId)
-      .eq("stage_key", stageKey)
-      .maybeSingle();
-    if (data) {
-      return {
-        correct: Number(data.correct_points ?? 0),
-        incorrect: normalizeIncorrectPenalty(
-          stageKey,
-          Number(data.incorrect_penalty ?? 0),
-        ),
-      };
+  if (stageKey) {
+    if (contestId) {
+      const { data } = await supabase
+        .from("contest_stage_scoring_rules")
+        .select("correct_points, incorrect_penalty")
+        .eq("contest_id", contestId)
+        .eq("stage_key", stageKey)
+        .maybeSingle();
+      if (data) {
+        return {
+          correct: Number(data.correct_points ?? 0),
+          incorrect: normalizeIncorrectPenalty(
+            stageKey,
+            Number(data.incorrect_penalty ?? 0),
+          ),
+        };
+      }
     }
 
     const defaultRule = DEFAULT_STAGE_RULES.find((r) => r.stageKey === stageKey);
@@ -298,6 +301,15 @@ export async function applyMatchScoring(
     }
   }
 
+  // Mirror into contest_points_ledger before profile updates. Leaderboard reads the
+  // contest ledger; a profile RLS failure must not leave it stale while points_ledger is correct.
+  try {
+    await mirrorMatchToLinkedContests(supabase, matchId);
+  } catch (mirrorErr) {
+    const message = mirrorErr instanceof Error ? mirrorErr.message : "contest ledger mirror failed";
+    return { ok: false, error: message };
+  }
+
   const userIdsForNet = new Set<string>([...refundByUser.keys(), ...awardByUser.keys()]);
   const nets = new Map<string, number>();
   for (const uid of userIdsForNet) {
@@ -315,7 +327,8 @@ export async function applyMatchScoring(
         .select("id, current_points")
         .in("id", slice);
       if (profErr) {
-        return { ok: false, error: profErr.message };
+        console.error("match scoring: profile read failed", profErr.message);
+        break;
       }
       for (const p of profs ?? []) {
         byId.set(p.id as string, Number(p.current_points ?? 0));
@@ -338,7 +351,7 @@ export async function applyMatchScoring(
       );
       for (const r of results) {
         if (r.error) {
-          return { ok: false, error: r.error.message };
+          console.error("match scoring: profile update failed", r.error.message);
         }
       }
     }
