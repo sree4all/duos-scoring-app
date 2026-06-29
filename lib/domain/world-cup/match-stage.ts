@@ -18,8 +18,19 @@ export function parseMatchNumberFromExternalKey(externalKey: string | null | und
   if (!key) return null;
   const wc = key.match(/^wc2026:m(\d+)$/i);
   if (wc) return Number(wc[1]);
+  const suffix = key.match(/(?:^|:|\s)m?(\d{1,3})$/i);
+  if (suffix) return Number(suffix[1]);
   if (/^\d+$/.test(key)) return Number(key);
   return null;
+}
+
+/** Final stage key for scoring: always reconcile with match_number. */
+export function resolveMatchScoringStageKey(
+  preferredStageKey: string | null | undefined,
+  storedMatchStageKey: string | null | undefined,
+  matchNumber: number | null | undefined,
+): StageKey | undefined {
+  return resolveScoringStageKey(preferredStageKey ?? storedMatchStageKey, matchNumber);
 }
 
 /**

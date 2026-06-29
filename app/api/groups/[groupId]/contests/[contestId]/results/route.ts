@@ -27,7 +27,12 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: mapGroupError(new Error(outcome.error)) }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true, ledgerRows: outcome.ledgerRows });
+    return NextResponse.json({
+      ok: true,
+      ledgerRows: outcome.ledgerRows,
+      stageKey: outcome.stageKey,
+      missPenalty: outcome.missPenalty,
+    });
   } catch (error) {
     return groupErrorResponse(error);
   }

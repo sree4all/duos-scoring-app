@@ -58,6 +58,26 @@ export function WorldCupStagesPanel({
     setPending(false);
   }
 
+  async function repairPenalties(stageKey: string) {
+    setPending(true);
+    setMessage(null);
+    const res = await fetch(
+      `/api/groups/${groupId}/contests/${contestId}/stages/repair`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stageKey }),
+      },
+    );
+    const data = (await res.json()) as { message?: string; error?: string; rescored?: number };
+    if (!res.ok) {
+      setMessage(data.error ?? "Repair failed.");
+    } else {
+      setMessage(data.message ?? `Re-scored ${data.rescored ?? 0} matches.`);
+    }
+    setPending(false);
+  }
+
   return (
     <section className="space-y-4">
       <p className="text-sm text-muted-foreground">
@@ -121,6 +141,17 @@ export function WorldCupStagesPanel({
             >
               Recalculate round
             </Button>
+            {r.stageKey === "round_of_32" ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={pending}
+                onClick={() => repairPenalties(r.stageKey)}
+              >
+                Apply wrong-pick penalties
+              </Button>
+            ) : null}
           </div>
         </div>
       ))}
