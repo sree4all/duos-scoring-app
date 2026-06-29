@@ -3,7 +3,7 @@
  */
 import assert from "node:assert/strict";
 import { resolveMatchScoringStageKey } from "@/lib/domain/world-cup/match-stage";
-import { DEFAULT_STAGE_RULES } from "@/lib/server/world-cup/seed-stage-rules";
+import { resolveStagePointsFromDb } from "@/lib/scoring/stage-points";
 import { normAnswer } from "@/lib/scoring/normalize";
 
 /** Mirrors winner pick branch in applyMatchScoring. */
@@ -20,12 +20,6 @@ function winnerPickDelta(
   return null;
 }
 
-function stagePointsWithoutContest(stageKey: string) {
-  const rule = DEFAULT_STAGE_RULES.find((r) => r.stageKey === stageKey);
-  assert.ok(rule, `missing default rule for ${stageKey}`);
-  return { correct: rule.correctPoints, incorrect: rule.incorrectPenalty };
-}
-
 assert.equal(winnerPickDelta("Brazil", "Brazil", 3, -1), 3);
 assert.equal(winnerPickDelta("Japan", "Brazil", 3, -1), -1);
 assert.equal(winnerPickDelta("Japan", "Brazil", 3, 0), null);
@@ -35,10 +29,10 @@ const r32Stage = resolveMatchScoringStageKey("group_stage", "group_stage", 75);
 assert.equal(r32Stage, "round_of_32");
 assert.equal(winnerPickDelta("Japan", "Brazil", 3, -1), -1);
 
-// Match 73 (South Africa vs Canada): wrong SA pick when Canada wins uses R32 defaults even without contestId.
+// Match 73 (South Africa vs Canada): wrong SA pick when Canada wins uses R32 defaults.
 const m73Stage = resolveMatchScoringStageKey("group_stage", "group_stage", 73);
 assert.equal(m73Stage, "round_of_32");
-const m73Pts = stagePointsWithoutContest(m73Stage!);
+const m73Pts = resolveStagePointsFromDb("round_of_32", 3, 0, 2);
 assert.equal(m73Pts.correct, 3);
 assert.equal(m73Pts.incorrect, -1);
 assert.equal(winnerPickDelta("South Africa", "Canada", m73Pts.correct, m73Pts.incorrect), -1);

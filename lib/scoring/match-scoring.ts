@@ -5,6 +5,7 @@ import {
 } from "@/lib/domain/world-cup/match-stage";
 import { DEFAULT_STAGE_RULES } from "@/lib/server/world-cup/seed-stage-rules";
 import { mirrorMatchToLinkedContests } from "@/lib/server/world-cup/contest-ledger-mirror";
+import { resolveIncorrectPenalty, resolveStagePointsFromDb } from "@/lib/scoring/stage-points";
 import { normAnswer } from "@/lib/scoring/normalize";
 import {
   bonusPointsForAnswer,
@@ -26,11 +27,6 @@ export type MatchScoreOptions = {
 export type MatchScoreOutcome =
   | { ok: true; ledgerRows: number; stageKey?: string; missPenalty?: number }
   | { ok: false; error: string };
-
-function normalizeIncorrectPenalty(stageKey: string | undefined, penalty: number): number {
-  if (!stageKey || stageKey === "group_stage" || penalty === 0) return penalty;
-  return penalty > 0 ? -penalty : penalty;
-}
 
 type LedgerInsert = {
   user_id: string;
@@ -72,13 +68,12 @@ async function resolveWinnerPoints(
         .eq("stage_key", stageKey)
         .maybeSingle();
       if (data) {
-        return {
-          correct: Number(data.correct_points ?? 0),
-          incorrect: normalizeIncorrectPenalty(
-            stageKey,
-            Number(data.incorrect_penalty ?? 0),
-          ),
-        };
+        return resolveStagePointsFromDb(
+          stageKey,
+          data.correct_points as number | null,
+          data.incorrect_penalty as number | null,
+          fallbackWinnerPts,
+        );
       }
     }
 
@@ -204,9 +199,10 @@ export async function applyMatchScoring(
   for (const userId of scoringUserIds) {
     const pred = predByUser.get(userId);
     const predictedWinner = pred?.predicted_winner as string | undefined;
+    const trimmedPick = predictedWinner?.trim();
 
-    if (predictedWinner && actualWinner) {
-      const correct = normAnswer(predictedWinner) === normAnswer(actualWinner);
+    if (trimmedPick && actualWinner) {
+      const correct = normAnswer(trimmedPick) === normAnswer(actualWinner);
       if (correct && winnerPts !== 0) {
         toInsert.push({
           user_id: userId,
