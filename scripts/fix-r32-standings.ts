@@ -7,6 +7,7 @@ import { resolve } from "path";
 import { createClient } from "@supabase/supabase-js";
 import { recalculateStageScoring } from "@/lib/server/world-cup/recalculate-stage";
 import { resyncContestLedgerFromSeason } from "@/lib/server/world-cup/contest-ledger-mirror";
+import type { ContestLeaderboardTotalsRow } from "@/lib/server/world-cup/contest-leaderboard";
 
 for (const name of [".env", ".env.local"] as const) {
   loadEnv({ path: resolve(process.cwd(), name), override: name === ".env.local" });
@@ -71,7 +72,8 @@ async function main() {
       rpcErr.message,
     );
   } else {
-    const ids = (rpcRows ?? []).map((r) => r.participant_id as string);
+    const rows = (rpcRows ?? []) as ContestLeaderboardTotalsRow[];
+    const ids = rows.map((r) => r.participant_id);
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, display_name")
@@ -82,11 +84,11 @@ async function main() {
     );
 
     console.log("\n=== LEADERBOARD (season ledger) ===");
-    for (const row of [...(rpcRows ?? [])].sort(
+    for (const row of [...rows].sort(
       (a, b) => Number(b.total_points) - Number(a.total_points),
     )) {
       console.log(
-        (names.get(row.participant_id as string) ?? row.participant_id).padEnd(22),
+        (names.get(row.participant_id) ?? row.participant_id).padEnd(22),
         Number(row.total_points),
       );
     }
