@@ -3,14 +3,14 @@
  */
 import assert from "node:assert/strict";
 import {
+  ADVANCED_BRACKET_LOCK_FALLBACK_UTC,
   ADVANCED_BRACKET_POINTS,
-  ADVANCED_BRACKET_LOCK_MATCH_NUMBER,
+  ROUND_OF_16_MATCH_NUMBER_MIN,
   countCorrectPicks,
   reconcileCascadingPicks,
   validateAdvancedBracketPicks,
 } from "@/lib/domain/world-cup/advanced-bracket";
-import { ADVANCED_BRACKET_LOCK_FALLBACK_UTC } from "@/lib/server/world-cup/advanced-bracket-lock";
-import { roundOf32KickoffUtc } from "@/lib/domain/world-cup/round-of-32-fixtures";
+import { ADVANCED_BRACKET_LOCK_FALLBACK_UTC as LOCK_FALLBACK } from "@/lib/server/world-cup/advanced-bracket-lock";
 
 const teams = [
   "Argentina",
@@ -95,7 +95,8 @@ const semiHits = countCorrectPicks(
 );
 assert.equal(semiHits * ADVANCED_BRACKET_POINTS.semiFinalist, 20);
 
-assert.equal(ADVANCED_BRACKET_LOCK_MATCH_NUMBER, 88);
-assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, roundOf32KickoffUtc(88));
+assert.equal(ROUND_OF_16_MATCH_NUMBER_MIN, 89);
+assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, "2026-07-04T17:00:00.000Z");
+assert.equal(LOCK_FALLBACK, ADVANCED_BRACKET_LOCK_FALLBACK_UTC);
 
 console.log("advanced-bracket: OK");
