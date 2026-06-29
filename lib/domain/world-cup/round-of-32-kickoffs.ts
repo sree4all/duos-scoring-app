@@ -9,6 +9,6 @@ export {
 /** @deprecated Use ROUND_OF_32_FIXTURES */
 export const ROUND_OF_32_KICKOFFS_ET = ROUND_OF_32_FIXTURES.map((f) => ({
   matchNumber: f.matchNumber,
-  date: f.kickoffDate,
-  time: f.kickoffTimeEt,
+  date: f.kickoffUtc.slice(0, 10),
+  time: f.kickoffUtc.slice(11, 19),
 }));

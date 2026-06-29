@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { buildLinkedMatchEventTitle } from "@/lib/domain/world-cup/match-event-title";
 import { defaultMatchLockAtIso } from "@/lib/utils/match-lock";
 
 export async function linkContestEventsFromMatches(
@@ -18,7 +19,11 @@ export async function linkContestEventsFromMatches(
   let linked = 0;
   for (const match of matches ?? []) {
     const matchId = match.id as string;
-    const title = `Match ${match.match_number}: ${match.home_team} vs ${match.away_team}`;
+    const title = buildLinkedMatchEventTitle(
+      match.match_number as number | null,
+      match.home_team as string,
+      match.away_team as string,
+    );
 
     const kickoffUtc = match.match_time_utc as string;
     const defaultLockAt = defaultMatchLockAtIso(kickoffUtc);

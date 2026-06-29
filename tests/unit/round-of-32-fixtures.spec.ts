@@ -9,8 +9,8 @@ import {
 } from "@/lib/domain/world-cup/round-of-32-fixtures";
 
 assert.equal(ROUND_OF_32_FIXTURES.length, 16);
-assert.equal(ROUND_OF_32_FIXTURES[0]?.matchNumber, 73);
-assert.equal(ROUND_OF_32_FIXTURES[15]?.matchNumber, 88);
+assert.equal(ROUND_OF_32_FIXTURES.find((f) => f.matchNumber === 73)?.homeTeam, "South Africa");
+assert.equal(ROUND_OF_32_FIXTURES.find((f) => f.matchNumber === 88)?.awayTeam, "Egypt");
 
 // Brazil vs Japan — match 76, 1 PM ET Houston (FIFA/NBC)
 const m76 = ROUND_OF_32_FIXTURES.find((f) => f.matchNumber === 76)!;

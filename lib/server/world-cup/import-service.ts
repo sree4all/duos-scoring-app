@@ -139,6 +139,11 @@ export async function runWorldCupImport(
     await seedPredefinedMatchBonusPrompts(supabase);
     summary.eventsLinked = await linkContestEventsFromMatches(supabase, contestId);
 
+    const { syncRoundOf32OfficialSchedule } = await import(
+      "@/lib/server/world-cup/sync-round-of-32-schedule"
+    );
+    await syncRoundOf32OfficialSchedule(supabase);
+
     await supabase
       .from("worldcup_import_runs")
       .update({

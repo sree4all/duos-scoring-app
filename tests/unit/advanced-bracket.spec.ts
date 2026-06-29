@@ -10,6 +10,7 @@ import {
   validateAdvancedBracketPicks,
 } from "@/lib/domain/world-cup/advanced-bracket";
 import { ADVANCED_BRACKET_LOCK_FALLBACK_UTC } from "@/lib/server/world-cup/advanced-bracket-lock";
+import { roundOf32KickoffUtc } from "@/lib/domain/world-cup/round-of-32-fixtures";
 
 const teams = [
   "Argentina",
@@ -95,6 +96,6 @@ const semiHits = countCorrectPicks(
 assert.equal(semiHits * ADVANCED_BRACKET_POINTS.semiFinalist, 20);
 
 assert.equal(ADVANCED_BRACKET_LOCK_MATCH_NUMBER, 88);
-assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, "2026-07-03T18:00:00.000Z");
+assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, roundOf32KickoffUtc(88));
 
 console.log("advanced-bracket: OK");

@@ -5,6 +5,7 @@ import {
 } from "@/lib/domain/world-cup/match-stage";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { worldCupCopy } from "@/lib/copy/world-cup";
+import { buildLinkedMatchEventTitle } from "@/lib/domain/world-cup/match-event-title";
 import { resolvePredictionLockAtIso } from "@/lib/utils/match-lock";
 
 export type ScheduleEventRow = {
@@ -102,7 +103,11 @@ export async function listRevealedScheduleEvents(
       eventId: ev.id as string,
       matchId,
       matchNumber: (match.match_number as number | null) ?? null,
-      title: ev.title as string,
+      title: buildLinkedMatchEventTitle(
+        matchNumber,
+        match.home_team as string,
+        match.away_team as string,
+      ),
       homeTeam: match.home_team as string,
       awayTeam: match.away_team as string,
       venueLabel: (match.venue_label as string | null) ?? null,

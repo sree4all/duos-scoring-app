@@ -8,6 +8,7 @@ import { allowsDrawPick } from "@/lib/domain/world-cup/match-outcome";
 import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
 import type { StageScoringRule } from "@/lib/domain/world-cup/types";
 import type { ScheduleEventRow } from "@/lib/server/world-cup/schedule-query";
+import { buildLinkedMatchEventTitle } from "@/lib/domain/world-cup/match-event-title";
 import {
   PREDICTION_SCHEDULE_INITIAL,
   PREDICTION_SCHEDULE_STEP,
@@ -30,9 +31,7 @@ function statusLabel(status: string, kickoffUtc: string, lockAt: string | null):
 }
 
 function formatMatchHeading(ev: ScheduleEventRow): string {
-  if (ev.title.toLowerCase().includes(" vs ")) return ev.title;
-  const code = ev.title || `Match ${ev.matchNumber ?? "—"}`;
-  return `${code} — ${ev.homeTeam} vs ${ev.awayTeam}`;
+  return buildLinkedMatchEventTitle(ev.matchNumber, ev.homeTeam, ev.awayTeam);
 }
 
 function formatStagePointsLine(rule: StageScoringRule | undefined): string | null {

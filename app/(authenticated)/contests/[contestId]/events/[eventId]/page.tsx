@@ -23,6 +23,7 @@ import { OwnerMatchLockForm } from "@/components/world-cup/owner-match-lock-form
 import { OwnerMatchBonusPanel } from "@/components/world-cup/owner-match-bonus-panel";
 import { AdminProxyPredictionPanel } from "@/components/world-cup/admin-proxy-prediction-panel";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
+import { buildLinkedMatchEventTitle } from "@/lib/domain/world-cup/match-event-title";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import {
   isPlatformAdmin,
@@ -75,12 +76,18 @@ export default async function EventSubmissionPage({ params }: PageProps) {
   const { data: match } = await supabase
     .from("matches")
     .select(
-      "home_team, away_team, match_time_utc, kickoff_tz_offset, status, winner, stage_key",
+      "match_number, home_team, away_team, match_time_utc, kickoff_tz_offset, status, winner, stage_key",
     )
     .eq("id", matchId)
     .maybeSingle();
 
   if (!match) notFound();
+
+  const pageTitle = buildLinkedMatchEventTitle(
+    match.match_number as number | null,
+    match.home_team as string,
+    match.away_team as string,
+  );
 
   const stageKey = await resolveEventStageKey(supabase, {
     stage_key: event.stage_key as string | null,
@@ -118,7 +125,7 @@ export default async function EventSubmissionPage({ params }: PageProps) {
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Match prediction
         </p>
-        <h1 className="text-xl font-semibold sm:text-2xl">{event.title as string}</h1>
+        <h1 className="text-xl font-semibold sm:text-2xl">{pageTitle}</h1>
         <p className="break-words text-base font-medium sm:text-lg">
           {match.home_team as string} vs {match.away_team as string}
         </p>
