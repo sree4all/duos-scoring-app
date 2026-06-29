@@ -4,8 +4,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
-import { aggregateLeaderboardForContest } from "@/lib/server/generalized-scoring/scoring-projection-service";
-import { fetchAllContestLedgerRows } from "@/lib/server/world-cup/contest-ledger-query";
+import { fetchContestLeaderboard } from "@/lib/server/world-cup/contest-leaderboard";
 import { LeaderboardList } from "@/components/world-cup/leaderboard-list";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
@@ -26,10 +25,10 @@ export default async function LeaderboardPage({ params }: LeaderboardPageProps) 
   const contests = new GroupContestService(supabase);
   const contest = await contests.assertContestInGroup(contestId, activeGroupId);
 
-  const ledger = await fetchAllContestLedgerRows(supabase, contestId);
-
   const isRummy = contest.format_label === "rummy_points";
-  const sorted = aggregateLeaderboardForContest(ledger, { lowerTotalWins: isRummy });
+  const sorted = await fetchContestLeaderboard(supabase, contestId, contest.format_label, {
+    lowerTotalWins: isRummy,
+  });
 
   const participantIds = sorted.map((e) => e.participantId);
   const displayNameById = new Map<string, string>();
