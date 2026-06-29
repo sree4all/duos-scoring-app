@@ -3,6 +3,7 @@ import { getAuthenticatedSupabaseUser, groupErrorResponse } from "@/lib/server/g
 import { requireWorldCupOwner } from "@/lib/server/world-cup/guards";
 import { recalculateStageScoring } from "@/lib/server/world-cup/recalculate-stage";
 import { resyncContestLedgerFromSeason } from "@/lib/server/world-cup/contest-ledger-mirror";
+import { createServiceClient } from "@/lib/supabase/service";
 
 type RouteContext = { params: Promise<{ groupId: string; contestId: string }> };
 
@@ -18,14 +19,16 @@ export async function POST(request: Request, context: RouteContext) {
     const body = (await request.json()) as { stageKey?: string };
     const stageKey = body.stageKey?.trim() || "round_of_32";
 
+    const serviceSupabase = createServiceClient();
+
     const result = await recalculateStageScoring(
-      auth.supabase,
+      serviceSupabase,
       contestId,
       stageKey,
       "repair_wrong_pick_penalties",
     );
 
-    const resync = await resyncContestLedgerFromSeason(auth.supabase, contestId);
+    const resync = await resyncContestLedgerFromSeason(serviceSupabase, contestId);
 
     return NextResponse.json({
       ok: true,
