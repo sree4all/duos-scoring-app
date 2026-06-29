@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  parseMatchNumberFromExternalKey,
+  resolveScoringStageKey,
+} from "@/lib/domain/world-cup/match-stage";
 import { applyMatchScoring } from "@/lib/scoring/match-scoring";
 import { mirrorMatchLedgerToContest } from "@/lib/server/world-cup/contest-ledger-mirror";
 
@@ -11,9 +15,8 @@ export async function recalculateStageScoring(
 ): Promise<{ rescored: number; errors: string[] }> {
   const { data: events, error } = await supabase
     .from("events")
-    .select("id, source_match_id, matches!inner(status, stage_key)")
+    .select("id, source_match_id, stage_key, matches!inner(status, stage_key, match_number, external_key)")
     .eq("contest_id", contestId)
-    .eq("stage_key", stageKey)
     .eq("voided", false);
 
   if (error) throw error;
@@ -23,24 +26,37 @@ export async function recalculateStageScoring(
 
   for (const ev of events ?? []) {
     const joined = ev.matches as
-      | { status: string; stage_key: string }
-      | { status: string; stage_key: string }[]
+      | {
+          status: string;
+          stage_key: string | null;
+          match_number: number | null;
+          external_key: string | null;
+        }
+      | {
+          status: string;
+          stage_key: string | null;
+          match_number: number | null;
+          external_key: string | null;
+        }[]
       | null;
     const match = Array.isArray(joined) ? joined[0] : joined;
     if (!match || match.status !== "completed") continue;
+
+    const matchNumber =
+      match.match_number ??
+      parseMatchNumberFromExternalKey(match.external_key);
+    const matchStageKey = resolveScoringStageKey(match.stage_key, matchNumber);
+    if (matchStageKey !== stageKey) continue;
+
     const matchId = ev.source_match_id as string;
+    const eventId = ev.id as string;
     const outcome = await applyMatchScoring(supabase, matchId, seasonYear, {
       contestId,
-      stageKey,
+      stageKey: matchStageKey,
       auditReason: `recalculate_stage:${stageKey}:${reason}`,
     });
     if (outcome.ok) {
-      await mirrorMatchLedgerToContest(
-        supabase,
-        contestId,
-        ev.id as string,
-        matchId,
-      );
+      await mirrorMatchLedgerToContest(supabase, contestId, eventId, matchId);
       rescored++;
     } else {
       errors.push(`${matchId}: ${outcome.error}`);

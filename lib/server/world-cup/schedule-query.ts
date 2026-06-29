@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  parseMatchNumberFromExternalKey,
+  resolveScoringStageKey,
+} from "@/lib/domain/world-cup/match-stage";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { resolvePredictionLockAtIso } from "@/lib/utils/match-lock";
@@ -18,21 +22,30 @@ export type ScheduleEventRow = {
   matchStatus: string;
 };
 
-/** Prefer event.stage_key; fall back to linked match when import left events without stage_key. */
+/** Prefer linked match stage_key (source of truth); fall back to denormalized event row. */
 export async function resolveEventStageKey(
   supabase: SupabaseClient,
   event: { stage_key: string | null; source_match_id: string | null },
 ): Promise<string | null> {
-  const fromEvent = event.stage_key as string | null;
-  if (fromEvent) return fromEvent;
   const matchId = event.source_match_id as string | null;
-  if (!matchId) return null;
-  const { data: match } = await supabase
-    .from("matches")
-    .select("stage_key")
-    .eq("id", matchId)
-    .maybeSingle();
-  return (match?.stage_key as string | null) ?? null;
+  if (matchId) {
+    const { data: match } = await supabase
+      .from("matches")
+      .select("stage_key, match_number, external_key")
+      .eq("id", matchId)
+      .maybeSingle();
+    if (match) {
+      const matchNumber =
+        (match.match_number as number | null) ??
+        parseMatchNumberFromExternalKey(match.external_key as string | null);
+      const resolved = resolveScoringStageKey(
+        match.stage_key as string | null,
+        matchNumber,
+      );
+      if (resolved) return resolved;
+    }
+  }
+  return (event.stage_key as string | null) ?? null;
 }
 
 export async function listRevealedScheduleEvents(
@@ -62,7 +75,7 @@ export async function listRevealedScheduleEvents(
     const { data: matchRows } = await supabase
       .from("matches")
       .select(
-        "id, match_number, home_team, away_team, venue_label, match_time_utc, kickoff_tz_offset, status, stage_key",
+        "id, match_number, external_key, home_team, away_team, venue_label, match_time_utc, kickoff_tz_offset, status, stage_key",
       )
       .in("id", matchIds);
     for (const m of matchRows ?? []) {
@@ -76,8 +89,13 @@ export async function listRevealedScheduleEvents(
     const match = matchById.get(matchId);
     if (!match) continue;
 
+    const matchNumber =
+      (match.match_number as number | null) ??
+      parseMatchNumberFromExternalKey(match.external_key as string | null);
     const stageKey =
-      (ev.stage_key as string | null) ?? (match.stage_key as string | null) ?? null;
+      resolveScoringStageKey(match.stage_key as string | null, matchNumber) ??
+      (ev.stage_key as string | null) ??
+      null;
     if (memberView && (!stageKey || !revealedKeys.has(stageKey))) continue;
 
     rows.push({

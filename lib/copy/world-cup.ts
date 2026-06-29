@@ -1,6 +1,7 @@
 export const worldCupCopy = {
   nav: {
     worldCupPredictions: "Predictions",
+    advancedPredictions: "Tournament forecast",
     predictionStats: "Prediction stats",
     rummyScores: "Rummy Scores",
     standings: "Standings",
@@ -25,6 +26,37 @@ export const worldCupCopy = {
       "Watch for bonus prompts—organizers may post questions on this match before kickoff.",
     yourPick: "Your pick",
     startLabel: "Start",
+  },
+  advancedBracket: {
+    title: "World Cup tournament forecast",
+    subtitle:
+      "Predict the semi-finalists, finalists, and champion before Match 88 kickoff (July 3, 9:30 PM ET).",
+    semiFinalists: "Semi-finalists",
+    semiFinalistsHint:
+      "Choose 4 teams you think will reach the semi-finals (10 points each). Opponents on the same knockout path are hidden once you pick a team — e.g. South Africa and Canada cannot both be selected.",
+    finalists: "Finalists",
+    finalistsHint:
+      "Choose 2 of your semi-finalists to reach the final (15 points each). Only your semi-finalist picks are shown.",
+    winner: "Champion",
+    winnerHint: "Pick the World Cup winner from your two finalists (20 points).",
+    pickSemiFirst: "Pick all 4 semi-finalists first to unlock finalists.",
+    pickFinalistsFirst: "Pick both finalists first to unlock the champion.",
+    teamsSelected: (n: number, max: number) => `${n} of ${max} selected`,
+    save: "Save tournament forecast",
+    update: "Update tournament forecast",
+    saved: "Tournament forecast saved!",
+    locked: "Tournament forecast is locked — Match 88 kickoff (July 3, 9:30 PM ET) has passed.",
+    notOpenYet: "Tournament forecast opens when your organizer reveals the Round of 32.",
+    pointsTitle: "How tournament forecast scoring works",
+    pointsSemi: "10 points per correct semi-finalist (up to 4)",
+    pointsFinal: "15 points per correct finalist (up to 2)",
+    pointsWinner: "20 points for the correct champion",
+    scoredAfterSemi: "Semi-finalist scoring runs after the semi-finals stage ends.",
+    scoredAfterFinal: "Finalist and champion scoring runs after the final.",
+    officialSemi: "Official semi-finalists",
+    officialFinal: "Official finalists",
+    officialWinner: "Official champion",
+    notScoredYet: "Not scored yet",
   },
   admin: {
     panelTitle: "Admin tools",
