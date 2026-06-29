@@ -7,8 +7,12 @@ export const ADVANCED_BRACKET_PICKS = {
   winner: 1,
 } as const;
 
-/** Tournament forecast locks at kickoff of this Round of 32 match (July 3, 2026 2:00 PM ET). */
-export const ADVANCED_BRACKET_LOCK_MATCH_NUMBER = 88;
+/** Round of 16 fixture numbers (FIFA WC 2026). */
+export const ROUND_OF_16_MATCH_NUMBER_MIN = 89;
+export const ROUND_OF_16_MATCH_NUMBER_MAX = 96;
+
+/** Tournament forecast locks at the first Round of 16 kickoff (match 90, July 4, 2026 1:00 PM ET). */
+export const ADVANCED_BRACKET_LOCK_FALLBACK_UTC = "2026-07-04T17:00:00.000Z";
 
 export const ADVANCED_BRACKET_POINTS = {
   semiFinalist: 10,

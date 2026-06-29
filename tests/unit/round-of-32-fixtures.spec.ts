@@ -20,7 +20,7 @@ assert.equal(roundOf32KickoffUtc(76), "2026-06-29T17:00:00.000Z");
 assert.ok(fixtureTeamsMatch("Brazil", "Japan", m76));
 assert.ok(!fixtureTeamsMatch("Japan", "Brazil", m76));
 
-// Tournament forecast lock match — Australia vs Egypt, 2 PM ET Dallas
+// Match 88 — Australia vs Egypt, 2 PM ET Dallas (R32; no longer tournament forecast lock)
 const m88 = ROUND_OF_32_FIXTURES.find((f) => f.matchNumber === 88)!;
 assert.equal(m88.homeTeam, "Australia");
 assert.equal(m88.awayTeam, "Egypt");
