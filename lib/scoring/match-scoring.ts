@@ -1,8 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   parseMatchNumberFromExternalKey,
-  resolveScoringStageKey,
+  resolveMatchScoringStageKey,
 } from "@/lib/domain/world-cup/match-stage";
+import { DEFAULT_STAGE_RULES } from "@/lib/server/world-cup/seed-stage-rules";
 import { normAnswer } from "@/lib/scoring/normalize";
 import {
   bonusPointsForAnswer,
@@ -22,8 +23,13 @@ export type MatchScoreOptions = {
 };
 
 export type MatchScoreOutcome =
-  | { ok: true; ledgerRows: number }
+  | { ok: true; ledgerRows: number; stageKey?: string; missPenalty?: number }
   | { ok: false; error: string };
+
+function normalizeIncorrectPenalty(stageKey: string | undefined, penalty: number): number {
+  if (!stageKey || stageKey === "group_stage" || penalty === 0) return penalty;
+  return penalty > 0 ? -penalty : penalty;
+}
 
 type LedgerInsert = {
   user_id: string;
@@ -66,7 +72,18 @@ async function resolveWinnerPoints(
     if (data) {
       return {
         correct: Number(data.correct_points ?? 0),
-        incorrect: Number(data.incorrect_penalty ?? 0),
+        incorrect: normalizeIncorrectPenalty(
+          stageKey,
+          Number(data.incorrect_penalty ?? 0),
+        ),
+      };
+    }
+
+    const defaultRule = DEFAULT_STAGE_RULES.find((r) => r.stageKey === stageKey);
+    if (defaultRule) {
+      return {
+        correct: defaultRule.correctPoints,
+        incorrect: defaultRule.incorrectPenalty,
       };
     }
   }
@@ -106,9 +123,11 @@ export async function applyMatchScoring(
   const matchNumber =
     (match.match_number as number | null) ??
     parseMatchNumberFromExternalKey(match.external_key as string | null);
-  const stageKey =
-    options?.stageKey ??
-    resolveScoringStageKey(match.stage_key as string | null, matchNumber);
+  const stageKey = resolveMatchScoringStageKey(
+    options?.stageKey,
+    match.stage_key as string | null,
+    matchNumber,
+  );
   const stagePts = await resolveWinnerPoints(
     supabase,
     options?.contestId,
@@ -327,5 +346,10 @@ export async function applyMatchScoring(
 
   await supabase.from("matches").update({ scored_at: now, updated_at: now }).eq("id", matchId);
 
-  return { ok: true, ledgerRows: toInsert.length };
+  return {
+    ok: true,
+    ledgerRows: toInsert.length,
+    stageKey,
+    missPenalty: missPts,
+  };
 }
