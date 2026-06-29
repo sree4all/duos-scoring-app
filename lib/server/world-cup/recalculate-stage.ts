@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyMatchScoring } from "@/lib/scoring/match-scoring";
+import { mirrorMatchLedgerToContest } from "@/lib/server/world-cup/contest-ledger-mirror";
 
 export async function recalculateStageScoring(
   supabase: SupabaseClient,
@@ -10,7 +11,7 @@ export async function recalculateStageScoring(
 ): Promise<{ rescored: number; errors: string[] }> {
   const { data: events, error } = await supabase
     .from("events")
-    .select("source_match_id, matches!inner(status, stage_key)")
+    .select("id, source_match_id, matches!inner(status, stage_key)")
     .eq("contest_id", contestId)
     .eq("stage_key", stageKey)
     .eq("voided", false);
@@ -33,8 +34,17 @@ export async function recalculateStageScoring(
       stageKey,
       auditReason: `recalculate_stage:${stageKey}:${reason}`,
     });
-    if (outcome.ok) rescored++;
-    else errors.push(`${matchId}: ${outcome.error}`);
+    if (outcome.ok) {
+      await mirrorMatchLedgerToContest(
+        supabase,
+        contestId,
+        ev.id as string,
+        matchId,
+      );
+      rescored++;
+    } else {
+      errors.push(`${matchId}: ${outcome.error}`);
+    }
   }
 
   return { rescored, errors };

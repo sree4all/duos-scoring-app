@@ -46,3 +46,50 @@ function mapReasonToAction(reason: string | null, sourceType: string): string {
   if (sourceType === "bonus" || reason?.startsWith("match_bonus")) return "match_bonus";
   return "match_winner";
 }
+
+/** Rebuild contest_points_ledger match/bonus lines from season points_ledger for one contest. */
+export async function resyncContestLedgerFromSeason(
+  supabase: SupabaseClient,
+  contestId: string,
+): Promise<{ mirrored: number }> {
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("id, source_match_id")
+    .eq("contest_id", contestId)
+    .eq("voided", false);
+
+  if (error) throw error;
+
+  let mirrored = 0;
+  for (const ev of events ?? []) {
+    const matchId = ev.source_match_id as string | null;
+    if (!matchId) continue;
+    await mirrorMatchLedgerToContest(supabase, contestId, ev.id as string, matchId);
+    mirrored++;
+  }
+
+  return { mirrored };
+}
+
+/** Mirror season ledger rows into every non-voided contest event linked to this match. */
+export async function mirrorMatchToLinkedContests(
+  supabase: SupabaseClient,
+  matchId: string,
+): Promise<void> {
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("id, contest_id")
+    .eq("source_match_id", matchId)
+    .eq("voided", false);
+
+  if (error) throw error;
+
+  for (const ev of events ?? []) {
+    await mirrorMatchLedgerToContest(
+      supabase,
+      ev.contest_id as string,
+      ev.id as string,
+      matchId,
+    );
+  }
+}
