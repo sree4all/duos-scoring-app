@@ -5,6 +5,7 @@ export const worldCupCopy = {
     predictionStats: "Prediction stats",
     rummyScores: "Rummy Scores",
     standings: "Standings",
+    standingsNew: "Standings (New)",
     myPoints: "My Points",
     groups: "Home",
   },

@@ -23,7 +23,9 @@ export function resolveContestPageBackground(
   pathname: string,
 ): PageBackgroundKey | null {
   if (!isWorldCupContest(contest)) return null;
-  if (pathname.includes("/leaderboard")) return "standings";
+  if (pathname.includes("/leaderboard") || pathname.includes("/standings-new")) {
+    return "standings";
+  }
   if (pathname.includes("/matches")) return "prediction";
   return null;
 }

@@ -32,6 +32,10 @@ export function WorldCupAppNav({
       href: `/contests/${defaultContestId}/leaderboard`,
       label: worldCupCopy.nav.standings,
     });
+    links.push({
+      href: `/contests/${defaultContestId}/standings-new`,
+      label: worldCupCopy.nav.standingsNew,
+    });
   }
   links.push({ href: "/history", label: worldCupCopy.nav.myPoints });
 
