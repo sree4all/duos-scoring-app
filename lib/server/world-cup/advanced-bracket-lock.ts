@@ -7,7 +7,7 @@ import {
 
 export { ADVANCED_BRACKET_LOCK_FALLBACK_UTC };
 
-/** Earliest imported Round of 16 kickoff; falls back to match 90 FIFA UTC time. */
+/** Earliest imported Round of 16 kickoff, extended through the tournament forecast deadline. */
 export async function getAdvancedBracketLockKickoffUtc(
   supabase: SupabaseClient,
   seasonYear = 2026,
@@ -24,5 +24,7 @@ export async function getAdvancedBracketLockKickoffUtc(
 
   if (error) throw error;
   const kickoff = (data?.[0]?.match_time_utc as string | null) ?? null;
-  return kickoff ?? ADVANCED_BRACKET_LOCK_FALLBACK_UTC;
+  const deadline = ADVANCED_BRACKET_LOCK_FALLBACK_UTC;
+  if (!kickoff) return deadline;
+  return new Date(kickoff) > new Date(deadline) ? kickoff : deadline;
 }
