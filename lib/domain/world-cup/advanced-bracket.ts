@@ -11,8 +11,8 @@ export const ADVANCED_BRACKET_PICKS = {
 export const ROUND_OF_16_MATCH_NUMBER_MIN = 89;
 export const ROUND_OF_16_MATCH_NUMBER_MAX = 96;
 
-/** Tournament forecast locks at the first Round of 16 kickoff (match 90, July 4, 2026 1:00 PM ET). */
-export const ADVANCED_BRACKET_LOCK_FALLBACK_UTC = "2026-07-04T17:00:00.000Z";
+/** Tournament forecast locks July 5, 2026 4:00 PM ET (match 91 kickoff). */
+export const ADVANCED_BRACKET_LOCK_FALLBACK_UTC = "2026-07-05T20:00:00.000Z";
 
 export const ADVANCED_BRACKET_POINTS = {
   semiFinalist: 10,

@@ -7,18 +7,83 @@ import {
 } from "@/lib/domain/world-cup/knockout-bracket";
 import { isPlaceholderTeam } from "@/lib/domain/world-cup/advanced-bracket";
 
-/** Distinct team names from Round of 32 fixtures (32 teams). */
+type RoundOf32MatchRow = {
+  match_number: number;
+  home_team: string;
+  away_team: string;
+  winner: string | null;
+  status: string;
+};
+
+/** Losers from completed Round of 32 matches. */
+export async function loadRoundOf32EliminatedTeams(
+  supabase: SupabaseClient,
+  seasonYear = 2026,
+): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("matches")
+    .select("home_team, away_team, winner")
+    .eq("season_year", seasonYear)
+    .in("match_number", [...ROUND_OF_32_MATCH_NUMBERS])
+    .eq("status", "completed")
+    .not("winner", "is", null);
+
+  if (error) throw error;
+
+  const eliminated = new Set<string>();
+  for (const row of data ?? []) {
+    const winner = String(row.winner ?? "").trim();
+    if (!winner || isPlaceholderTeam(winner)) continue;
+    for (const team of [String(row.home_team ?? "").trim(), String(row.away_team ?? "").trim()]) {
+      if (team && team !== winner && !isPlaceholderTeam(team)) eliminated.add(team);
+    }
+  }
+  return eliminated;
+}
+
+async function loadRoundOf32MatchRows(
+  supabase: SupabaseClient,
+  seasonYear = 2026,
+): Promise<RoundOf32MatchRow[]> {
+  const { data, error } = await supabase
+    .from("matches")
+    .select("match_number, external_key, home_team, away_team, winner, status")
+    .eq("season_year", seasonYear)
+    .in("match_number", [...ROUND_OF_32_MATCH_NUMBERS])
+    .order("match_number", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []) as RoundOf32MatchRow[];
+}
+
+function fixtureTeamsFromRow(row: RoundOf32MatchRow): [string, string] | null {
+  const home = String(row.home_team ?? "").trim();
+  const away = String(row.away_team ?? "").trim();
+  if (isPlaceholderTeam(home) || isPlaceholderTeam(away)) return null;
+
+  const winner = String(row.winner ?? "").trim();
+  if (row.status === "completed" && winner && !isPlaceholderTeam(winner)) {
+    return [winner, winner];
+  }
+  return [home, away];
+}
+
+/** Distinct team names from Round of 32 fixtures, excluding eliminated teams. */
 export async function listRoundOf32Teams(
   supabase: SupabaseClient,
   seasonYear = 2026,
 ): Promise<string[]> {
-  const bracket = await loadKnockoutBracket(supabase, seasonYear);
+  const [rows, eliminated] = await Promise.all([
+    loadRoundOf32MatchRows(supabase, seasonYear),
+    loadRoundOf32EliminatedTeams(supabase, seasonYear),
+  ]);
+
   const teams = new Set<string>();
-  for (const matchNumber of ROUND_OF_32_MATCH_NUMBERS) {
-    for (const team of bracket.fixtures.get(matchNumber)
-      ? [bracket.fixtures.get(matchNumber)!.homeTeam, bracket.fixtures.get(matchNumber)!.awayTeam]
-      : []) {
-      if (team && !isPlaceholderTeam(team)) teams.add(team);
+  for (const row of rows) {
+    const pair = fixtureTeamsFromRow(row);
+    if (!pair) continue;
+    for (const team of pair) {
+      if (team && !eliminated.has(team)) teams.add(team);
     }
   }
   return [...teams].sort((a, b) => a.localeCompare(b));
@@ -29,24 +94,16 @@ export async function loadKnockoutBracket(
   supabase: SupabaseClient,
   seasonYear = 2026,
 ): Promise<KnockoutBracket> {
-  const { data, error } = await supabase
-    .from("matches")
-    .select("match_number, external_key, home_team, away_team")
-    .eq("season_year", seasonYear)
-    .in("match_number", [...ROUND_OF_32_MATCH_NUMBERS])
-    .order("match_number", { ascending: true });
-
-  if (error) throw error;
+  const rows = await loadRoundOf32MatchRows(supabase, seasonYear);
 
   const fixtures: KnockoutFixture[] = [];
-  for (const row of data ?? []) {
-    const home = String(row.home_team ?? "").trim();
-    const away = String(row.away_team ?? "").trim();
-    if (isPlaceholderTeam(home) || isPlaceholderTeam(away)) continue;
+  for (const row of rows) {
+    const pair = fixtureTeamsFromRow(row);
+    if (!pair) continue;
     fixtures.push({
       matchNumber: Number(row.match_number),
-      homeTeam: home,
-      awayTeam: away,
+      homeTeam: pair[0],
+      awayTeam: pair[1],
     });
   }
 
