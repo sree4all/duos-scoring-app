@@ -14,7 +14,53 @@ export const KNOCKOUT_FEEDERS: Record<number, readonly [number, number]> = {
   100: [95, 96],
   101: [97, 98],
   102: [99, 100],
+  104: [101, 102],
 };
+
+/** Round of 16 and later — propagation applies from this match number upward. */
+export const MIN_PROPAGATION_MATCH_NUMBER = 89;
+
+export type WinnerSlotTarget = {
+  sourceMatchNumber: number;
+  targetMatchNumber: number;
+  slot: "home" | "away";
+};
+
+/** Full knockout feeder map including Final (104). */
+export const FULL_KNOCKOUT_FEEDERS: Record<number, readonly [number, number]> = {
+  ...KNOCKOUT_FEEDERS,
+  104: [101, 102],
+};
+
+/** Map completed feeder match winners → downstream home/away slots (R16+ sources only). */
+export function buildWinnerToSlotMap(
+  minSourceMatch = MIN_PROPAGATION_MATCH_NUMBER,
+): WinnerSlotTarget[] {
+  const entries: WinnerSlotTarget[] = [];
+  for (const [targetStr, feeders] of Object.entries(FULL_KNOCKOUT_FEEDERS)) {
+    const targetMatchNumber = Number(targetStr);
+    const [homeFeeder, awayFeeder] = feeders;
+    if (homeFeeder >= minSourceMatch) {
+      entries.push({
+        sourceMatchNumber: homeFeeder,
+        targetMatchNumber,
+        slot: "home",
+      });
+    }
+    if (awayFeeder >= minSourceMatch) {
+      entries.push({
+        sourceMatchNumber: awayFeeder,
+        targetMatchNumber,
+        slot: "away",
+      });
+    }
+  }
+  return entries;
+}
+
+export function winnerSlotTargetsForSource(sourceMatchNumber: number): WinnerSlotTarget[] {
+  return buildWinnerToSlotMap().filter((e) => e.sourceMatchNumber === sourceMatchNumber);
+}
 
 export const ROUND_OF_32_MATCH_NUMBERS = Array.from({ length: 16 }, (_, i) => 73 + i);
 

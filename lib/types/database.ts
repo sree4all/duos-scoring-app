@@ -83,6 +83,9 @@ export type BonusPrompt = {
   display_order: number;
   correct_answer?: string | null;
   input_type?: "text" | "single_choice";
+  correct_points?: number;
+  incorrect_penalty?: number;
+  generation_source?: "owner" | "auto_odd";
 };
 
 export type BonusPromptOption = {

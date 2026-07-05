@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # Duos Scoring App Development Guidelines
 
-Auto-generated guidance. Canonical feature: **004-generalized-scoring-platform** (`specs/004-generalized-scoring-platform`). Last updated: 2026-05-21.
+Auto-generated guidance. Canonical feature: **004-generalized-scoring-platform** (`specs/004-generalized-scoring-platform`). Last updated: 2026-07-05.
 
 ## Active technologies
 - Supabase PostgreSQL (additive migrations: `groups`, memberships, `group_id` on contests, `rummy_hands`) (005-prediction-rummy-groups)
@@ -16,6 +16,8 @@ Auto-generated guidance. Canonical feature: **004-generalized-scoring-platform**
 - N/A (no schema changes) (007-design-system-styling)
 - TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Tailwind CSS 3, existing `PageShell` / `lib/design/tokens.ts` (007) (008-world-cup-2026-design)
 - N/A — static assets in `public/design/world-cup-2026/` (008-world-cup-2026-design)
+- TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Supabase JS/SSR, Tailwind CSS, shadcn/ui (existing) (009-fifa-match-enhancements)
+- Supabase PostgreSQL — **no required new tables**; optional additive column `bonus_prompts.source` (`owner` | `auto_odd`) via migration; reuse `matches.home_team` / `away_team` updates (009-fifa-match-enhancements)
 
 - TypeScript 5.x (Node.js 20 LTS) + Next.js App Router, React, Supabase JS/SSR, Tailwind CSS, shadcn/ui
 - Supabase PostgreSQL (existing schema + additive migrations; generalized scoring tables per 004)

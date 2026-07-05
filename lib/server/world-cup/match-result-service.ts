@@ -1,16 +1,31 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { validateOfficialWinner } from "@/lib/domain/world-cup/match-outcome";
+import {
+  MIN_PROPAGATION_MATCH_NUMBER,
+} from "@/lib/domain/world-cup/knockout-bracket";
+import { propagateKnockoutTeams } from "@/lib/server/world-cup/bracket-propagation-service";
 import { resolveEventStageKey } from "@/lib/server/world-cup/schedule-query";
+
+export type MatchResultOutcome =
+  | {
+      ok: true;
+      propagated?: {
+        matchIds: string[];
+        picksCleared: number;
+        bonusAnswersCleared: number;
+      };
+    }
+  | { ok: false; error: string };
 
 export async function setMatchOfficialResult(
   supabase: SupabaseClient,
   contestId: string,
   matchId: string,
   winnerRaw: string,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<MatchResultOutcome> {
   const { data: match, error: matchErr } = await supabase
     .from("matches")
-    .select("id, home_team, away_team, stage_key, status")
+    .select("id, home_team, away_team, stage_key, status, match_number")
     .eq("id", matchId)
     .maybeSingle();
 
@@ -45,5 +60,22 @@ export async function setMatchOfficialResult(
     .eq("id", matchId);
 
   if (updateErr) return { ok: false, error: updateErr.message };
+
+  const matchNumber = match.match_number as number | null;
+  if (matchNumber != null && matchNumber >= MIN_PROPAGATION_MATCH_NUMBER) {
+    const propagation = await propagateKnockoutTeams(supabase, matchId, contestId);
+    if (!propagation.ok) {
+      return { ok: false, error: propagation.error };
+    }
+    return {
+      ok: true,
+      propagated: {
+        matchIds: propagation.propagatedMatchIds,
+        picksCleared: propagation.picksCleared,
+        bonusAnswersCleared: propagation.bonusAnswersCleared,
+      },
+    };
+  }
+
   return { ok: true };
 }

@@ -3,16 +3,24 @@ import type { MemberPredictionRow } from "@/components/world-cup/prediction-stat
 import type { PredictionStatsEvent } from "@/components/world-cup/prediction-stats-panel";
 import { listRevealedScheduleEvents } from "@/lib/server/world-cup/schedule-query";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
+import { shouldHidePeerPredictions } from "@/lib/server/world-cup/prediction-visibility";
+
+export type PredictionStatsLoadOptions = {
+  memberView?: boolean;
+  viewerUserId: string;
+  isOwner: boolean;
+};
 
 export async function loadPredictionStatsForContest(
   supabase: SupabaseClient,
   contestId: string,
   groupId: string,
-  memberView: boolean,
+  options: PredictionStatsLoadOptions,
 ): Promise<{
   events: PredictionStatsEvent[];
   predictionsByEventId: Record<string, MemberPredictionRow[]>;
 }> {
+  const memberView = options.memberView ?? true;
   const schedule = await listRevealedScheduleEvents(supabase, contestId, memberView);
   const matchIds = schedule.map((e) => e.matchId);
 
@@ -39,6 +47,10 @@ export async function loadPredictionStatsForContest(
     homeTeam: e.homeTeam,
     awayTeam: e.awayTeam,
     bonusPrompts: bonusPromptsByMatchId.get(e.matchId) ?? [],
+    peerPredictionsHidden: shouldHidePeerPredictions(
+      options.isOwner,
+      e.kickoffUtc,
+    ),
   }));
 
   const { data: memberRows } = await supabase
@@ -95,8 +107,13 @@ export async function loadPredictionStatsForContest(
   const predictionsByEventId: Record<string, MemberPredictionRow[]> = {};
 
   for (const ev of schedule) {
+    const hidePeers = shouldHidePeerPredictions(options.isOwner, ev.kickoffUtc);
+    const visibleMemberIds = hidePeers
+      ? memberIds.filter((id) => id === options.viewerUserId)
+      : memberIds;
+
     const bonusPrompts = bonusPromptsByMatchId.get(ev.matchId) ?? [];
-    const rows: MemberPredictionRow[] = memberIds.map((uid) => ({
+    const rows: MemberPredictionRow[] = visibleMemberIds.map((uid) => ({
       displayName: displayNameByUserId.get(uid) ?? `Player ${uid.slice(0, 6)}`,
       predictedWinner: pickByMatchAndUser.get(`${ev.matchId}:${uid}`) ?? null,
       bonusAnswers:
