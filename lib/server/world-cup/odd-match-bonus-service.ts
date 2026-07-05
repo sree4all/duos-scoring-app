@@ -9,18 +9,60 @@ import {
   getWorldCupOddBonusEnabledAt,
   isWorldCupOddBonusEnabled,
 } from "@/lib/server/world-cup/flags";
+import { createServiceClient } from "@/lib/supabase/service";
 
 const ODD_BONUS_CORRECT_POINTS = 3;
 const ODD_BONUS_INCORRECT_PENALTY = 0;
 
+export type OddMatchBonusOutcome = {
+  generated: number;
+  skipped: number;
+  error?: string;
+};
+
+function isAutoOddPromptKey(promptKey: string): boolean {
+  return promptKey.startsWith("wc2026:auto:odd:");
+}
+
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message: unknown }).message);
+  }
+  return String(err);
+}
+
+/** Uses service role so bonus upserts are not blocked by member RLS. Never throws. */
 export async function ensureOddMatchBonuses(
-  supabase: SupabaseClient,
+  _supabase: SupabaseClient,
   contestId: string,
-): Promise<{ generated: number; skipped: number }> {
+): Promise<OddMatchBonusOutcome> {
   if (!isWorldCupOddBonusEnabled()) {
     return { generated: 0, skipped: 0 };
   }
 
+  let supabase: SupabaseClient;
+  try {
+    supabase = createServiceClient();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Missing service credentials";
+    console.error("[ensureOddMatchBonuses]", message);
+    return { generated: 0, skipped: 0, error: message };
+  }
+
+  try {
+    return await runEnsureOddMatchBonuses(supabase, contestId);
+  } catch (err) {
+    const message = errorMessage(err) || "Odd bonus generation failed";
+    console.error("[ensureOddMatchBonuses]", message);
+    return { generated: 0, skipped: 0, error: message };
+  }
+}
+
+async function runEnsureOddMatchBonuses(
+  supabase: SupabaseClient,
+  contestId: string,
+): Promise<OddMatchBonusOutcome> {
   const enabledAt = getWorldCupOddBonusEnabledAt();
   const now = new Date().toISOString();
 
@@ -75,14 +117,12 @@ export async function ensureOddMatchBonuses(
 
     const { data: existingPrompts } = await supabase
       .from("bonus_prompts")
-      .select("id, generation_source, prompt_key")
+      .select("id, prompt_key")
       .eq("match_id", matchId)
       .eq("is_active", true);
 
     const hasOwnerPrompt = (existingPrompts ?? []).some(
-      (p) =>
-        (p.generation_source as string | null) !== "auto_odd" &&
-        !(p.prompt_key as string).startsWith("wc2026:auto:odd:"),
+      (p) => !isAutoOddPromptKey(p.prompt_key as string),
     );
     if (hasOwnerPrompt) {
       skipped += 1;
@@ -106,18 +146,19 @@ export async function ensureOddMatchBonuses(
 
     let promptId = existing?.id as string | undefined;
 
+    const promptWriteBase = {
+      prompt_text: template.promptText,
+      is_active: true,
+      correct_points: ODD_BONUS_CORRECT_POINTS,
+      incorrect_penalty: ODD_BONUS_INCORRECT_PENALTY,
+      input_type: "single_choice" as const,
+    };
+
+    // Auto prompts are identified by prompt_key (wc2026:auto:odd:m{n}), not generation_source.
     if (promptId) {
       const { error: updateErr } = await supabase
         .from("bonus_prompts")
-        .update({
-          prompt_text: template.promptText,
-          is_active: true,
-          correct_points: ODD_BONUS_CORRECT_POINTS,
-          incorrect_penalty: ODD_BONUS_INCORRECT_PENALTY,
-          generation_source: "auto_odd",
-          input_type: "single_choice",
-          updated_at: now,
-        })
+        .update({ ...promptWriteBase, updated_at: now })
         .eq("id", promptId);
       if (updateErr) throw updateErr;
 
@@ -130,13 +171,8 @@ export async function ensureOddMatchBonuses(
           scope: "match",
           match_id: matchId,
           prompt_key: promptKey,
-          prompt_text: template.promptText,
-          input_type: "single_choice",
-          correct_points: ODD_BONUS_CORRECT_POINTS,
-          incorrect_penalty: ODD_BONUS_INCORRECT_PENALTY,
-          generation_source: "auto_odd",
+          ...promptWriteBase,
           display_order: 0,
-          is_active: true,
         })
         .select("id")
         .single();

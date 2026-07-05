@@ -27,9 +27,9 @@ export function isGroupCreationDisabled(): boolean {
   return isWorldCupPrivateMode();
 }
 
-/** Odd-match auto bonus generation (feature 009). */
+/** Odd-match auto bonus generation (feature 009). Opt-in until DB migration is applied. */
 export function isWorldCupOddBonusEnabled(): boolean {
-  return process.env.WORLD_CUP_ODD_BONUS_ENABLED !== "false";
+  return process.env.WORLD_CUP_ODD_BONUS_ENABLED === "true";
 }
 
 /** Matches with kickoff after this instant may receive auto odd bonuses. */
