@@ -15,6 +15,7 @@ import { MatchScheduleList } from "@/components/world-cup/match-schedule-list";
 import { StagePointsPanel } from "@/components/world-cup/stage-points-panel";
 import { ContestMatchesTabs } from "@/components/world-cup/contest-matches-tabs";
 import { PredictionStatsPanel } from "@/components/world-cup/prediction-stats-panel";
+import { AdvancedBracketStatsPanel } from "@/components/world-cup/advanced-bracket-stats-panel";
 import { AdvancedBracketPredictionsForm } from "@/components/world-cup/advanced-bracket-predictions-form";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
 import type { MatchBonusPrompt } from "@/lib/domain/world-cup/match-bonus";
@@ -26,6 +27,8 @@ import {
   getAdvancedBracketAccess,
   loadUserAdvancedBracketPicks,
 } from "@/lib/server/world-cup/advanced-bracket-service";
+import { loadAdvancedBracketStatsForContest } from "@/lib/server/world-cup/advanced-bracket-stats";
+import { isAdvancedBracketStatsTabVisible } from "@/lib/utils/advanced-bracket-stats-tab";
 import {
   loadKnockoutBracket,
   listRoundOf32Teams,
@@ -129,13 +132,25 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     await loadPredictionStatsForContest(supabase, contestId, activeGroupId, memberView);
   const defaultStatsEventId = pickDefaultStatsEventId(upcomingEvents);
 
-  const [bracketAccess, bracketTeams, bracket, bracketPicks] = await Promise.all([
+  const [bracketAccess, bracketTeams, bracket, bracketPicks, tournamentConfig] = await Promise.all([
     getAdvancedBracketAccess(supabase, contestId),
     listRoundOf32Teams(supabase),
     loadKnockoutBracket(supabase),
     loadUserAdvancedBracketPicks(supabase, contestId, user.id),
+    supabase
+      .from("group_tournament_config")
+      .select("advanced_bracket_stats_visible_to_members")
+      .eq("group_id", activeGroupId)
+      .eq("season_year", 2026)
+      .maybeSingle()
+      .then(({ data }) => data),
   ]);
   const knockoutFixtures = serializeKnockoutFixtures(bracket);
+
+  const showAdvancedBracketStats = isAdvancedBracketStatsTabVisible(tournamentConfig, isAdmin);
+  const advancedBracketStatsRows = showAdvancedBracketStats
+    ? await loadAdvancedBracketStatsForContest(supabase, contestId, activeGroupId)
+    : [];
 
   const schedulePanel = (
     <div className="space-y-6">
@@ -206,6 +221,16 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     </div>
   );
 
+  const advancedStatsPanel = showAdvancedBracketStats ? (
+    <AdvancedBracketStatsPanel
+      rows={advancedBracketStatsRows}
+      groupId={activeGroupId}
+      contestId={contestId}
+      canToggleVisibility={isAdmin}
+      visibleToMembers={Boolean(tournamentConfig?.advanced_bracket_stats_visible_to_members)}
+    />
+  ) : null;
+
   const pageBackground = resolveContestPageBackground(
     contest,
     `/contests/${contestId}/matches`,
@@ -232,7 +257,12 @@ export default async function ContestMatchesPage({ params }: PageProps) {
         </p>
       ) : null}
 
-      <ContestMatchesTabs schedule={schedulePanel} stats={statsPanel} advanced={advancedPanel} />
+      <ContestMatchesTabs
+        schedule={schedulePanel}
+        stats={statsPanel}
+        advanced={advancedPanel}
+        advancedStats={bracketAccess.open && advancedStatsPanel ? advancedStatsPanel : undefined}
+      />
 
       <div className="flex flex-wrap gap-3 border-t pt-4 text-sm">
         <Link href={`/contests/${contestId}/leaderboard`} className="underline">
