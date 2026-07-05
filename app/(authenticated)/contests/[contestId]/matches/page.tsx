@@ -10,6 +10,7 @@ import {
 } from "@/lib/server/world-cup/schedule-query";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { loadPredictionStatsForContest } from "@/lib/server/world-cup/prediction-stats";
+import { ensureOddMatchBonuses } from "@/lib/server/world-cup/odd-match-bonus-service";
 import { pickDefaultStatsEventId } from "@/lib/server/world-cup/pick-default-event";
 import { MatchScheduleList } from "@/components/world-cup/match-schedule-list";
 import { StagePointsPanel } from "@/components/world-cup/stage-points-panel";
@@ -125,8 +126,14 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     }
   }
 
+  await ensureOddMatchBonuses(supabase, contestId);
+
   const { events: statsEvents, predictionsByEventId } =
-    await loadPredictionStatsForContest(supabase, contestId, activeGroupId, memberView);
+    await loadPredictionStatsForContest(supabase, contestId, activeGroupId, {
+      memberView: true,
+      viewerUserId: user.id,
+      isOwner,
+    });
   const defaultStatsEventId = pickDefaultStatsEventId(upcomingEvents);
 
   const [bracketAccess, bracketTeams, bracket, bracketPicks] = await Promise.all([

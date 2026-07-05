@@ -12,6 +12,8 @@ export const worldCupCopy = {
     alreadyPredicted: "Already predicted",
     bonusNotPredicted: "Bonus not predicted",
     duePrediction: "Due prediction",
+    hiddenUntilKickoff: "Other players' picks will be visible at kickoff.",
+    pickClearedHint: "Your pick was cleared because the match teams changed. Please pick again.",
     save: "Save prediction",
     update: "Update prediction",
     saved: "Prediction saved!",

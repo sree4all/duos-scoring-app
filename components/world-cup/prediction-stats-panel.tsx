@@ -5,6 +5,7 @@ import { formatKickoffDisplay } from "@/lib/utils/kickoff-display";
 import { MOBILE_LIST_INITIAL, MOBILE_LIST_STEP } from "@/lib/world-cup/mobile-list";
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
 import { formatMatchPickLabel } from "@/lib/domain/world-cup/match-outcome";
+import { worldCupCopy } from "@/lib/copy/world-cup";
 
 export type PredictionStatsBonusPrompt = {
   id: string;
@@ -19,6 +20,7 @@ export type PredictionStatsEvent = {
   homeTeam: string;
   awayTeam: string;
   bonusPrompts?: PredictionStatsBonusPrompt[];
+  peerPredictionsHidden?: boolean;
 };
 
 export type MemberPredictionRow = {
@@ -91,6 +93,12 @@ export function PredictionStatsPanel({
         <p className="break-words text-sm text-muted-foreground">
           {selected.homeTeam} vs {selected.awayTeam} · Kickoff{" "}
           {formatKickoffDisplay(selected.kickoffUtc)}
+        </p>
+      ) : null}
+
+      {selected?.peerPredictionsHidden ? (
+        <p className="rounded-md border border-dashed bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+          {worldCupCopy.prediction.hiddenUntilKickoff}
         </p>
       ) : null}
 

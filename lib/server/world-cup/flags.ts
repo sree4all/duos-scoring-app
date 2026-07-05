@@ -26,3 +26,18 @@ export function getDefaultInviteCode(): string | null {
 export function isGroupCreationDisabled(): boolean {
   return isWorldCupPrivateMode();
 }
+
+/** Odd-match auto bonus generation (feature 009). */
+export function isWorldCupOddBonusEnabled(): boolean {
+  return process.env.WORLD_CUP_ODD_BONUS_ENABLED !== "false";
+}
+
+/** Matches with kickoff after this instant may receive auto odd bonuses. */
+export function getWorldCupOddBonusEnabledAt(): Date {
+  const raw = process.env.WORLD_CUP_ODD_BONUS_ENABLED_AT?.trim();
+  if (raw) {
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return new Date("2026-07-05T00:00:00.000Z");
+}

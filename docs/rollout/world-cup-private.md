@@ -22,6 +22,8 @@ GROUP_RUMMY_ENABLED=true
 | `DEFAULT_GROUP_ID` | UUID (optional) | Pilot group; active-group cookie fallback |
 | `DEFAULT_CONTEST_ID` | UUID (optional) | Nav links for Predictions and Standings |
 | `DEFAULT_INVITE_CODE` | e.g. `DQBGKVTM` | Auto-join on `/welcome` after sign-in |
+| `WORLD_CUP_ODD_BONUS_ENABLED` | `true` / `false` (default `true`) | Auto-generate odd-match bonus questions |
+| `WORLD_CUP_ODD_BONUS_ENABLED_AT` | ISO timestamp | Only matches kicking off after this instant get auto bonuses |
 
 ## Recommended pilot `.env.local`
 
@@ -34,6 +36,8 @@ WORLD_CUP_PRIVATE_MODE=true
 DEFAULT_GROUP_ID=<your-group-uuid>
 DEFAULT_CONTEST_ID=<your-world-cup-contest-uuid>
 DEFAULT_INVITE_CODE=DQBGKVTM
+WORLD_CUP_ODD_BONUS_ENABLED=true
+WORLD_CUP_ODD_BONUS_ENABLED_AT=2026-07-05T00:00:00.000Z
 ```
 
 When `WORLD_CUP_PRIVATE_MODE=true`:

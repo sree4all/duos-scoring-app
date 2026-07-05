@@ -33,7 +33,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: outcome.error }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      propagated: outcome.propagated ?? null,
+    });
   } catch (error) {
     return groupErrorResponse(error);
   }
