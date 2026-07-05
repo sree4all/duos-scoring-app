@@ -3,6 +3,7 @@ export const worldCupCopy = {
     worldCupPredictions: "Predictions",
     advancedPredictions: "Tournament forecast",
     predictionStats: "Prediction stats",
+    advancedBracketStats: "Tournament forecast stats",
     rummyScores: "Rummy Scores",
     standings: "Standings",
     standingsNew: "Standings (New)",
@@ -59,6 +60,12 @@ export const worldCupCopy = {
     officialFinal: "Official finalists",
     officialWinner: "Official champion",
     notScoredYet: "Not scored yet",
+    statsVisibilityTitle: "Show stats to all members",
+    statsVisibilityHint:
+      "When off, only admins can see member tournament forecast picks. When on, everyone in the group can see them.",
+    statsVisibleToAll: "Visible to all group members.",
+    statsAdminOnly: "Hidden from members — admins only.",
+    statsNotVisible: "Tournament forecast stats are not visible to members yet.",
   },
   admin: {
     panelTitle: "Admin tools",
