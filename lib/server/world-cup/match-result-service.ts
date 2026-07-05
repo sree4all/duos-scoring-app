@@ -4,6 +4,7 @@ import {
   MIN_PROPAGATION_MATCH_NUMBER,
 } from "@/lib/domain/world-cup/knockout-bracket";
 import { propagateKnockoutTeams } from "@/lib/server/world-cup/bracket-propagation-service";
+import { ensureOddMatchBonuses } from "@/lib/server/world-cup/odd-match-bonus-service";
 import { resolveEventStageKey } from "@/lib/server/world-cup/schedule-query";
 
 export type MatchResultOutcome =
@@ -63,10 +64,11 @@ export async function setMatchOfficialResult(
 
   const matchNumber = match.match_number as number | null;
   if (matchNumber != null && matchNumber >= MIN_PROPAGATION_MATCH_NUMBER) {
-    const propagation = await propagateKnockoutTeams(supabase, matchId, contestId);
+    const propagation = await propagateKnockoutTeams(supabase, matchId);
     if (!propagation.ok) {
       return { ok: false, error: propagation.error };
     }
+    await ensureOddMatchBonuses(supabase, contestId);
     return {
       ok: true,
       propagated: {
@@ -77,5 +79,6 @@ export async function setMatchOfficialResult(
     };
   }
 
+  await ensureOddMatchBonuses(supabase, contestId);
   return { ok: true };
 }

@@ -8,7 +8,6 @@ import {
   MIN_PROPAGATION_MATCH_NUMBER,
   winnerSlotTargetsForSource,
 } from "@/lib/domain/world-cup/knockout-bracket";
-import { ensureOddMatchBonuses } from "@/lib/server/world-cup/odd-match-bonus-service";
 
 export type PropagationOutcome = {
   ok: true;
@@ -24,7 +23,6 @@ export type PropagationResult =
 export async function propagateKnockoutTeams(
   supabase: SupabaseClient,
   sourceMatchId: string,
-  contestId?: string,
 ): Promise<PropagationResult> {
   const { data: source, error: sourceErr } = await supabase
     .from("matches")
@@ -145,10 +143,6 @@ export async function propagateKnockoutTeams(
         bonusAnswersCleared += bonusIdsToClear.length;
       }
     }
-  }
-
-  if (contestId) {
-    await ensureOddMatchBonuses(supabase, contestId);
   }
 
   return {
