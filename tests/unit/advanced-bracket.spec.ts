@@ -10,7 +10,10 @@ import {
   reconcileCascadingPicks,
   validateAdvancedBracketPicks,
 } from "@/lib/domain/world-cup/advanced-bracket";
+import { computeBracketState } from "@/lib/domain/world-cup/forecast-eligibility";
 import { ADVANCED_BRACKET_LOCK_FALLBACK_UTC as LOCK_FALLBACK } from "@/lib/server/world-cup/advanced-bracket-lock";
+
+const bracketState = computeBracketState([]);
 
 const teams = [
   "Argentina",
@@ -53,7 +56,7 @@ const validPicks = {
   winnerTeam: teams[0],
 };
 
-assert.equal(validateAdvancedBracketPicks(validPicks, teams), null);
+assert.equal(validateAdvancedBracketPicks(validPicks, teams, bracketState), null);
 
 const finalistNotInSemi = {
   semiFinalistTeams: teams.slice(0, 4),
@@ -61,8 +64,8 @@ const finalistNotInSemi = {
   winnerTeam: teams[0],
 };
 assert.match(
-  validateAdvancedBracketPicks(finalistNotInSemi, teams) ?? "",
-  /semi-finalist picks/,
+  validateAdvancedBracketPicks(finalistNotInSemi, teams, bracketState) ?? "",
+  /finalist/,
 );
 
 const winnerNotFinalist = {
@@ -70,7 +73,7 @@ const winnerNotFinalist = {
   finalistTeams: teams.slice(0, 2),
   winnerTeam: teams[2],
 };
-assert.match(validateAdvancedBracketPicks(winnerNotFinalist, teams) ?? "", /finalist picks/);
+assert.match(validateAdvancedBracketPicks(winnerNotFinalist, teams, bracketState) ?? "", /finalist/);
 
 const reconciled = reconcileCascadingPicks(
   teams.slice(0, 4),
@@ -84,7 +87,7 @@ const tooFewSemi = {
   ...validPicks,
   semiFinalistTeams: teams.slice(0, 3),
 };
-assert.match(validateAdvancedBracketPicks(tooFewSemi, teams) ?? "", /4 semi-finalists/);
+assert.match(validateAdvancedBracketPicks(tooFewSemi, teams, bracketState) ?? "", /4 semi-finalists/);
 
 assert.equal(countCorrectPicks(["France", "Spain", "Italy"], ["France", "Germany", "Spain"]), 2);
 assert.equal(countCorrectPicks(["France"], ["France"]), 1);

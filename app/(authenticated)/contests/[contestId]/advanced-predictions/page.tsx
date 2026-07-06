@@ -13,9 +13,7 @@ import {
   loadUserAdvancedBracketPicks,
 } from "@/lib/server/world-cup/advanced-bracket-service";
 import {
-  loadKnockoutBracket,
-  listRoundOf32Teams,
-  serializeKnockoutFixtures,
+  loadForecastEligibility,
 } from "@/lib/server/world-cup/round-of-32-teams";
 import { resolveContestPageBackground } from "@/lib/design/resolve-page-background";
 import { PageHeroLayer } from "@/components/layout/page-hero-layer";
@@ -35,14 +33,12 @@ export default async function AdvancedPredictionsPage({ params }: PageProps) {
     activeGroupId,
   );
 
-  const [access, teams, bracket, initialPicks, official] = await Promise.all([
+  const [access, eligibility, initialPicks, official] = await Promise.all([
     getAdvancedBracketAccess(supabase, contestId),
-    listRoundOf32Teams(supabase),
-    loadKnockoutBracket(supabase),
+    loadForecastEligibility(supabase),
     loadUserAdvancedBracketPicks(supabase, contestId, user.id),
     loadAdvancedBracketOfficial(supabase, contestId),
   ]);
-  const knockoutFixtures = serializeKnockoutFixtures(bracket);
 
   const pageBackground = resolveContestPageBackground(
     contest,
@@ -124,7 +120,7 @@ export default async function AdvancedPredictionsPage({ params }: PageProps) {
         <div className="relative z-[1] rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
           {access.message ?? worldCupCopy.advancedBracket.notOpenYet}
         </div>
-      ) : teams.length === 0 ? (
+      ) : eligibility.eligible_teams.length === 0 ? (
         <div className="relative z-[1] rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
           Round of 32 teams are not available yet. Import the schedule first.
         </div>
@@ -132,8 +128,7 @@ export default async function AdvancedPredictionsPage({ params }: PageProps) {
         <div className="relative z-[1]">
           <AdvancedBracketPredictionsForm
             contestId={contestId}
-            teams={teams}
-            knockoutFixtures={knockoutFixtures}
+            eligibility={eligibility}
             initialPicks={initialPicks}
             locked={access.locked}
           />

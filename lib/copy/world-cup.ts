@@ -37,10 +37,10 @@ export const worldCupCopy = {
       "Predict the semi-finalists, finalists, and champion before July 6, 3:00 PM ET.",
     semiFinalists: "Semi-finalists",
     semiFinalistsHint:
-      "Choose 4 teams you think will reach the semi-finals (10 points each). Picking one team hides every opponent on the same knockout path — R16 pairings (e.g. Portugal vs Spain), quarter-finals (e.g. France vs Morocco), and earlier rounds. Eliminated teams are removed automatically.",
+      "Choose 4 semi-finalists (10 points each) — one per quarter-final path: W97, W98, W99, W100. Picking Brazil hides Japan, Norway, Mexico, and England (all in W99). Eliminated teams are removed automatically.",
     finalists: "Finalists",
     finalistsHint:
-      "Choose 2 of your semi-finalists to reach the final (15 points each). Only your semi-finalist picks are shown.",
+      "Choose 2 of your semi-finalists to reach the final (15 points each). Finalists must come from different bracket halves — e.g. Argentina and England cannot both be finalists (both right half).",
     winner: "Champion",
     winnerHint: "Pick the World Cup winner from your two finalists (20 points).",
     pickSemiFirst: "Pick all 4 semi-finalists first to unlock finalists.",

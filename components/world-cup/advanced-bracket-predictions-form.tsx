@@ -10,10 +10,10 @@ import {
   type AdvancedBracketPicks,
 } from "@/lib/domain/world-cup/advanced-bracket";
 import {
-  buildKnockoutBracket,
+  visibleFinalistTeams,
   visibleSemiFinalistTeams,
-  type KnockoutFixture,
-} from "@/lib/domain/world-cup/knockout-bracket";
+  type ForecastEligibility,
+} from "@/lib/domain/world-cup/forecast-eligibility";
 import { saveAdvancedBracketPicks } from "@/app/(authenticated)/contests/[contestId]/advanced-predictions/actions";
 import { cn } from "@/lib/utils";
 
@@ -119,18 +119,15 @@ function WinnerRadioList({
 
 export function AdvancedBracketPredictionsForm({
   contestId,
-  teams,
-  knockoutFixtures,
+  eligibility,
   initialPicks,
   locked,
 }: {
   contestId: string;
-  teams: string[];
-  knockoutFixtures: KnockoutFixture[];
+  eligibility: ForecastEligibility;
   initialPicks: AdvancedBracketPicks | null;
   locked: boolean;
 }) {
-  const bracket = useMemo(() => buildKnockoutBracket(knockoutFixtures), [knockoutFixtures]);
   const router = useRouter();
   const [semiFinalists, setSemiFinalists] = useState<string[]>(
     initialPicks?.semiFinalistTeams ?? [],
@@ -151,10 +148,13 @@ export function AdvancedBracketPredictionsForm({
   const finalistsComplete = finalists.length === ADVANCED_BRACKET_PICKS.finalists;
 
   const semiFinalistPool = useMemo(
-    () => visibleSemiFinalistTeams(bracket, teams, semiFinalists),
-    [bracket, teams, semiFinalists],
+    () => visibleSemiFinalistTeams(eligibility, semiFinalists),
+    [eligibility, semiFinalists],
   );
-  const finalistPool = useMemo(() => [...semiFinalists].sort((a, b) => a.localeCompare(b)), [semiFinalists]);
+  const finalistPool = useMemo(
+    () => visibleFinalistTeams(eligibility, semiFinalists, finalists),
+    [eligibility, semiFinalists, finalists],
+  );
   const winnerPool = useMemo(() => [...finalists].sort((a, b) => a.localeCompare(b)), [finalists]);
 
   function handleSemiChange(next: string[]) {

@@ -31,9 +31,7 @@ import {
 import { loadAdvancedBracketStatsForContest } from "@/lib/server/world-cup/advanced-bracket-stats";
 import { isAdvancedBracketStatsTabVisible } from "@/lib/utils/advanced-bracket-stats-tab";
 import {
-  loadKnockoutBracket,
-  listRoundOf32Teams,
-  serializeKnockoutFixtures,
+  loadForecastEligibility,
 } from "@/lib/server/world-cup/round-of-32-teams";
 import { PageHeroLayer } from "@/components/layout/page-hero-layer";
 import {
@@ -140,10 +138,9 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     });
   const defaultStatsEventId = pickDefaultStatsEventId(upcomingEvents);
 
-  const [bracketAccess, bracketTeams, bracket, bracketPicks, tournamentConfig] = await Promise.all([
+  const [bracketAccess, forecastEligibility, bracketPicks, tournamentConfig] = await Promise.all([
     getAdvancedBracketAccess(supabase, contestId),
-    listRoundOf32Teams(supabase),
-    loadKnockoutBracket(supabase),
+    loadForecastEligibility(supabase),
     loadUserAdvancedBracketPicks(supabase, contestId, user.id),
     supabase
       .from("group_tournament_config")
@@ -153,7 +150,6 @@ export default async function ContestMatchesPage({ params }: PageProps) {
       .maybeSingle()
       .then(({ data }) => data),
   ]);
-  const knockoutFixtures = serializeKnockoutFixtures(bracket);
 
   const showAdvancedBracketStats = isAdvancedBracketStatsTabVisible(tournamentConfig, isAdmin);
   const advancedBracketStatsRows = showAdvancedBracketStats
@@ -206,7 +202,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
     <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
       {bracketAccess.message ?? worldCupCopy.advancedBracket.notOpenYet}
     </div>
-  ) : bracketTeams.length === 0 ? (
+  ) : forecastEligibility.eligible_teams.length === 0 ? (
     <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
       Round of 32 teams are not available yet.
     </div>
@@ -215,8 +211,7 @@ export default async function ContestMatchesPage({ params }: PageProps) {
       <p className="text-sm text-muted-foreground">{worldCupCopy.advancedBracket.subtitle}</p>
       <AdvancedBracketPredictionsForm
         contestId={contestId}
-        teams={bracketTeams}
-        knockoutFixtures={knockoutFixtures}
+        eligibility={forecastEligibility}
         initialPicks={bracketPicks}
         locked={bracketAccess.locked}
       />
