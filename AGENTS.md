@@ -28,6 +28,7 @@ Copy `.env.local.example` for the full list. Restart the cloud agent after addin
 ```bash
 npm run ops:db:link          # one-time per VM (or after snapshot reset)
 npm run ops:db:push          # apply pending files in supabase/migrations/
+npm run ops:db:repair-applied  # sync history when SQL was run in Dashboard editor
 npm run ops:db:sql -- path/to/file.sql
 npm run ops:db:sql -- "select count(*) from profiles"
 ```

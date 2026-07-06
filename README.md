@@ -41,6 +41,15 @@ Editable diagram (diagrams.net / draw.io): [`docs/app-architecture.drawio`](docs
    ```
 
    If many versions are stuck, reset the database in the Dashboard (clears tables and migration history), then `npm run db:push` once.
+
+   **Ran migration SQL in the Dashboard editor:** the schema may be current but CLI history is not. Sync without re-running SQL:
+
+   ```bash
+   npm run ops:db:repair-applied
+   npm run ops:db:push   # should report "Remote database is up to date"
+   ```
+
+   Each file under `supabase/migrations/` must have a **unique** version prefix (the part before the first `_`). Duplicate prefixes cause `schema_migrations_pkey` errors on push.
 4. Enable auth providers (Google and/or Email) and set callback URL to `http://localhost:3000/auth/callback`.
 5. Set group flags (recommended for local dev):
 
