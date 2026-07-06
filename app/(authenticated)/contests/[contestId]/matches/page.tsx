@@ -5,6 +5,7 @@ import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { requireGroupMembership } from "@/lib/server/groups/guards";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import {
+  getActiveStageKeys,
   listRevealedScheduleEvents,
   listUpcomingScheduleEvents,
 } from "@/lib/server/world-cup/schedule-query";
@@ -62,6 +63,9 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   const allEvents = await listRevealedScheduleEvents(supabase, contestId, memberView);
   const upcomingEvents = listUpcomingScheduleEvents(allEvents);
   const rules = await new StageRulesRepository(supabase).listForContest(contestId, memberView);
+  const activeStageKeys = getActiveStageKeys(allEvents);
+  const activePointRules = rules.filter((r) => activeStageKeys.has(r.stageKey));
+  const showPointsPanel = rules.length === 0 || activePointRules.length > 0;
 
   const matchIds = upcomingEvents.map((e) => e.matchId);
   const userPickByEventId: Record<string, string | null> = {};
@@ -164,15 +168,9 @@ export default async function ContestMatchesPage({ params }: PageProps) {
         </div>
       ) : null}
 
-      <div>
-        <h2 className="text-sm font-semibold">How points work</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Only rounds your organizer has opened are listed below.
-        </p>
-        <div className="mt-2">
-          <StagePointsPanel rules={rules} />
-        </div>
-      </div>
+      {showPointsPanel ? (
+        <StagePointsPanel rules={activePointRules.length > 0 ? activePointRules : rules} />
+      ) : null}
 
       <div>
         <h2 className="text-sm font-semibold">Match schedule</h2>

@@ -125,6 +125,17 @@ export async function listRevealedScheduleEvents(
   return rows;
 }
 
+/** Stage keys that still have at least one non-completed match. */
+export function getActiveStageKeys(events: ScheduleEventRow[]): Set<string> {
+  const active = new Set<string>();
+  for (const e of events) {
+    if (e.stageKey && e.matchStatus !== "completed") {
+      active.add(e.stageKey);
+    }
+  }
+  return active;
+}
+
 /** Non-completed matches in kickoff order for the predictions schedule. */
 export function listUpcomingScheduleEvents(events: ScheduleEventRow[]): ScheduleEventRow[] {
   return events
