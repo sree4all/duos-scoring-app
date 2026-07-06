@@ -95,3 +95,7 @@ npx tsx tests/integration/group-isolation.spec.ts
 ## License
 
 Private / project use.
+
+## Cursor Cloud Agents
+
+To let a cloud agent deploy to Vercel and run Supabase migrations/SQL without your terminal, add secrets from `.env.local.example` in [Cursor Cloud Agents → Secrets](https://cursor.com/dashboard/cloud-agents), then see [AGENTS.md](AGENTS.md).
