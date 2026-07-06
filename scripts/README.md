@@ -49,6 +49,19 @@ Rows are matched by email to existing auth users.
 
 ---
 
+## Cloud agent / CI operations
+
+Non-interactive Supabase and Vercel commands for Cursor Cloud Agents. Requires secrets from `.env.local.example` (set in [Cursor Cloud Agents → Secrets](https://cursor.com/dashboard/cloud-agents), not committed to git).
+
+```bash
+npm run ops:db:link          # link CLI to remote Supabase project
+npm run ops:db:push          # apply pending migrations
+npm run ops:db:sql -- path/to/query.sql
+npm run ops:deploy:prod      # Vercel production deploy
+```
+
+See [AGENTS.md](../AGENTS.md) for the full cloud-agent setup checklist.
+
 ## Command reference
 
 ```bash
