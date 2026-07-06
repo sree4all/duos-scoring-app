@@ -2,30 +2,42 @@
 
 ## Cursor Cloud specific instructions
 
-This repo is configured for **Cursor Cloud Agents** to deploy to Vercel and run Supabase migrations/SQL without local terminal access. Secrets are injected via [Cursor Cloud Agents → Secrets](https://cursor.com/dashboard/cloud-agents).
+Ops scripts load **`.env.local` automatically** (same file you use locally). You do not need to duplicate every key into Cursor Secrets unless you prefer to.
 
-### One-time setup (you, in Cursor dashboard)
+### Option A — Use your existing `.env.local` (recommended)
 
-Add these secrets to your workspace. Use **Runtime Secret** for passwords and API tokens; use **Environment Variable** for public URLs and feature flags.
+**Locally:** copy `.env.local.example` → `.env.local`, fill in values, run ops commands as usual.
 
-| Secret | Type | Where to get it |
-|--------|------|-----------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Environment Variable | Supabase → Settings → API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Environment Variable | Supabase → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Runtime Secret | Supabase → Settings → API |
-| `SUPABASE_ACCESS_TOKEN` | Runtime Secret | [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
-| `SUPABASE_PROJECT_ID` | Environment Variable | Supabase → Settings → General (project ref) |
-| `SUPABASE_DB_PASSWORD` | Runtime Secret | Supabase → Settings → Database |
-| `VERCEL_TOKEN` | Runtime Secret | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
-| `VERCEL_ORG_ID` | Environment Variable | Vercel project → Settings → General, or `.vercel/project.json` after `vercel link` |
-| `VERCEL_PROJECT_ID` | Environment Variable | Same as above |
-| Feature flags (`GROUP_*`, `WORLD_CUP_*`) | Environment Variable | Match production Vercel env vars |
+**In Cursor Cloud Agents**, pick one:
 
-Copy `.env.local.example` for the full list. Restart the cloud agent after adding secrets.
+1. **Single secret (easiest):** paste your entire `.env.local` file as one **Runtime Secret** named `DOTENV_LOCAL` at [cursor.com/dashboard/cloud-agents](https://cursor.com/dashboard/cloud-agents). On startup the agent writes it to `.env.local` automatically.
+2. **Environment snapshot:** when saving a cloud environment snapshot, include your `.env.local` in the VM. Future agents inherit it.
+3. **Commit the file to the VM once:** at the start of an agent run, ask it to create `.env.local` from the contents you paste in chat (one-time per VM).
+
+Verify everything loaded:
+
+```bash
+npm run ops:env:check
+```
+
+### Option B — Individual Cursor Secrets (optional)
+
+If you already use the Secrets tab, those values take precedence over `.env.local`. See `.env.local.example` for the full key list.
+
+Add any **missing** CLI-only keys your local file may not have yet:
+
+| Key | Where to get it |
+|-----|-----------------|
+| `SUPABASE_ACCESS_TOKEN` | [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
+| `SUPABASE_PROJECT_ID` | Supabase → Settings → General (project ref) |
+| `SUPABASE_DB_PASSWORD` | Supabase → Settings → Database |
+| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` | `.vercel/project.json` after `vercel link` |
 
 ### Supabase: link, migrate, run SQL
 
 ```bash
+npm run ops:env:check
 npm run ops:db:link          # one-time per VM (or after snapshot reset)
 npm run ops:db:push          # apply pending files in supabase/migrations/
 npm run ops:db:sql -- path/to/file.sql
@@ -47,7 +59,7 @@ This runs `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt 
 ### Typical agent workflow
 
 1. Implement code + migration on a feature branch, open PR, merge to `main`.
-2. `npm run ops:db:link` (if not linked) → `npm run ops:db:push`.
+2. `npm run ops:env:check` → `npm run ops:db:link` (if not linked) → `npm run ops:db:push`.
 3. `npm run ops:deploy:prod`.
 4. Verify with `npm run lint` and targeted scripts under `scripts/`.
 

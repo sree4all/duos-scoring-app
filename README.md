@@ -98,4 +98,4 @@ Private / project use.
 
 ## Cursor Cloud Agents
 
-To let a cloud agent deploy to Vercel and run Supabase migrations/SQL without your terminal, add secrets from `.env.local.example` in [Cursor Cloud Agents → Secrets](https://cursor.com/dashboard/cloud-agents), then see [AGENTS.md](AGENTS.md).
+Ops scripts read **`.env.local`** (same as local dev). For cloud agents, paste the whole file as a Runtime Secret named `DOTENV_LOCAL`, or include it in your environment snapshot. See [AGENTS.md](AGENTS.md).

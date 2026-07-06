@@ -51,16 +51,17 @@ Rows are matched by email to existing auth users.
 
 ## Cloud agent / CI operations
 
-Non-interactive Supabase and Vercel commands for Cursor Cloud Agents. Requires secrets from `.env.local.example` (set in [Cursor Cloud Agents → Secrets](https://cursor.com/dashboard/cloud-agents), not committed to git).
+Non-interactive Supabase and Vercel commands. **All ops scripts load `.env.local` automatically.**
 
 ```bash
+npm run ops:env:check        # verify required vars are present
 npm run ops:db:link          # link CLI to remote Supabase project
 npm run ops:db:push          # apply pending migrations
 npm run ops:db:sql -- path/to/query.sql
 npm run ops:deploy:prod      # Vercel production deploy
 ```
 
-See [AGENTS.md](../AGENTS.md) for the full cloud-agent setup checklist.
+For Cursor Cloud Agents without a local file, paste your entire `.env.local` as a Runtime Secret named `DOTENV_LOCAL`. See [AGENTS.md](../AGENTS.md).
 
 ## Command reference
 
