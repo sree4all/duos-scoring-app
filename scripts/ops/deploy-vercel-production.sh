@@ -9,8 +9,8 @@ set -euo pipefail
 
 export VERCEL_ORG_ID VERCEL_PROJECT_ID
 
-vercel pull --yes --environment=production
-vercel build --prod
-vercel deploy --prebuilt --prod
+npx vercel pull --yes --environment=production
+npx vercel build --prod
+npx vercel deploy --prebuilt --prod
 
 echo "Production deployment complete."
