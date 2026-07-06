@@ -14,7 +14,11 @@
     "import:worldcup": "tsx scripts/import-worldcup-2026.ts",
     "db:link": "npx supabase link",
     "db:push": "npx supabase db push",
-    "db:migration-list": "npx supabase migration list"
+    "db:migration-list": "npx supabase migration list",
+    "ops:db:link": "bash scripts/ops/link-supabase.sh",
+    "ops:db:push": "bash scripts/ops/push-migrations.sh",
+    "ops:db:sql": "bash scripts/ops/run-sql.sh",
+    "ops:deploy:prod": "bash scripts/ops/deploy-vercel-production.sh"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
