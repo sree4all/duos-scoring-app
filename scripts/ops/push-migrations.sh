@@ -7,5 +7,5 @@ if [[ ! -f supabase/.temp/project-ref ]]; then
   exit 1
 fi
 
-npx supabase db push --linked
+npx supabase db push --linked --include-all --yes
 echo "Migrations pushed successfully."
