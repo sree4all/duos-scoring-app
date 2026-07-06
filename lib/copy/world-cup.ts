@@ -37,7 +37,7 @@ export const worldCupCopy = {
       "Predict the semi-finalists, finalists, and champion before July 6, 3:00 PM ET.",
     semiFinalists: "Semi-finalists",
     semiFinalistsHint:
-      "Choose 4 teams you think will reach the semi-finals (10 points each). When you pick one team, their bracket opponent is hidden — including Round of 16 matchups like Portugal vs Spain. Eliminated teams are removed automatically.",
+      "Choose 4 teams you think will reach the semi-finals (10 points each). Picking one team hides every opponent on the same knockout path — R16 pairings (e.g. Portugal vs Spain), quarter-finals (e.g. France vs Morocco), and earlier rounds. Eliminated teams are removed automatically.",
     finalists: "Finalists",
     finalistsHint:
       "Choose 2 of your semi-finalists to reach the final (15 points each). Only your semi-finalist picks are shown.",

@@ -1,20 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  buildKnockoutBracket,
+  activeTeamsFromKnockoutFixtures,
+  buildEffectiveKnockoutBracket,
+  buildEffectiveKnockoutFixtures,
+  type KnockoutMatchState,
+} from "@/lib/domain/world-cup/knockout-bracket-build";
+import {
   KNOCKOUT_ELIMINATION_MATCH_NUMBERS,
   PRE_SEMI_KNOCKOUT_MATCHES,
   type KnockoutBracket,
   type KnockoutFixture,
 } from "@/lib/domain/world-cup/knockout-bracket";
 import { isPlaceholderTeam } from "@/lib/domain/world-cup/advanced-bracket";
-
-type KnockoutMatchRow = {
-  match_number: number;
-  home_team: string;
-  away_team: string;
-  winner: string | null;
-  status: string;
-};
 
 /** Losers from completed knockout matches (R32 through semi-finals). */
 export async function loadKnockoutEliminatedTeams(
@@ -54,28 +51,23 @@ async function loadKnockoutMatchRows(
   supabase: SupabaseClient,
   seasonYear = 2026,
   matchNumbers: readonly number[] = PRE_SEMI_KNOCKOUT_MATCHES,
-): Promise<KnockoutMatchRow[]> {
+): Promise<KnockoutMatchState[]> {
   const { data, error } = await supabase
     .from("matches")
-    .select("match_number, external_key, home_team, away_team, winner, status")
+    .select("match_number, home_team, away_team, winner, status")
     .eq("season_year", seasonYear)
     .in("match_number", [...matchNumbers])
     .order("match_number", { ascending: true });
 
   if (error) throw error;
-  return (data ?? []) as KnockoutMatchRow[];
-}
 
-function fixtureTeamsFromRow(row: KnockoutMatchRow): [string, string] | null {
-  const home = String(row.home_team ?? "").trim();
-  const away = String(row.away_team ?? "").trim();
-  if (isPlaceholderTeam(home) || isPlaceholderTeam(away)) return null;
-
-  const winner = String(row.winner ?? "").trim();
-  if (row.status === "completed" && winner && !isPlaceholderTeam(winner)) {
-    return [winner, winner];
-  }
-  return [home, away];
+  return (data ?? []).map((row) => ({
+    matchNumber: Number(row.match_number),
+    homeTeam: String(row.home_team ?? ""),
+    awayTeam: String(row.away_team ?? ""),
+    winner: (row.winner as string | null) ?? null,
+    status: String(row.status ?? ""),
+  }));
 }
 
 /** Distinct team names from knockout fixtures, excluding eliminated teams. */
@@ -84,19 +76,12 @@ export async function listRoundOf32Teams(
   seasonYear = 2026,
 ): Promise<string[]> {
   const [rows, eliminated] = await Promise.all([
-    loadKnockoutMatchRows(supabase, seasonYear, KNOCKOUT_ELIMINATION_MATCH_NUMBERS),
+    loadKnockoutMatchRows(supabase, seasonYear, PRE_SEMI_KNOCKOUT_MATCHES),
     loadKnockoutEliminatedTeams(supabase, seasonYear),
   ]);
 
-  const teams = new Set<string>();
-  for (const row of rows) {
-    const pair = fixtureTeamsFromRow(row);
-    if (!pair) continue;
-    for (const team of pair) {
-      if (team && !eliminated.has(team)) teams.add(team);
-    }
-  }
-  return [...teams].sort((a, b) => a.localeCompare(b));
+  const fixtures = buildEffectiveKnockoutFixtures(rows);
+  return activeTeamsFromKnockoutFixtures(fixtures, eliminated);
 }
 
 /** Knockout fixtures with team names for bracket-path UI rules (R32 through QF). */
@@ -105,19 +90,7 @@ export async function loadKnockoutBracket(
   seasonYear = 2026,
 ): Promise<KnockoutBracket> {
   const rows = await loadKnockoutMatchRows(supabase, seasonYear, PRE_SEMI_KNOCKOUT_MATCHES);
-
-  const fixtures: KnockoutFixture[] = [];
-  for (const row of rows) {
-    const pair = fixtureTeamsFromRow(row);
-    if (!pair) continue;
-    fixtures.push({
-      matchNumber: Number(row.match_number),
-      homeTeam: pair[0],
-      awayTeam: pair[1],
-    });
-  }
-
-  return buildKnockoutBracket(fixtures);
+  return buildEffectiveKnockoutBracket(rows);
 }
 
 export function serializeKnockoutFixtures(bracket: KnockoutBracket): KnockoutFixture[] {

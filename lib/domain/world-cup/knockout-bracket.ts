@@ -62,6 +62,22 @@ export function winnerSlotTargetsForSource(sourceMatchNumber: number): WinnerSlo
   return buildWinnerToSlotMap().filter((e) => e.sourceMatchNumber === sourceMatchNumber);
 }
 
+/** Downstream slots filled when `sourceMatchNumber` completes (R32 → R16 → QF → SF). */
+export function parentMatchSlotTargets(sourceMatchNumber: number): WinnerSlotTarget[] {
+  const entries: WinnerSlotTarget[] = [];
+  for (const [targetStr, feeders] of Object.entries(KNOCKOUT_FEEDERS)) {
+    const targetMatchNumber = Number(targetStr);
+    const [homeFeeder, awayFeeder] = feeders;
+    if (homeFeeder === sourceMatchNumber) {
+      entries.push({ sourceMatchNumber, targetMatchNumber, slot: "home" });
+    }
+    if (awayFeeder === sourceMatchNumber) {
+      entries.push({ sourceMatchNumber, targetMatchNumber, slot: "away" });
+    }
+  }
+  return entries;
+}
+
 export const ROUND_OF_32_MATCH_NUMBERS = Array.from({ length: 16 }, (_, i) => 73 + i);
 
 /** Knockout matches R32 through semi-finals (matches 73–102). */
