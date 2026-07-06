@@ -19,7 +19,8 @@
     "ops:db:push": "bash scripts/ops/push-migrations.sh",
     "ops:db:sql": "bash scripts/ops/run-sql.sh",
     "ops:deploy:prod": "bash scripts/ops/deploy-vercel-production.sh",
-    "ops:env:check": "bash scripts/ops/check-env.sh"
+    "ops:env:check": "bash scripts/ops/check-env.sh",
+    "ops:verify-cloud": "bash scripts/ops/verify-cloud.sh"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
