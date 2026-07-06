@@ -1,4 +1,3 @@
-import type { AdvancedBracketPicks } from "@/lib/domain/world-cup/advanced-bracket";
 import {
   forecastValidationErrorMessage,
   validateForecastAnswers,

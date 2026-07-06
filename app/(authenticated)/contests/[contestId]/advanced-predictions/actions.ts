@@ -9,7 +9,7 @@ import {
   loadForecastBracketState,
   loadForecastEligibility,
 } from "@/lib/server/world-cup/round-of-32-teams";
-import { saveUserAdvancedBracketPicks } from "@/lib/server/world-cup/advanced-bracket-service";
+import { saveUserAdvancedBracketPicks, deleteUserAdvancedBracketPicks } from "@/lib/server/world-cup/advanced-bracket-service";
 
 export async function saveAdvancedBracketPicks(contestId: string, picks: AdvancedBracketPicks) {
   const { supabase, user } = await requireUser();
@@ -37,4 +37,17 @@ export async function saveAdvancedBracketPicks(contestId: string, picks: Advance
     eligibility.eligible_teams,
     bracketState,
   );
+}
+
+export async function invalidateAdvancedBracketPicks(contestId: string) {
+  const { supabase, user } = await requireUser();
+  const activeGroupId = await resolveActiveGroupId(supabase, user.id);
+  if (!activeGroupId) {
+    return { ok: false as const, error: "Select an active group first." };
+  }
+
+  await requireGroupMembership(supabase, activeGroupId, user.id);
+  await new GroupContestService(supabase).assertContestInGroup(contestId, activeGroupId);
+
+  return deleteUserAdvancedBracketPicks(supabase, contestId, user.id);
 }

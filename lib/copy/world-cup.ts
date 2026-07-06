@@ -49,6 +49,10 @@ export const worldCupCopy = {
     save: "Save tournament forecast",
     update: "Update tournament forecast",
     saved: "Tournament forecast saved!",
+    invalidateSelection: "Invalidate my selection",
+    invalidateConfirm:
+      "Remove all your tournament forecast picks? You can submit a new forecast before the deadline.",
+    invalidated: "Your tournament forecast has been cleared.",
     locked:
       "Tournament forecast is locked — the deadline has passed (July 6, 3:00 PM ET).",
     notOpenYet: "Tournament forecast opens when your organizer reveals the Round of 32.",

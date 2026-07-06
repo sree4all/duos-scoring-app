@@ -128,6 +128,26 @@ export async function saveUserAdvancedBracketPicks(
   return { ok: true };
 }
 
+export async function deleteUserAdvancedBracketPicks(
+  supabase: SupabaseClient,
+  contestId: string,
+  userId: string,
+  seasonYear = 2026,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const access = await getAdvancedBracketAccess(supabase, contestId, seasonYear);
+  if (!access.open) return { ok: false, error: access.message ?? "Not open yet." };
+  if (access.locked) return { ok: false, error: worldCupCopy.advancedBracket.locked };
+
+  const { error } = await supabase
+    .from("advanced_bracket_predictions")
+    .delete()
+    .eq("contest_id", contestId)
+    .eq("user_id", userId);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 export type AdvancedBracketScoreOutcome =
   | { ok: true; rowsAwarded: number; officialTeams: string[] }
   | { ok: false; error: string };

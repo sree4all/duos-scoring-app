@@ -14,7 +14,10 @@ import {
   visibleSemiFinalistTeams,
   type ForecastEligibility,
 } from "@/lib/domain/world-cup/forecast-eligibility";
-import { saveAdvancedBracketPicks } from "@/app/(authenticated)/contests/[contestId]/advanced-predictions/actions";
+import {
+  invalidateAdvancedBracketPicks,
+  saveAdvancedBracketPicks,
+} from "@/app/(authenticated)/contests/[contestId]/advanced-predictions/actions";
 import { cn } from "@/lib/utils";
 
 function TeamCheckboxGrid({
@@ -137,6 +140,7 @@ export function AdvancedBracketPredictionsForm({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [invalidating, setInvalidating] = useState(false);
 
   useEffect(() => {
     setSemiFinalists(initialPicks?.semiFinalistTeams ?? []);
@@ -171,6 +175,8 @@ export function AdvancedBracketPredictionsForm({
   }
 
   const hasSaved = Boolean(initialPicks);
+  const hasAnySelection =
+    semiFinalists.length > 0 || finalists.length > 0 || Boolean(winner);
   const canSave = useMemo(
     () => semiComplete && finalistsComplete && Boolean(winner),
     [semiComplete, finalistsComplete, winner],
@@ -193,6 +199,27 @@ export function AdvancedBracketPredictionsForm({
       router.refresh();
     }
     setPending(false);
+  }
+
+  async function invalidate() {
+    if (locked) return;
+    if (!window.confirm(worldCupCopy.advancedBracket.invalidateConfirm)) return;
+
+    setInvalidating(true);
+    setError(null);
+    setMessage(null);
+
+    const result = await invalidateAdvancedBracketPicks(contestId);
+    if (!result.ok) {
+      setError(result.error);
+    } else {
+      setSemiFinalists([]);
+      setFinalists([]);
+      setWinner(null);
+      setMessage(worldCupCopy.advancedBracket.invalidated);
+      router.refresh();
+    }
+    setInvalidating(false);
   }
 
   return (
@@ -284,15 +311,29 @@ export function AdvancedBracketPredictionsForm({
       </section>
 
       {!locked ? (
-        <Button
-          type="button"
-          className="w-full touch-manipulation"
-          size="cta-compact"
-          disabled={pending || !canSave}
-          onClick={save}
-        >
-          {hasSaved ? worldCupCopy.advancedBracket.update : worldCupCopy.advancedBracket.save}
-        </Button>
+        <div className="space-y-3">
+          <Button
+            type="button"
+            className="w-full touch-manipulation"
+            size="cta-compact"
+            disabled={pending || invalidating || !canSave}
+            onClick={save}
+          >
+            {hasSaved ? worldCupCopy.advancedBracket.update : worldCupCopy.advancedBracket.save}
+          </Button>
+          {(hasSaved || hasAnySelection) ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full touch-manipulation border-destructive/40 text-destructive hover:bg-destructive/10"
+              size="cta-compact"
+              disabled={pending || invalidating}
+              onClick={invalidate}
+            >
+              {worldCupCopy.advancedBracket.invalidateSelection}
+            </Button>
+          ) : null}
+        </div>
       ) : (
         <p className="text-sm text-muted-foreground">{worldCupCopy.advancedBracket.locked}</p>
       )}
