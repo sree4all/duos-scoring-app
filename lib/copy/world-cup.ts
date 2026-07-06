@@ -34,10 +34,10 @@ export const worldCupCopy = {
   advancedBracket: {
     title: "World Cup tournament forecast",
     subtitle:
-      "Predict the semi-finalists, finalists, and champion before July 5, 4:00 PM ET.",
+      "Predict the semi-finalists, finalists, and champion before July 6, 3:00 PM ET.",
     semiFinalists: "Semi-finalists",
     semiFinalistsHint:
-      "Choose 4 teams you think will reach the semi-finals (10 points each). Opponents on the same knockout path are hidden once you pick a team — e.g. South Africa and Canada cannot both be selected.",
+      "Choose 4 teams you think will reach the semi-finals (10 points each). When you pick one team, their bracket opponent is hidden — including Round of 16 matchups like Portugal vs Spain. Eliminated teams are removed automatically.",
     finalists: "Finalists",
     finalistsHint:
       "Choose 2 of your semi-finalists to reach the final (15 points each). Only your semi-finalist picks are shown.",
@@ -50,7 +50,7 @@ export const worldCupCopy = {
     update: "Update tournament forecast",
     saved: "Tournament forecast saved!",
     locked:
-      "Tournament forecast is locked — the deadline has passed (July 5, 4:00 PM ET).",
+      "Tournament forecast is locked — the deadline has passed (July 6, 3:00 PM ET).",
     notOpenYet: "Tournament forecast opens when your organizer reveals the Round of 32.",
     pointsTitle: "How tournament forecast scoring works",
     pointsSemi: "10 points per correct semi-finalist (up to 4)",

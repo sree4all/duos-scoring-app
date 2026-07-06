@@ -1,13 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   buildKnockoutBracket,
+  KNOCKOUT_ELIMINATION_MATCH_NUMBERS,
+  PRE_SEMI_KNOCKOUT_MATCHES,
   type KnockoutBracket,
   type KnockoutFixture,
-  ROUND_OF_32_MATCH_NUMBERS,
 } from "@/lib/domain/world-cup/knockout-bracket";
 import { isPlaceholderTeam } from "@/lib/domain/world-cup/advanced-bracket";
 
-type RoundOf32MatchRow = {
+type KnockoutMatchRow = {
   match_number: number;
   home_team: string;
   away_team: string;
@@ -15,8 +16,8 @@ type RoundOf32MatchRow = {
   status: string;
 };
 
-/** Losers from completed Round of 32 matches. */
-export async function loadRoundOf32EliminatedTeams(
+/** Losers from completed knockout matches (R32 through semi-finals). */
+export async function loadKnockoutEliminatedTeams(
   supabase: SupabaseClient,
   seasonYear = 2026,
 ): Promise<Set<string>> {
@@ -24,7 +25,7 @@ export async function loadRoundOf32EliminatedTeams(
     .from("matches")
     .select("home_team, away_team, winner")
     .eq("season_year", seasonYear)
-    .in("match_number", [...ROUND_OF_32_MATCH_NUMBERS])
+    .in("match_number", [...KNOCKOUT_ELIMINATION_MATCH_NUMBERS])
     .eq("status", "completed")
     .not("winner", "is", null);
 
@@ -41,22 +42,31 @@ export async function loadRoundOf32EliminatedTeams(
   return eliminated;
 }
 
-async function loadRoundOf32MatchRows(
+/** @deprecated Use {@link loadKnockoutEliminatedTeams}. */
+export async function loadRoundOf32EliminatedTeams(
   supabase: SupabaseClient,
   seasonYear = 2026,
-): Promise<RoundOf32MatchRow[]> {
+): Promise<Set<string>> {
+  return loadKnockoutEliminatedTeams(supabase, seasonYear);
+}
+
+async function loadKnockoutMatchRows(
+  supabase: SupabaseClient,
+  seasonYear = 2026,
+  matchNumbers: readonly number[] = PRE_SEMI_KNOCKOUT_MATCHES,
+): Promise<KnockoutMatchRow[]> {
   const { data, error } = await supabase
     .from("matches")
     .select("match_number, external_key, home_team, away_team, winner, status")
     .eq("season_year", seasonYear)
-    .in("match_number", [...ROUND_OF_32_MATCH_NUMBERS])
+    .in("match_number", [...matchNumbers])
     .order("match_number", { ascending: true });
 
   if (error) throw error;
-  return (data ?? []) as RoundOf32MatchRow[];
+  return (data ?? []) as KnockoutMatchRow[];
 }
 
-function fixtureTeamsFromRow(row: RoundOf32MatchRow): [string, string] | null {
+function fixtureTeamsFromRow(row: KnockoutMatchRow): [string, string] | null {
   const home = String(row.home_team ?? "").trim();
   const away = String(row.away_team ?? "").trim();
   if (isPlaceholderTeam(home) || isPlaceholderTeam(away)) return null;
@@ -68,14 +78,14 @@ function fixtureTeamsFromRow(row: RoundOf32MatchRow): [string, string] | null {
   return [home, away];
 }
 
-/** Distinct team names from Round of 32 fixtures, excluding eliminated teams. */
+/** Distinct team names from knockout fixtures, excluding eliminated teams. */
 export async function listRoundOf32Teams(
   supabase: SupabaseClient,
   seasonYear = 2026,
 ): Promise<string[]> {
   const [rows, eliminated] = await Promise.all([
-    loadRoundOf32MatchRows(supabase, seasonYear),
-    loadRoundOf32EliminatedTeams(supabase, seasonYear),
+    loadKnockoutMatchRows(supabase, seasonYear, KNOCKOUT_ELIMINATION_MATCH_NUMBERS),
+    loadKnockoutEliminatedTeams(supabase, seasonYear),
   ]);
 
   const teams = new Set<string>();
@@ -89,12 +99,12 @@ export async function listRoundOf32Teams(
   return [...teams].sort((a, b) => a.localeCompare(b));
 }
 
-/** Round of 32 fixtures with team names for bracket-path UI rules. */
+/** Knockout fixtures with team names for bracket-path UI rules (R32 through QF). */
 export async function loadKnockoutBracket(
   supabase: SupabaseClient,
   seasonYear = 2026,
 ): Promise<KnockoutBracket> {
-  const rows = await loadRoundOf32MatchRows(supabase, seasonYear);
+  const rows = await loadKnockoutMatchRows(supabase, seasonYear, PRE_SEMI_KNOCKOUT_MATCHES);
 
   const fixtures: KnockoutFixture[] = [];
   for (const row of rows) {

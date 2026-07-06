@@ -64,6 +64,9 @@ export function winnerSlotTargetsForSource(sourceMatchNumber: number): WinnerSlo
 
 export const ROUND_OF_32_MATCH_NUMBERS = Array.from({ length: 16 }, (_, i) => 73 + i);
 
+/** Knockout matches R32 through semi-finals (matches 73–102). */
+export const KNOCKOUT_ELIMINATION_MATCH_NUMBERS = Array.from({ length: 30 }, (_, i) => 73 + i);
+
 /** Knockout matches whose winner feeds the semi-finals (R32 through QF). */
 export const PRE_SEMI_KNOCKOUT_MATCHES = Array.from({ length: 28 }, (_, i) => 73 + i);
 
@@ -85,8 +88,30 @@ export function buildKnockoutBracket(fixtures: KnockoutFixture[]): KnockoutBrack
   return { fixtures: map };
 }
 
-/** All team names that could win through this match slot (R32 leaves only). */
+function isPlaceholderTeam(name: string): boolean {
+  const n = name.trim().toLowerCase();
+  return !n || n.includes("tbd") || n.includes("playoff") || n.includes("winner");
+}
+
+/** True when a fixture row has a known scheduled or completed matchup. */
+export function isKnownKnockoutMatchup(fixture: KnockoutFixture): boolean {
+  const home = fixture.homeTeam.trim();
+  const away = fixture.awayTeam.trim();
+  if (!home || !away) return false;
+  if (isPlaceholderTeam(home) || isPlaceholderTeam(away)) return false;
+  return true;
+}
+
+/** Teams in this match slot — prefers a known fixture over feeder subtrees (FIFA bracket style). */
 export function teamsInKnockoutSubtree(bracket: KnockoutBracket, matchNumber: number): string[] {
+  const fixture = bracket.fixtures.get(matchNumber);
+  if (fixture && isKnownKnockoutMatchup(fixture)) {
+    const home = fixture.homeTeam.trim();
+    const away = fixture.awayTeam.trim();
+    if (home === away) return [home];
+    return [home, away];
+  }
+
   const feeders = KNOCKOUT_FEEDERS[matchNumber];
   if (feeders) {
     const left = teamsInKnockoutSubtree(bracket, feeders[0]);
@@ -94,7 +119,6 @@ export function teamsInKnockoutSubtree(bracket: KnockoutBracket, matchNumber: nu
     return [...new Set([...left, ...right])];
   }
 
-  const fixture = bracket.fixtures.get(matchNumber);
   if (!fixture) return [];
   return [fixture.homeTeam, fixture.awayTeam].filter(Boolean);
 }

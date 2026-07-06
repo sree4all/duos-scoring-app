@@ -1,13 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   ADVANCED_BRACKET_LOCK_FALLBACK_UTC,
-  ROUND_OF_16_MATCH_NUMBER_MAX,
-  ROUND_OF_16_MATCH_NUMBER_MIN,
+  ADVANCED_BRACKET_LOCK_MATCH_NUMBER,
 } from "@/lib/domain/world-cup/advanced-bracket";
 
 export { ADVANCED_BRACKET_LOCK_FALLBACK_UTC };
 
-/** Earliest imported Round of 16 kickoff, extended through the tournament forecast deadline. */
+/** Match 93 kickoff (Portugal vs Spain), or fallback when not imported yet. */
 export async function getAdvancedBracketLockKickoffUtc(
   supabase: SupabaseClient,
   seasonYear = 2026,
@@ -16,15 +15,10 @@ export async function getAdvancedBracketLockKickoffUtc(
     .from("matches")
     .select("match_time_utc")
     .eq("season_year", seasonYear)
-    .gte("match_number", ROUND_OF_16_MATCH_NUMBER_MIN)
-    .lte("match_number", ROUND_OF_16_MATCH_NUMBER_MAX)
+    .eq("match_number", ADVANCED_BRACKET_LOCK_MATCH_NUMBER)
     .not("match_time_utc", "is", null)
-    .order("match_time_utc", { ascending: true })
-    .limit(1);
+    .maybeSingle();
 
   if (error) throw error;
-  const kickoff = (data?.[0]?.match_time_utc as string | null) ?? null;
-  const deadline = ADVANCED_BRACKET_LOCK_FALLBACK_UTC;
-  if (!kickoff) return deadline;
-  return new Date(kickoff) > new Date(deadline) ? kickoff : deadline;
+  return (data?.match_time_utc as string | null) ?? ADVANCED_BRACKET_LOCK_FALLBACK_UTC;
 }

@@ -60,4 +60,17 @@ assert.match(
   /cannot both reach/,
 );
 
+const r16Bracket = buildKnockoutBracket([
+  { matchNumber: 83, homeTeam: "Portugal", awayTeam: "Croatia" },
+  { matchNumber: 84, homeTeam: "Spain", awayTeam: "Austria" },
+  { matchNumber: 93, homeTeam: "Portugal", awayTeam: "Spain" },
+]);
+const r16Teams = ["Portugal", "Croatia", "Spain", "Austria", "Brazil", "Japan"];
+const hiddenForPortugal = hiddenSemiFinalistTeams(r16Bracket, ["Portugal"]);
+assert.ok(hiddenForPortugal.has("Spain"));
+assert.ok(!hiddenForPortugal.has("Brazil"));
+const visibleForPortugal = visibleSemiFinalistTeams(r16Bracket, r16Teams, ["Portugal"]);
+assert.ok(visibleForPortugal.includes("Portugal"));
+assert.ok(!visibleForPortugal.includes("Spain"));
+
 console.log("knockout-bracket: OK");

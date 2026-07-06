@@ -11,8 +11,11 @@ export const ADVANCED_BRACKET_PICKS = {
 export const ROUND_OF_16_MATCH_NUMBER_MIN = 89;
 export const ROUND_OF_16_MATCH_NUMBER_MAX = 96;
 
-/** Tournament forecast locks July 5, 2026 4:00 PM ET (match 91 kickoff). */
-export const ADVANCED_BRACKET_LOCK_FALLBACK_UTC = "2026-07-05T20:00:00.000Z";
+/** Tournament forecast locks July 6, 2026 3:00 PM ET (match 93 kickoff — Portugal vs Spain). */
+export const ADVANCED_BRACKET_LOCK_FALLBACK_UTC = "2026-07-06T19:00:00.000Z";
+
+/** FIFA match number whose kickoff is the tournament forecast deadline. */
+export const ADVANCED_BRACKET_LOCK_MATCH_NUMBER = 93;
 
 export const ADVANCED_BRACKET_POINTS = {
   semiFinalist: 10,
