@@ -3,9 +3,14 @@
 # Requires: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
 set -euo pipefail
 
-: "${VERCEL_TOKEN:?Set VERCEL_TOKEN (https://vercel.com/account/tokens)}"
-: "${VERCEL_ORG_ID:?Set VERCEL_ORG_ID (team slug or user ID)}"
-: "${VERCEL_PROJECT_ID:?Set VERCEL_PROJECT_ID (project ID or name)}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$ROOT"
+# shellcheck source=scripts/ops/load-env.sh
+source scripts/ops/load-env.sh
+
+: "${VERCEL_TOKEN:?Set VERCEL_TOKEN in .env.local (https://vercel.com/account/tokens)}"
+: "${VERCEL_ORG_ID:?Set VERCEL_ORG_ID in .env.local (team slug or user ID)}"
+: "${VERCEL_PROJECT_ID:?Set VERCEL_PROJECT_ID in .env.local (project ID or name)}"
 
 export VERCEL_ORG_ID VERCEL_PROJECT_ID
 

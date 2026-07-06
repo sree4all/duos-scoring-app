@@ -18,7 +18,8 @@
     "ops:db:link": "bash scripts/ops/link-supabase.sh",
     "ops:db:push": "bash scripts/ops/push-migrations.sh",
     "ops:db:sql": "bash scripts/ops/run-sql.sh",
-    "ops:deploy:prod": "bash scripts/ops/deploy-vercel-production.sh"
+    "ops:deploy:prod": "bash scripts/ops/deploy-vercel-production.sh",
+    "ops:env:check": "bash scripts/ops/check-env.sh"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
