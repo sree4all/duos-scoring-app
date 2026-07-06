@@ -56,6 +56,7 @@ Non-interactive Supabase and Vercel commands for Cursor Cloud Agents. Requires s
 ```bash
 npm run ops:db:link          # link CLI to remote Supabase project
 npm run ops:db:push          # apply pending migrations
+npm run ops:db:repair-applied # mark SQL-editor migrations as applied in CLI history
 npm run ops:db:sql -- path/to/query.sql
 npm run ops:deploy:prod      # Vercel production deploy
 ```
