@@ -64,4 +64,23 @@ assert.equal(
   null,
 );
 
+const afterSpainBeatAustria = computeBracketState([
+  {
+    match_number: 81,
+    home_team: "United States",
+    away_team: "Bosnia and Herzegovina",
+    winner: "United States",
+    status: "completed",
+  },
+  {
+    match_number: 84,
+    home_team: "Spain",
+    away_team: "Austria",
+    winner: "Spain",
+    status: "completed",
+  },
+]);
+assert.ok(afterSpainBeatAustria.aliveTeams.has("USA"), "Austria loss must not eliminate USA");
+assert.ok(!afterSpainBeatAustria.aliveTeams.has("Austria"), "Austria should be eliminated");
+
 console.log("forecast-eligibility: OK");

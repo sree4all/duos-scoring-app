@@ -142,7 +142,7 @@ export function teamMatchesFixtureName(actual: string, canonical: string): boole
   const aliases = ROUND_OF_32_TEAM_ALIASES[canonical] ?? [canonical];
   const norm = (s: string) => s.trim().toLowerCase();
   const a = norm(actual);
-  return aliases.some((alias) => norm(alias) === a || a.includes(norm(alias)));
+  return aliases.some((alias) => norm(alias) === a);
 }
 
 export function fixtureTeamsMatch(
