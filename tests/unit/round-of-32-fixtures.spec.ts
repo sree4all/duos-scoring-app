@@ -6,6 +6,7 @@ import {
   ROUND_OF_32_FIXTURES,
   fixtureTeamsMatch,
   roundOf32KickoffUtc,
+  teamMatchesFixtureName,
 } from "@/lib/domain/world-cup/round-of-32-fixtures";
 
 assert.equal(ROUND_OF_32_FIXTURES.length, 16);
@@ -29,6 +30,8 @@ assert.equal(roundOf32KickoffUtc(88), "2026-07-03T18:00:00.000Z");
 // Aliases for import spelling drift
 assert.ok(fixtureTeamsMatch("Côte d'Ivoire", "Norway", ROUND_OF_32_FIXTURES.find((f) => f.matchNumber === 78)!));
 assert.ok(fixtureTeamsMatch("USA", "Bosnia and Herzegovina", ROUND_OF_32_FIXTURES.find((f) => f.matchNumber === 81)!));
+assert.ok(teamMatchesFixtureName("United States", "USA"));
+assert.ok(!teamMatchesFixtureName("Austria", "USA"), "US alias must not match Austria");
 
 // Kickoff UTC for every fixture
 for (const f of ROUND_OF_32_FIXTURES) {
