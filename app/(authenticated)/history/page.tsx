@@ -2,7 +2,6 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth/require-user";
 import { resolveActiveGroupId } from "@/lib/server/groups/active-context";
 import { listGroupHistoryForUser } from "@/lib/server/groups/history-query";
-import { projectLedgerLines } from "@/lib/server/generalized-scoring/scoring-projection-service";
 import { isGroupScopingEnabled } from "@/lib/server/groups/flags";
 import { isWorldCupPrivateMode } from "@/lib/server/world-cup/flags";
 import { HistoryList } from "@/components/world-cup/history-list";
@@ -41,19 +40,18 @@ export default async function ParticipantHistoryPage() {
   }
 
   const items = await listGroupHistoryForUser(supabase, activeGroupId, user.id);
-  const projected = projectLedgerLines(
-    items.map((item) => ({
-      actionType: item.actionType,
-      pointsDelta: item.pointsDelta,
-      reasonText: item.reasonText,
-    })),
-  );
 
-  const lines = items.map((item, index) => ({
+  const lines = items.map((item) => ({
     id: item.id,
-    label: projected[index]?.label ?? item.actionType,
+    kind: item.kind,
     pointsDelta: item.pointsDelta,
-    matchNumber: item.matchNumber,
+    matchTitle: item.matchTitle,
+    predictedWinner: item.predictedWinner,
+    actualWinner: item.actualWinner,
+    bonusQuestion: item.bonusQuestion,
+    chosenAnswer: item.chosenAnswer,
+    correctAnswer: item.correctAnswer,
+    fallbackLabel: item.fallbackLabel,
     voided: Boolean(item.voided),
     provisional: Boolean(item.provisional),
   }));
@@ -63,7 +61,7 @@ export default async function ParticipantHistoryPage() {
       <header>
         <h1 className="text-xl font-semibold sm:text-2xl">{worldCupCopy.nav.myPoints}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your point lines for this group.
+          Your point lines for this group — match picks and bonus answers with results.
         </p>
       </header>
       <HistoryList items={lines} />
