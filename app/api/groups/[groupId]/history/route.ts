@@ -15,8 +15,8 @@ export async function GET(_request: Request, context: RouteContext) {
     const { groupId } = await context.params;
     await requireGroupMembership(auth.supabase, groupId, auth.user.id);
 
-    const items = await listGroupHistoryForUser(auth.supabase, groupId, auth.user.id);
-    return NextResponse.json({ items });
+    const history = await listGroupHistoryForUser(auth.supabase, groupId, auth.user.id);
+    return NextResponse.json(history);
   } catch (error) {
     return groupErrorResponse(error);
   }
