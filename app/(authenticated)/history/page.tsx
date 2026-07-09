@@ -39,22 +39,7 @@ export default async function ParticipantHistoryPage() {
     );
   }
 
-  const items = await listGroupHistoryForUser(supabase, activeGroupId, user.id);
-
-  const lines = items.map((item) => ({
-    id: item.id,
-    kind: item.kind,
-    pointsDelta: item.pointsDelta,
-    matchTitle: item.matchTitle,
-    predictedWinner: item.predictedWinner,
-    actualWinner: item.actualWinner,
-    bonusQuestion: item.bonusQuestion,
-    chosenAnswer: item.chosenAnswer,
-    correctAnswer: item.correctAnswer,
-    fallbackLabel: item.fallbackLabel,
-    voided: Boolean(item.voided),
-    provisional: Boolean(item.provisional),
-  }));
+  const history = await listGroupHistoryForUser(supabase, activeGroupId, user.id);
 
   return (
     <section className="space-y-4">
@@ -64,7 +49,7 @@ export default async function ParticipantHistoryPage() {
           Your point lines for this group — match picks and bonus answers with results.
         </p>
       </header>
-      <HistoryList items={lines} />
+      <HistoryList matches={history.matches} other={history.other} />
     </section>
   );
 }

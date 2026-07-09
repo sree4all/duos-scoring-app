@@ -3,26 +3,36 @@
 import { useState } from "react";
 import { MOBILE_LIST_INITIAL, MOBILE_LIST_STEP } from "@/lib/world-cup/mobile-list";
 import { SeeMoreFooter } from "@/components/ui/see-more-footer";
-import type { HistoryLineKind } from "@/lib/domain/world-cup/history-line-detail";
+import type {
+  HistoryMatchGroup,
+  HistoryOtherLine,
+} from "@/lib/domain/world-cup/history-match-groups";
 import { cn } from "@/lib/utils";
 
-export type HistoryLine = {
-  id: string;
-  kind: HistoryLineKind;
-  pointsDelta: number;
-  matchTitle: string | null;
-  predictedWinner: string | null;
-  actualWinner: string | null;
-  bonusQuestion: string | null;
-  chosenAnswer: string | null;
-  correctAnswer: string | null;
-  fallbackLabel: string | null;
-  voided: boolean;
-  provisional: boolean;
+export type HistoryListProps = {
+  matches: HistoryMatchGroup[];
+  other: HistoryOtherLine[];
 };
 
-function formatPoints(delta: number): string {
+function formatPoints(delta: number | null): string {
+  if (delta === null) return "—";
   return `${delta >= 0 ? "+" : ""}${delta} pts`;
+}
+
+function PointsBadge({ delta }: { delta: number | null }) {
+  if (delta === null) {
+    return <span className="tabular-nums text-muted-foreground">—</span>;
+  }
+  return (
+    <span
+      className={cn(
+        "tabular-nums font-semibold",
+        delta > 0 ? "text-score-positive" : delta < 0 ? "text-score-negative" : "",
+      )}
+    >
+      {formatPoints(delta)}
+    </span>
+  );
 }
 
 function DetailRow({ label, value }: { label: string; value: string | null }) {
@@ -37,87 +47,101 @@ function DetailRow({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-function lineHeading(item: HistoryLine): string {
-  if (item.matchTitle) return item.matchTitle;
-  return item.fallbackLabel ?? "Points";
-}
-
-function lineSubheading(item: HistoryLine): string | null {
-  if (item.kind === "match_winner") return "Winner pick";
-  if (item.kind === "match_winner_miss") return "Wrong winner pick";
-  if (item.kind === "match_bonus") return "Bonus question";
-  return null;
-}
-
-function HistoryLineCard({ item }: { item: HistoryLine }) {
-  const subheading = lineSubheading(item);
-  const isMatchLine =
-    item.kind === "match_winner" || item.kind === "match_winner_miss";
-  const isBonusLine = item.kind === "match_bonus";
-
+function HistoryMatchCard({ group }: { group: HistoryMatchGroup }) {
   return (
     <li className="rounded-lg border bg-card p-3 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0 space-y-0.5">
-          <p className="font-semibold leading-snug">{lineHeading(item)}</p>
-          {subheading ? (
-            <p className="text-xs text-muted-foreground">{subheading}</p>
-          ) : item.fallbackLabel && !item.matchTitle ? null : item.fallbackLabel ? (
-            <p className="text-xs text-muted-foreground">{item.fallbackLabel}</p>
-          ) : null}
-        </div>
+        <p className="font-semibold leading-snug">{group.matchTitle}</p>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <span
             className={cn(
-              "tabular-nums font-semibold",
-              item.pointsDelta > 0
+              "tabular-nums text-xs font-medium uppercase tracking-wide",
+              group.totalPoints > 0
                 ? "text-score-positive"
-                : item.pointsDelta < 0
+                : group.totalPoints < 0
                   ? "text-score-negative"
-                  : "",
+                  : "text-muted-foreground",
             )}
           >
-            {formatPoints(item.pointsDelta)}
+            {formatPoints(group.totalPoints)}
           </span>
-          {item.voided ? (
+          {group.voided ? (
             <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
               voided
             </span>
           ) : null}
-          {item.provisional ? (
+        </div>
+      </div>
+
+      {group.winner ? (
+        <section className="mt-3 space-y-2 border-t pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Winner pick
+            </p>
+            <PointsBadge delta={group.winner.pointsDelta} />
+          </div>
+          <dl className="space-y-2">
+            <DetailRow label="Your pick" value={group.winner.predictedWinner} />
+            <DetailRow label="Actual winner" value={group.winner.actualWinner} />
+          </dl>
+          {group.winner.provisional ? (
+            <span className="inline-block rounded bg-slate-100 px-2 py-0.5 text-xs dark:bg-slate-800">
+              provisional
+            </span>
+          ) : null}
+        </section>
+      ) : null}
+
+      {group.bonuses.map((bonus) => (
+        <section key={bonus.promptId} className="mt-3 space-y-2 border-t pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Bonus question
+            </p>
+            <PointsBadge delta={bonus.pointsDelta} />
+          </div>
+          <dl className="space-y-2">
+            <DetailRow label="Question" value={bonus.question} />
+            <DetailRow label="Your answer" value={bonus.chosenAnswer} />
+            <DetailRow label="Correct answer" value={bonus.correctAnswer} />
+          </dl>
+        </section>
+      ))}
+    </li>
+  );
+}
+
+function HistoryOtherCard({ line }: { line: HistoryOtherLine }) {
+  return (
+    <li className="rounded-lg border bg-card p-3 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-medium">{line.label}</p>
+        <div className="flex items-center gap-2">
+          <PointsBadge delta={line.pointsDelta} />
+          {line.voided ? (
+            <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+              voided
+            </span>
+          ) : null}
+          {line.provisional ? (
             <span className="rounded bg-slate-100 px-2 py-0.5 text-xs dark:bg-slate-800">
               provisional
             </span>
           ) : null}
         </div>
       </div>
-
-      {isMatchLine ? (
-        <dl className="mt-3 space-y-2 border-t pt-3">
-          <DetailRow label="Your pick" value={item.predictedWinner} />
-          <DetailRow label="Actual winner" value={item.actualWinner} />
-        </dl>
-      ) : null}
-
-      {isBonusLine ? (
-        <dl className="mt-3 space-y-2 border-t pt-3">
-          <DetailRow label="Question" value={item.bonusQuestion} />
-          <DetailRow label="Your answer" value={item.chosenAnswer} />
-          <DetailRow label="Correct answer" value={item.correctAnswer} />
-        </dl>
-      ) : null}
-
-      {!isMatchLine && !isBonusLine && item.fallbackLabel ? (
-        <p className="mt-2 text-muted-foreground">{item.fallbackLabel}</p>
-      ) : null}
     </li>
   );
 }
 
-export function HistoryList({ items }: { items: HistoryLine[] }) {
+export function HistoryList({ matches, other }: HistoryListProps) {
+  const items = [...matches, ...other];
   const [visibleCount, setVisibleCount] = useState(MOBILE_LIST_INITIAL);
-  const visible = items.slice(0, visibleCount);
-  const remaining = items.length - visible.length;
+  const visibleMatches = matches.slice(0, visibleCount);
+  const visibleOther =
+    visibleCount > matches.length ? other.slice(0, visibleCount - matches.length) : [];
+  const remaining = items.length - visibleMatches.length - visibleOther.length;
 
   if (items.length === 0) {
     return (
@@ -128,8 +152,11 @@ export function HistoryList({ items }: { items: HistoryLine[] }) {
   return (
     <div>
       <ul className="space-y-3">
-        {visible.map((item) => (
-          <HistoryLineCard key={item.id} item={item} />
+        {visibleMatches.map((group) => (
+          <HistoryMatchCard key={group.id} group={group} />
+        ))}
+        {visibleOther.map((line) => (
+          <HistoryOtherCard key={line.id} line={line} />
         ))}
       </ul>
       <SeeMoreFooter
