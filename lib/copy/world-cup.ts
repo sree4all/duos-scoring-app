@@ -107,6 +107,10 @@ export const worldCupCopy = {
   },
   bonus: {
     sectionTitle: "Bonus question",
+    gambleTag: "Gamble",
+    safeTag: "No risk",
+    gambleHint:
+      "Optional — a wrong answer loses points. Skip it to risk nothing: unanswered questions score 0.",
     optional: "Optional — only on matches your organizer adds one.",
     save: "Save bonus answer",
     update: "Update bonus answer",
