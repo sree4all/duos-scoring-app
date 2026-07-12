@@ -60,8 +60,10 @@ export const worldCupCopy = {
     pointsSemi: "10 points per correct semi-finalist (up to 4)",
     pointsFinal: "15 points per correct finalist (up to 2)",
     pointsWinner: "20 points for the correct champion",
-    scoredAfterSemi: "Semi-finalist scoring runs after the semi-finals stage ends.",
-    scoredAfterFinal: "Finalist and champion scoring runs after the final.",
+    scoredAfterSemi:
+      "Semi-finalist points are awarded once all four semi-finalists are known (after the quarter-finals).",
+    scoredAfterFinal:
+      "Finalist points are awarded after the semi-finals; champion points after the Final.",
     officialSemi: "Official semi-finalists",
     officialFinal: "Official finalists",
     officialWinner: "Official champion",
@@ -132,6 +134,8 @@ export const worldCupCopy = {
   },
   errors: {
     notOpenYet: "This round is not open yet. Check back when your group owner opens it.",
+    fixtureNotSet:
+      "This match opens for predictions once both teams are decided by the earlier results.",
     predictionsClosed: "Predictions are closed for this match.",
     predictionRejectedAtLock: "The lock time passed. Your prediction was not saved.",
     importFailed: "We could not load the schedule. Check the CSV files and try again.",

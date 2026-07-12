@@ -2,9 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   ADVANCED_BRACKET_POINTS,
   type AdvancedBracketOfficial,
+  type AdvancedBracketPhaseReadiness,
   type AdvancedBracketPicks,
   type AdvancedBracketScoringPhase,
   countCorrectPicks,
+  evaluatePhaseReadiness,
 } from "@/lib/domain/world-cup/advanced-bracket";
 import {
   deriveFinalistTeams,
@@ -148,6 +150,29 @@ export async function deleteUserAdvancedBracketPicks(
   return { ok: true };
 }
 
+/** Staged readiness of the three forecast questions, with derived official previews. */
+export async function loadAdvancedBracketPhaseReadiness(
+  supabase: SupabaseClient,
+  seasonYear = 2026,
+): Promise<AdvancedBracketPhaseReadiness[]> {
+  const [semiFinalistTeams, semiFinalsCompleted, finalistTeams, finalCompleted, winnerTeam] =
+    await Promise.all([
+      deriveSemiFinalistTeams(supabase, seasonYear),
+      isStageFullyCompleted(supabase, "semi_finals", seasonYear),
+      deriveFinalistTeams(supabase, seasonYear),
+      isStageFullyCompleted(supabase, "final", seasonYear),
+      deriveTournamentWinner(supabase, seasonYear),
+    ]);
+
+  return evaluatePhaseReadiness({
+    semiFinalistTeams,
+    semiFinalsCompleted,
+    finalistTeams,
+    finalCompleted,
+    winnerTeam,
+  });
+}
+
 export type AdvancedBracketScoreOutcome =
   | { ok: true; rowsAwarded: number; officialTeams: string[] }
   | { ok: false; error: string };
@@ -159,22 +184,21 @@ export async function applyAdvancedBracketScoring(
   seasonYear = 2026,
 ): Promise<AdvancedBracketScoreOutcome> {
   if (phase === "semi_finalists") {
-    const complete = await isStageFullyCompleted(supabase, "semi_finals", seasonYear);
-    if (!complete) {
-      return { ok: false, error: "Semi-finals stage is not fully completed yet." };
-    }
+    // Semi-finalists are known as soon as both semi-final fixtures are set
+    // (quarter-finals done) — the semis do not need to be played.
     const official = await deriveSemiFinalistTeams(supabase, seasonYear);
     if (official.length !== 4) {
-      return { ok: false, error: "Could not determine four semi-finalist teams from fixtures." };
+      return {
+        ok: false,
+        error: `Semi-finalists are not fully known yet (${official.length} of 4 teams on the semi-final fixtures).`,
+      };
     }
     return scorePhase(supabase, contestId, phase, official, ADVANCED_BRACKET_POINTS.semiFinalist);
   }
 
   if (phase === "finalists") {
-    const finalComplete = await isStageFullyCompleted(supabase, "final", seasonYear);
-    if (!finalComplete) {
-      return { ok: false, error: "Final stage must be completed before scoring finalists." };
-    }
+    // Finalists are known once both semi-finals are completed — the Final
+    // does not need to be played.
     const sfComplete = await isStageFullyCompleted(supabase, "semi_finals", seasonYear);
     if (!sfComplete) {
       return { ok: false, error: "Semi-finals must be completed before scoring finalists." };
