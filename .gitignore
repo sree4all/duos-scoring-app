@@ -40,3 +40,6 @@ coverage/
 # World Cup CSV drop (keep README)
 data/worldcup-2026/*
 !data/worldcup-2026/README.md
+
+# Vercel CLI artifacts
+.vercel/
