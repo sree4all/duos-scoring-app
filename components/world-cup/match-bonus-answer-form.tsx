@@ -73,6 +73,7 @@ function BonusPromptCard({
   const [message, setMessage] = useState<string | null>(null);
 
   const hasAnswer = Boolean(initialAnswer);
+  const isGamble = prompt.incorrectPenalty < 0;
 
   async function save() {
     if (locked || !answer) return;
@@ -99,13 +100,26 @@ function BonusPromptCard({
     <section
       className={cn(
         compact
-          ? "rounded-lg border border-dashed border-primary/30 bg-card/50 p-3"
-          : "rounded-xl border-2 border-dashed border-primary/30 bg-card p-4",
+          ? "rounded-lg border border-dashed bg-card/50 p-3"
+          : "rounded-xl border-2 border-dashed bg-card p-4",
+        isGamble ? "border-amber-400/50" : "border-primary/30",
       )}
     >
-      <p className="text-xs font-medium uppercase tracking-wide text-primary">
-        {worldCupCopy.bonus.sectionTitle}
-      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-primary">
+          {worldCupCopy.bonus.sectionTitle}
+        </p>
+        <span
+          className={cn(
+            "rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+            isGamble
+              ? "border-amber-400/60 bg-amber-400/10 text-amber-300"
+              : "border-emerald-400/40 bg-emerald-400/10 text-emerald-300",
+          )}
+        >
+          {isGamble ? worldCupCopy.bonus.gambleTag : worldCupCopy.bonus.safeTag}
+        </span>
+      </div>
       <p className={cn("font-medium text-white", compact ? "mt-1 text-sm" : "mt-2 text-base")}>
         {prompt.promptText}
       </p>
@@ -113,6 +127,9 @@ function BonusPromptCard({
         +{prompt.correctPoints} if correct
         {prompt.incorrectPenalty !== 0 ? ` · ${prompt.incorrectPenalty} if wrong` : ""}
       </p>
+      {isGamble ? (
+        <p className="mt-1 text-xs text-amber-300/90">{worldCupCopy.bonus.gambleHint}</p>
+      ) : null}
 
       <div className={cn(compact ? "mt-2 flex flex-wrap gap-2" : "mt-3 flex flex-col gap-2")}>
         {prompt.options.map((opt) => (
