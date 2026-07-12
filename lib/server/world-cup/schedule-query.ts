@@ -3,10 +3,16 @@ import {
   parseMatchNumberFromExternalKey,
   resolveScoringStageKey,
 } from "@/lib/domain/world-cup/match-stage";
+import { isPlaceholderTeam } from "@/lib/domain/world-cup/advanced-bracket";
 import { StageRulesRepository } from "@/lib/server/world-cup/stage-rules-repository";
 import { worldCupCopy } from "@/lib/copy/world-cup";
 import { buildLinkedMatchEventTitle } from "@/lib/domain/world-cup/match-event-title";
 import { resolvePredictionLockAtIso } from "@/lib/utils/match-lock";
+
+/** Both fixture slots resolved to real teams (no TBD / "Winner Match N" placeholders). */
+export function isFixtureKnown(homeTeam: string | null, awayTeam: string | null): boolean {
+  return !isPlaceholderTeam(homeTeam ?? "") && !isPlaceholderTeam(awayTeam ?? "");
+}
 
 export type ScheduleEventRow = {
   eventId: string;
@@ -98,6 +104,12 @@ export async function listRevealedScheduleEvents(
       (ev.stage_key as string | null) ??
       null;
     if (memberView && (!stageKey || !revealedKeys.has(stageKey))) continue;
+    if (
+      memberView &&
+      !isFixtureKnown(match.home_team as string | null, match.away_team as string | null)
+    ) {
+      continue;
+    }
 
     rows.push({
       eventId: ev.id as string,
@@ -157,5 +169,21 @@ export async function assertEventRevealedForMember(
   const repo = new StageRulesRepository(supabase);
   const revealed = await repo.isStageRevealed(contestId, resolved);
   if (!revealed) return { ok: false, message: worldCupCopy.errors.notOpenYet };
+
+  const matchId = event?.source_match_id as string | null | undefined;
+  if (matchId) {
+    const { data: match } = await supabase
+      .from("matches")
+      .select("home_team, away_team")
+      .eq("id", matchId)
+      .maybeSingle();
+    if (
+      match &&
+      !isFixtureKnown(match.home_team as string | null, match.away_team as string | null)
+    ) {
+      return { ok: false, message: worldCupCopy.errors.fixtureNotSet };
+    }
+  }
+
   return { ok: true, stageKey: resolved };
 }

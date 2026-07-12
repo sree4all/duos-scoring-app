@@ -28,6 +28,62 @@ export const ADVANCED_BRACKET_POINTS = {
 
 export type AdvancedBracketScoringPhase = "semi_finalists" | "finalists" | "winner";
 
+export type AdvancedBracketPhaseReadiness = {
+  phase: AdvancedBracketScoringPhase;
+  ready: boolean;
+  /** Derived official answer so the organizer can verify before scoring. */
+  officialPreview: string[];
+  blockedReason: string | null;
+};
+
+/**
+ * Staged readiness for the three forecast questions:
+ * semi-finalists are known once both semi-final fixtures are set (quarter-finals
+ * done), finalists once both semi-finals are completed, champion once the
+ * Final is completed.
+ */
+export function evaluatePhaseReadiness(input: {
+  semiFinalistTeams: string[];
+  semiFinalsCompleted: boolean;
+  finalistTeams: string[];
+  finalCompleted: boolean;
+  winnerTeam: string | null;
+}): AdvancedBracketPhaseReadiness[] {
+  const semiKnown = input.semiFinalistTeams.length;
+  const semiReady = semiKnown === ADVANCED_BRACKET_PICKS.semiFinalists;
+
+  const finalistsReady =
+    input.semiFinalsCompleted &&
+    input.finalistTeams.length === ADVANCED_BRACKET_PICKS.finalists;
+
+  const winnerReady = input.finalCompleted && Boolean(input.winnerTeam?.trim());
+
+  return [
+    {
+      phase: "semi_finalists",
+      ready: semiReady,
+      officialPreview: input.semiFinalistTeams,
+      blockedReason: semiReady
+        ? null
+        : `Waiting on quarter-final results — ${semiKnown} of ${ADVANCED_BRACKET_PICKS.semiFinalists} semi-finalists known.`,
+    },
+    {
+      phase: "finalists",
+      ready: finalistsReady,
+      officialPreview: input.finalistTeams,
+      blockedReason: finalistsReady
+        ? null
+        : "Waiting on semi-final results — finalists are known once both semi-finals are completed.",
+    },
+    {
+      phase: "winner",
+      ready: winnerReady,
+      officialPreview: input.winnerTeam?.trim() ? [input.winnerTeam.trim()] : [],
+      blockedReason: winnerReady ? null : "Waiting on the Final result.",
+    },
+  ];
+}
+
 export type AdvancedBracketPicks = {
   semiFinalistTeams: string[];
   finalistTeams: string[];

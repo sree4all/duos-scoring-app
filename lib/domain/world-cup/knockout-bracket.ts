@@ -62,6 +62,29 @@ export function winnerSlotTargetsForSource(sourceMatchNumber: number): WinnerSlo
   return buildWinnerToSlotMap().filter((e) => e.sourceMatchNumber === sourceMatchNumber);
 }
 
+export const THIRD_PLACE_MATCH_NUMBER = 103;
+
+/** Third-place playoff is fed by the semi-final LOSERS (SF1 → home, SF2 → away). */
+export const LOSER_FEEDERS: Record<number, readonly [number, number]> = {
+  [THIRD_PLACE_MATCH_NUMBER]: [101, 102],
+};
+
+/** Downstream slots filled by the LOSER of `sourceMatchNumber` (third-place playoff). */
+export function loserSlotTargetsForSource(sourceMatchNumber: number): WinnerSlotTarget[] {
+  const entries: WinnerSlotTarget[] = [];
+  for (const [targetStr, feeders] of Object.entries(LOSER_FEEDERS)) {
+    const targetMatchNumber = Number(targetStr);
+    const [homeFeeder, awayFeeder] = feeders;
+    if (homeFeeder === sourceMatchNumber) {
+      entries.push({ sourceMatchNumber, targetMatchNumber, slot: "home" });
+    }
+    if (awayFeeder === sourceMatchNumber) {
+      entries.push({ sourceMatchNumber, targetMatchNumber, slot: "away" });
+    }
+  }
+  return entries;
+}
+
 /** Downstream slots filled when `sourceMatchNumber` completes (R32 → R16 → QF → SF). */
 export function parentMatchSlotTargets(sourceMatchNumber: number): WinnerSlotTarget[] {
   const entries: WinnerSlotTarget[] = [];

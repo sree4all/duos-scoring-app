@@ -10,6 +10,7 @@ import { AdvancedBracketOwnerPanel } from "@/components/world-cup/advanced-brack
 import {
   getAdvancedBracketAccess,
   loadAdvancedBracketOfficial,
+  loadAdvancedBracketPhaseReadiness,
   loadUserAdvancedBracketPicks,
 } from "@/lib/server/world-cup/advanced-bracket-service";
 import {
@@ -33,11 +34,12 @@ export default async function AdvancedPredictionsPage({ params }: PageProps) {
     activeGroupId,
   );
 
-  const [access, eligibility, initialPicks, official] = await Promise.all([
+  const [access, eligibility, initialPicks, official, phaseReadiness] = await Promise.all([
     getAdvancedBracketAccess(supabase, contestId),
     loadForecastEligibility(supabase),
     loadUserAdvancedBracketPicks(supabase, contestId, user.id),
     loadAdvancedBracketOfficial(supabase, contestId),
+    loadAdvancedBracketPhaseReadiness(supabase),
   ]);
 
   const pageBackground = resolveContestPageBackground(
@@ -137,7 +139,12 @@ export default async function AdvancedPredictionsPage({ params }: PageProps) {
 
       {membership.isOwner && isWorldCupPrivateMode() ? (
         <div className="relative z-[1]">
-          <AdvancedBracketOwnerPanel groupId={activeGroupId} contestId={contestId} official={official} />
+          <AdvancedBracketOwnerPanel
+            groupId={activeGroupId}
+            contestId={contestId}
+            official={official}
+            readiness={phaseReadiness}
+          />
         </div>
       ) : null}
     </section>
