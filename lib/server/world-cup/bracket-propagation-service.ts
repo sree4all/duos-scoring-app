@@ -8,12 +8,14 @@ import {
   MIN_PROPAGATION_MATCH_NUMBER,
   winnerSlotTargetsForSource,
 } from "@/lib/domain/world-cup/knockout-bracket";
+import { refreshPlaceholderBonusPrompts } from "@/lib/server/world-cup/placeholder-bonus-prompt-service";
 
 export type PropagationOutcome = {
   ok: true;
   propagatedMatchIds: string[];
   picksCleared: number;
   bonusAnswersCleared: number;
+  bonusPromptsRefreshed: number;
 };
 
 export type PropagationResult =
@@ -48,6 +50,7 @@ export async function propagateKnockoutTeams(
       propagatedMatchIds: [],
       picksCleared: 0,
       bonusAnswersCleared: 0,
+      bonusPromptsRefreshed: 0,
     };
   }
 
@@ -58,12 +61,14 @@ export async function propagateKnockoutTeams(
       propagatedMatchIds: [],
       picksCleared: 0,
       bonusAnswersCleared: 0,
+      bonusPromptsRefreshed: 0,
     };
   }
 
   const propagatedMatchIds: string[] = [];
   let picksCleared = 0;
   let bonusAnswersCleared = 0;
+  let bonusPromptsRefreshed = 0;
   const now = new Date().toISOString();
 
   for (const target of slotTargets) {
@@ -97,6 +102,15 @@ export async function propagateKnockoutTeams(
 
     if (updateErr) return { ok: false, error: updateErr.message };
     propagatedMatchIds.push(targetId);
+
+    const promptRefresh = await refreshPlaceholderBonusPrompts(
+      supabase,
+      targetId,
+      newHome,
+      newAway,
+    );
+    if (!promptRefresh.ok) return { ok: false, error: promptRefresh.error };
+    bonusPromptsRefreshed += promptRefresh.promptsRefreshed;
 
     const affectedTeams = teamsRemovedFromFixture(oldHome, oldAway, newHome, newAway);
 
@@ -150,5 +164,6 @@ export async function propagateKnockoutTeams(
     propagatedMatchIds,
     picksCleared,
     bonusAnswersCleared,
+    bonusPromptsRefreshed,
   };
 }
