@@ -6,7 +6,9 @@ import {
 } from "@/lib/domain/world-cup/bracket-propagation";
 import {
   MIN_PROPAGATION_MATCH_NUMBER,
+  loserSlotTargetsForSource,
   winnerSlotTargetsForSource,
+  type WinnerSlotTarget,
 } from "@/lib/domain/world-cup/knockout-bracket";
 import { refreshPlaceholderBonusPrompts } from "@/lib/server/world-cup/placeholder-bonus-prompt-service";
 
@@ -28,7 +30,7 @@ export async function propagateKnockoutTeams(
 ): Promise<PropagationResult> {
   const { data: source, error: sourceErr } = await supabase
     .from("matches")
-    .select("id, match_number, season_year, winner, status")
+    .select("id, match_number, season_year, home_team, away_team, winner, status")
     .eq("id", sourceMatchId)
     .maybeSingle();
 
@@ -39,31 +41,42 @@ export async function propagateKnockoutTeams(
   const winner = (source.winner as string | null)?.trim();
   const seasonYear = (source.season_year as number | null) ?? 2026;
 
+  const emptyOutcome: PropagationOutcome = {
+    ok: true,
+    propagatedMatchIds: [],
+    picksCleared: 0,
+    bonusAnswersCleared: 0,
+    bonusPromptsRefreshed: 0,
+  };
+
   if (
     matchNumber == null ||
     matchNumber < MIN_PROPAGATION_MATCH_NUMBER ||
     source.status !== "completed" ||
     !winner
   ) {
-    return {
-      ok: true,
-      propagatedMatchIds: [],
-      picksCleared: 0,
-      bonusAnswersCleared: 0,
-      bonusPromptsRefreshed: 0,
-    };
+    return emptyOutcome;
   }
 
-  const slotTargets = winnerSlotTargetsForSource(matchNumber);
-  if (slotTargets.length === 0) {
-    return {
-      ok: true,
-      propagatedMatchIds: [],
-      picksCleared: 0,
-      bonusAnswersCleared: 0,
-      bonusPromptsRefreshed: 0,
-    };
-  }
+  const homeTeam = ((source.home_team as string | null) ?? "").trim();
+  const awayTeam = ((source.away_team as string | null) ?? "").trim();
+  const loser =
+    winner === homeTeam ? awayTeam : winner === awayTeam ? homeTeam : "";
+
+  const targets: { target: WinnerSlotTarget; team: string }[] = [
+    ...winnerSlotTargetsForSource(matchNumber).map((target) => ({
+      target,
+      team: winner,
+    })),
+    ...(loser
+      ? loserSlotTargetsForSource(matchNumber).map((target) => ({
+          target,
+          team: loser,
+        }))
+      : []),
+  ];
+
+  if (targets.length === 0) return emptyOutcome;
 
   const propagatedMatchIds: string[] = [];
   let picksCleared = 0;
@@ -71,7 +84,7 @@ export async function propagateKnockoutTeams(
   let bonusPromptsRefreshed = 0;
   const now = new Date().toISOString();
 
-  for (const target of slotTargets) {
+  for (const { target, team } of targets) {
     const { data: targetMatch, error: targetErr } = await supabase
       .from("matches")
       .select("id, home_team, away_team, status")
@@ -86,8 +99,8 @@ export async function propagateKnockoutTeams(
     const targetId = targetMatch.id as string;
     const oldHome = targetMatch.home_team as string;
     const oldAway = targetMatch.away_team as string;
-    const newHome = target.slot === "home" ? winner : oldHome;
-    const newAway = target.slot === "away" ? winner : oldAway;
+    const newHome = target.slot === "home" ? team : oldHome;
+    const newAway = target.slot === "away" ? team : oldAway;
 
     if (newHome === oldHome && newAway === oldAway) continue;
 
