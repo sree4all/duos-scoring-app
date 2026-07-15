@@ -1,11 +1,43 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MemberAdvancedBracketRow } from "@/components/world-cup/advanced-bracket-stats-panel";
+import {
+  evaluateForecastStatsRow,
+  type ForecastOfficialAnswers,
+} from "@/lib/domain/world-cup/advanced-bracket";
+import {
+  deriveFinalistTeams,
+  deriveSemiFinalistTeams,
+  deriveTournamentWinner,
+} from "@/lib/server/world-cup/advanced-bracket-official";
+import { loadAdvancedBracketOfficial } from "@/lib/server/world-cup/advanced-bracket-service";
+
+/** Prefer derived fixture/results answers; fall back to stored official row. */
+async function resolveOfficialAnswers(
+  supabase: SupabaseClient,
+  contestId: string,
+  seasonYear = 2026,
+): Promise<ForecastOfficialAnswers> {
+  const [derivedSemi, derivedFinalists, derivedWinner, stored] = await Promise.all([
+    deriveSemiFinalistTeams(supabase, seasonYear),
+    deriveFinalistTeams(supabase, seasonYear),
+    deriveTournamentWinner(supabase, seasonYear),
+    loadAdvancedBracketOfficial(supabase, contestId),
+  ]);
+
+  return {
+    semiFinalistTeams:
+      derivedSemi.length === 4 ? derivedSemi : (stored?.semiFinalistTeams ?? []),
+    finalistTeams:
+      derivedFinalists.length === 2 ? derivedFinalists : (stored?.finalistTeams ?? []),
+    winnerTeam: derivedWinner ?? stored?.winnerTeam ?? null,
+  };
+}
 
 export async function loadAdvancedBracketStatsForContest(
   supabase: SupabaseClient,
   contestId: string,
   groupId: string,
-): Promise<MemberAdvancedBracketRow[]> {
+): Promise<{ rows: MemberAdvancedBracketRow[]; official: ForecastOfficialAnswers }> {
   const { data: memberRows } = await supabase
     .from("group_memberships")
     .select("user_id")
@@ -49,16 +81,30 @@ export async function loadAdvancedBracketStatsForContest(
     }
   }
 
+  const official = await resolveOfficialAnswers(supabase, contestId);
+
   const rows: MemberAdvancedBracketRow[] = memberIds.map((uid) => {
-    const picks = picksByUserId.get(uid);
+    const picks = picksByUserId.get(uid) ?? {
+      semiFinalistTeams: [],
+      finalistTeams: [],
+      winnerTeam: null,
+    };
+    const evaluation = evaluateForecastStatsRow(picks, official);
     return {
       displayName: displayNameByUserId.get(uid) ?? `Player ${uid.slice(0, 6)}`,
-      semiFinalistTeams: picks?.semiFinalistTeams ?? [],
-      finalistTeams: picks?.finalistTeams ?? [],
-      winnerTeam: picks?.winnerTeam ?? null,
+      semiFinalistTeams: picks.semiFinalistTeams,
+      finalistTeams: picks.finalistTeams,
+      winnerTeam: picks.winnerTeam,
+      semiFinalistResults: evaluation.semiFinalistResults,
+      finalistResults: evaluation.finalistResults,
+      winnerResult: evaluation.winnerResult,
+      points: evaluation.points,
     };
   });
 
-  rows.sort((a, b) => a.displayName.localeCompare(b.displayName));
-  return rows;
+  rows.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    return a.displayName.localeCompare(b.displayName);
+  });
+  return { rows, official };
 }
