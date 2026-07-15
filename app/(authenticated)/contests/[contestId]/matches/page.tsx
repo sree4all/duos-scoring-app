@@ -152,9 +152,9 @@ export default async function ContestMatchesPage({ params }: PageProps) {
   ]);
 
   const showAdvancedBracketStats = isAdvancedBracketStatsTabVisible(tournamentConfig, isAdmin);
-  const advancedBracketStatsRows = showAdvancedBracketStats
+  const advancedBracketStats = showAdvancedBracketStats
     ? await loadAdvancedBracketStatsForContest(supabase, contestId, activeGroupId)
-    : [];
+    : { rows: [], official: { semiFinalistTeams: [], finalistTeams: [], winnerTeam: null } };
 
   const schedulePanel = (
     <div className="space-y-6">
@@ -220,11 +220,14 @@ export default async function ContestMatchesPage({ params }: PageProps) {
 
   const advancedStatsPanel = showAdvancedBracketStats ? (
     <AdvancedBracketStatsPanel
-      rows={advancedBracketStatsRows}
+      rows={advancedBracketStats.rows}
       groupId={activeGroupId}
       contestId={contestId}
       canToggleVisibility={isAdmin}
       visibleToMembers={Boolean(tournamentConfig?.advanced_bracket_stats_visible_to_members)}
+      officialSemiFinalists={advancedBracketStats.official.semiFinalistTeams}
+      officialFinalists={advancedBracketStats.official.finalistTeams}
+      officialWinner={advancedBracketStats.official.winnerTeam}
     />
   ) : null;
 

@@ -173,3 +173,83 @@ export function countCorrectPicks(userPicks: string[], officialTeams: string[]):
   }
   return count;
 }
+
+export type ForecastTeamPickResult = {
+  team: string;
+  /** `null` when that forecast phase's official answer is not known yet. */
+  correct: boolean | null;
+};
+
+export type ForecastOfficialAnswers = {
+  semiFinalistTeams: string[];
+  finalistTeams: string[];
+  winnerTeam: string | null;
+};
+
+export type ForecastStatsEvaluation = {
+  semiFinalistResults: ForecastTeamPickResult[];
+  finalistResults: ForecastTeamPickResult[];
+  winnerResult: ForecastTeamPickResult | null;
+  /** Points for known phases only (0 contribution from still-open phases). */
+  points: number;
+};
+
+function annotateTeamPicks(
+  picks: string[],
+  officialTeams: string[],
+  phaseKnown: boolean,
+): ForecastTeamPickResult[] {
+  if (!phaseKnown) {
+    return picks.map((team) => ({ team, correct: null }));
+  }
+  const official = new Set(officialTeams);
+  return picks.map((team) => ({ team, correct: official.has(team) }));
+}
+
+/**
+ * Evaluate a member's tournament forecast picks against known official answers
+ * for the stats table (✓/✗ per team + accumulated points).
+ */
+export function evaluateForecastStatsRow(
+  picks: AdvancedBracketPicks,
+  official: ForecastOfficialAnswers,
+): ForecastStatsEvaluation {
+  const semiKnown = official.semiFinalistTeams.length === ADVANCED_BRACKET_PICKS.semiFinalists;
+  const finalistsKnown = official.finalistTeams.length === ADVANCED_BRACKET_PICKS.finalists;
+  const winnerKnown = Boolean(official.winnerTeam?.trim());
+
+  const semiFinalistResults = annotateTeamPicks(
+    picks.semiFinalistTeams,
+    official.semiFinalistTeams,
+    semiKnown,
+  );
+  const finalistResults = annotateTeamPicks(
+    picks.finalistTeams,
+    official.finalistTeams,
+    finalistsKnown,
+  );
+  const winnerPick = picks.winnerTeam?.trim() || null;
+  const winnerResult: ForecastTeamPickResult | null = winnerPick
+    ? {
+        team: winnerPick,
+        correct: winnerKnown ? winnerPick === official.winnerTeam?.trim() : null,
+      }
+    : null;
+
+  let points = 0;
+  if (semiKnown) {
+    points +=
+      countCorrectPicks(picks.semiFinalistTeams, official.semiFinalistTeams) *
+      ADVANCED_BRACKET_POINTS.semiFinalist;
+  }
+  if (finalistsKnown) {
+    points +=
+      countCorrectPicks(picks.finalistTeams, official.finalistTeams) *
+      ADVANCED_BRACKET_POINTS.finalist;
+  }
+  if (winnerKnown && winnerResult?.correct) {
+    points += ADVANCED_BRACKET_POINTS.winner;
+  }
+
+  return { semiFinalistResults, finalistResults, winnerResult, points };
+}
