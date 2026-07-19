@@ -89,8 +89,9 @@ export function AdvancedBracketOwnerPanel({
       <h2 className="text-sm font-semibold">Organizer — tournament forecast scoring</h2>
       <p className="mt-1 text-xs text-muted-foreground">
         Each question can be scored as soon as its answer is known: semi-finalists after the
-        quarter-finals, finalists after the semi-finals, champion after the Final. Re-running a
-        question replaces its previous points, so it is safe after a result correction.
+        quarter-finals, finalists after the semi-finals, champion after the Final. Applying match
+        scoring also scores any ready forecast phases automatically. Re-running a question replaces
+        its previous points, so it is safe after a result correction.
       </p>
 
       <ul className="mt-3 space-y-3">

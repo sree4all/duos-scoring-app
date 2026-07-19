@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyMatchScoring, type MatchScoreOutcome } from "@/lib/scoring/match-scoring";
 import { GroupContestService } from "@/lib/server/groups/group-contest-service";
 import { requireGroupMembership, requireGroupOwner } from "@/lib/server/groups/guards";
+import { scoreReadyAdvancedBracketPhases } from "@/lib/server/world-cup/advanced-bracket-service";
 import { resolveEventStageKey } from "@/lib/server/world-cup/schedule-query";
 
 export type GroupPredictionBridge = {
@@ -76,6 +77,23 @@ export class GroupPredictionAdapter {
       contestId: bridge.contestId,
       stageKey,
     });
+
+    if (outcome.ok) {
+      // Keep tournament forecast ledger aligned when knockout results unlock a phase
+      // (e.g. Final match scoring also awards the champion forecast).
+      try {
+        await scoreReadyAdvancedBracketPhases(
+          this.supabase,
+          bridge.contestId,
+          seasonYear,
+        );
+      } catch (forecastErr) {
+        console.error(
+          "match scoring: ready advanced-bracket phases failed",
+          forecastErr instanceof Error ? forecastErr.message : forecastErr,
+        );
+      }
+    }
 
     return outcome;
   }

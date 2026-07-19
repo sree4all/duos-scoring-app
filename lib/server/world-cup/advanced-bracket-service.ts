@@ -177,6 +177,38 @@ export type AdvancedBracketScoreOutcome =
   | { ok: true; rowsAwarded: number; officialTeams: string[] }
   | { ok: false; error: string };
 
+export type ReadyPhaseScoreResult = {
+  phase: AdvancedBracketScoringPhase;
+  outcome: AdvancedBracketScoreOutcome;
+};
+
+/**
+ * Score every tournament-forecast phase whose official answer is already known.
+ * Safe to re-run: each phase replaces its prior contest ledger rows.
+ * Called after match scoring so Final (+/−) and champion forecast stay in sync.
+ */
+export async function scoreReadyAdvancedBracketPhases(
+  supabase: SupabaseClient,
+  contestId: string,
+  seasonYear = 2026,
+): Promise<ReadyPhaseScoreResult[]> {
+  const readiness = await loadAdvancedBracketPhaseReadiness(supabase, seasonYear);
+  const results: ReadyPhaseScoreResult[] = [];
+
+  for (const item of readiness) {
+    if (!item.ready) continue;
+    const outcome = await applyAdvancedBracketScoring(
+      supabase,
+      contestId,
+      item.phase,
+      seasonYear,
+    );
+    results.push({ phase: item.phase, outcome });
+  }
+
+  return results;
+}
+
 export async function applyAdvancedBracketScoring(
   supabase: SupabaseClient,
   contestId: string,
