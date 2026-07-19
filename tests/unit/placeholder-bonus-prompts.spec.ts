@@ -6,6 +6,7 @@ import {
   PLACEHOLDER_PROMPT_TEMPLATES,
   buildPlaceholderPromptUpdate,
   isPlaceholderTeamName,
+  optionsWithResolvedPlaceholderLabels,
   resolveTeamDisplayName,
 } from "@/lib/domain/world-cup/placeholder-bonus-prompts";
 
@@ -45,6 +46,50 @@ assert.deepEqual(potmFull.optionLabelsByValue, {
   finalist_sf1: "France",
   finalist_sf2: "England",
 });
+
+// Display overlay: stored values map to rendered team labels even if DB still has fallbacks.
+assert.deepEqual(
+  optionsWithResolvedPlaceholderLabels(
+    [
+      { value: "finalist_sf1", label: "Winner of Semi Final 1" },
+      { value: "finalist_sf2", label: "Winner of Semi Final 2" },
+    ],
+    "wc2026:final:potm-team",
+    "Spain",
+    "Argentina",
+  ),
+  [
+    { value: "finalist_sf1", label: "Spain" },
+    { value: "finalist_sf2", label: "Argentina" },
+  ],
+);
+
+assert.deepEqual(
+  optionsWithResolvedPlaceholderLabels(
+    [
+      { value: "finalist_sf2_wins_2_1", label: "Winner of Semi Final 2 wins 2-1" },
+      { value: "level_after_90", label: "Level after 90 minutes" },
+    ],
+    "wc2026:final:exact-result",
+    "Spain",
+    "Argentina",
+  ),
+  [
+    { value: "finalist_sf2_wins_2_1", label: "Argentina wins 2-1" },
+    { value: "level_after_90", label: "Level after 90 minutes" },
+  ],
+);
+
+// Non-placeholder prompts keep stored labels.
+assert.deepEqual(
+  optionsWithResolvedPlaceholderLabels(
+    [{ value: "yes", label: "Yes" }],
+    "wc2026:sf1:star-duel",
+    "Spain",
+    "Argentina",
+  ),
+  [{ value: "yes", label: "Yes" }],
+);
 
 // Result correction re-renders from the template (labels are not stuck).
 const potmCorrected = buildPlaceholderPromptUpdate(

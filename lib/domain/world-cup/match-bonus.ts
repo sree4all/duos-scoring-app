@@ -8,6 +8,8 @@ export type MatchBonusOption = {
 export type MatchBonusPrompt = {
   id: string;
   matchId: string;
+  /** Stable key used for placeholder re-renders (e.g. wc2026:final:potm-team). */
+  promptKey: string;
   promptText: string;
   correctPoints: number;
   incorrectPenalty: number;

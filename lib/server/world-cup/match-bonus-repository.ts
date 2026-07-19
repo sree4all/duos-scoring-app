@@ -8,6 +8,7 @@ function mapPrompt(
   return {
     id: row.id as string,
     matchId: row.match_id as string,
+    promptKey: (row.prompt_key as string) ?? "",
     promptText: row.prompt_text as string,
     correctPoints: Number(row.correct_points ?? 2),
     incorrectPenalty: Number(row.incorrect_penalty ?? 0),
