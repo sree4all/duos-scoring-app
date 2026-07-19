@@ -3,6 +3,7 @@ import type { MemberAdvancedBracketRow } from "@/components/world-cup/advanced-b
 import {
   evaluateForecastStatsRow,
   type ForecastOfficialAnswers,
+  type ForecastScoredPhases,
 } from "@/lib/domain/world-cup/advanced-bracket";
 import {
   deriveFinalistTeams,
@@ -11,12 +12,17 @@ import {
 } from "@/lib/server/world-cup/advanced-bracket-official";
 import { loadAdvancedBracketOfficial } from "@/lib/server/world-cup/advanced-bracket-service";
 
+type ResolvedForecastOfficial = {
+  answers: ForecastOfficialAnswers;
+  scoredPhases: ForecastScoredPhases;
+};
+
 /** Prefer derived fixture/results answers; fall back to stored official row. */
 async function resolveOfficialAnswers(
   supabase: SupabaseClient,
   contestId: string,
   seasonYear = 2026,
-): Promise<ForecastOfficialAnswers> {
+): Promise<ResolvedForecastOfficial> {
   const [derivedSemi, derivedFinalists, derivedWinner, stored] = await Promise.all([
     deriveSemiFinalistTeams(supabase, seasonYear),
     deriveFinalistTeams(supabase, seasonYear),
@@ -25,11 +31,18 @@ async function resolveOfficialAnswers(
   ]);
 
   return {
-    semiFinalistTeams:
-      derivedSemi.length === 4 ? derivedSemi : (stored?.semiFinalistTeams ?? []),
-    finalistTeams:
-      derivedFinalists.length === 2 ? derivedFinalists : (stored?.finalistTeams ?? []),
-    winnerTeam: derivedWinner ?? stored?.winnerTeam ?? null,
+    answers: {
+      semiFinalistTeams:
+        derivedSemi.length === 4 ? derivedSemi : (stored?.semiFinalistTeams ?? []),
+      finalistTeams:
+        derivedFinalists.length === 2 ? derivedFinalists : (stored?.finalistTeams ?? []),
+      winnerTeam: derivedWinner ?? stored?.winnerTeam ?? null,
+    },
+    scoredPhases: {
+      semiFinalists: Boolean(stored?.semiFinalistsScoredAt),
+      finalists: Boolean(stored?.finalistsScoredAt),
+      winner: Boolean(stored?.winnerScoredAt),
+    },
   };
 }
 
@@ -81,7 +94,10 @@ export async function loadAdvancedBracketStatsForContest(
     }
   }
 
-  const official = await resolveOfficialAnswers(supabase, contestId);
+  const { answers: official, scoredPhases } = await resolveOfficialAnswers(
+    supabase,
+    contestId,
+  );
 
   const rows: MemberAdvancedBracketRow[] = memberIds.map((uid) => {
     const picks = picksByUserId.get(uid) ?? {
@@ -89,7 +105,7 @@ export async function loadAdvancedBracketStatsForContest(
       finalistTeams: [],
       winnerTeam: null,
     };
-    const evaluation = evaluateForecastStatsRow(picks, official);
+    const evaluation = evaluateForecastStatsRow(picks, official, scoredPhases);
     return {
       displayName: displayNameByUserId.get(uid) ?? `Player ${uid.slice(0, 6)}`,
       semiFinalistTeams: picks.semiFinalistTeams,

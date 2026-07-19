@@ -129,6 +129,46 @@ const pendingEval = evaluateForecastStatsRow(validPicks, {
 assert.ok(pendingEval.semiFinalistResults.every((r) => r.correct === null));
 assert.equal(pendingEval.points, 0);
 
+// Points follow ledger-scored phases even when derived answers are already known.
+const unscoredChampion = evaluateForecastStatsRow(
+  {
+    semiFinalistTeams: ["Argentina", "England", "France", "Spain"],
+    finalistTeams: ["Argentina", "Spain"],
+    winnerTeam: "Spain",
+  },
+  {
+    semiFinalistTeams: ["Argentina", "England", "France", "Spain"],
+    finalistTeams: ["Argentina", "Spain"],
+    winnerTeam: "Spain",
+  },
+  { semiFinalists: true, finalists: true, winner: false },
+);
+assert.equal(unscoredChampion.winnerResult?.correct, true);
+assert.equal(
+  unscoredChampion.points,
+  4 * ADVANCED_BRACKET_POINTS.semiFinalist + 2 * ADVANCED_BRACKET_POINTS.finalist,
+);
+
+const scoredChampion = evaluateForecastStatsRow(
+  {
+    semiFinalistTeams: ["Argentina", "England", "France", "Spain"],
+    finalistTeams: ["Argentina", "Spain"],
+    winnerTeam: "Spain",
+  },
+  {
+    semiFinalistTeams: ["Argentina", "England", "France", "Spain"],
+    finalistTeams: ["Argentina", "Spain"],
+    winnerTeam: "Spain",
+  },
+  { semiFinalists: true, finalists: true, winner: true },
+);
+assert.equal(
+  scoredChampion.points,
+  4 * ADVANCED_BRACKET_POINTS.semiFinalist +
+    2 * ADVANCED_BRACKET_POINTS.finalist +
+    ADVANCED_BRACKET_POINTS.winner,
+);
+
 assert.equal(ROUND_OF_16_MATCH_NUMBER_MIN, 89);
 assert.equal(ADVANCED_BRACKET_LOCK_FALLBACK_UTC, "2026-07-06T19:00:00.000Z");
 assert.equal(LOCK_FALLBACK, ADVANCED_BRACKET_LOCK_FALLBACK_UTC);

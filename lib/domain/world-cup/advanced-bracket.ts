@@ -186,11 +186,21 @@ export type ForecastOfficialAnswers = {
   winnerTeam: string | null;
 };
 
+/** Which forecast phases have been written to the contest ledger. */
+export type ForecastScoredPhases = {
+  semiFinalists: boolean;
+  finalists: boolean;
+  winner: boolean;
+};
+
 export type ForecastStatsEvaluation = {
   semiFinalistResults: ForecastTeamPickResult[];
   finalistResults: ForecastTeamPickResult[];
   winnerResult: ForecastTeamPickResult | null;
-  /** Points for known phases only (0 contribution from still-open phases). */
+  /**
+   * Points for ledger-scored phases only when `scoredPhases` is provided;
+   * otherwise points for known official answers (derived or stored).
+   */
   points: number;
 };
 
@@ -209,14 +219,22 @@ function annotateTeamPicks(
 /**
  * Evaluate a member's tournament forecast picks against known official answers
  * for the stats table (✓/✗ per team + accumulated points).
+ *
+ * Pass `scoredPhases` so the Points column matches contest ledger totals
+ * (derived ✓/✗ can appear before the organizer scores a phase).
  */
 export function evaluateForecastStatsRow(
   picks: AdvancedBracketPicks,
   official: ForecastOfficialAnswers,
+  scoredPhases?: ForecastScoredPhases,
 ): ForecastStatsEvaluation {
   const semiKnown = official.semiFinalistTeams.length === ADVANCED_BRACKET_PICKS.semiFinalists;
   const finalistsKnown = official.finalistTeams.length === ADVANCED_BRACKET_PICKS.finalists;
   const winnerKnown = Boolean(official.winnerTeam?.trim());
+
+  const countSemiPoints = scoredPhases ? scoredPhases.semiFinalists : semiKnown;
+  const countFinalistPoints = scoredPhases ? scoredPhases.finalists : finalistsKnown;
+  const countWinnerPoints = scoredPhases ? scoredPhases.winner : winnerKnown;
 
   const semiFinalistResults = annotateTeamPicks(
     picks.semiFinalistTeams,
@@ -237,17 +255,17 @@ export function evaluateForecastStatsRow(
     : null;
 
   let points = 0;
-  if (semiKnown) {
+  if (countSemiPoints && semiKnown) {
     points +=
       countCorrectPicks(picks.semiFinalistTeams, official.semiFinalistTeams) *
       ADVANCED_BRACKET_POINTS.semiFinalist;
   }
-  if (finalistsKnown) {
+  if (countFinalistPoints && finalistsKnown) {
     points +=
       countCorrectPicks(picks.finalistTeams, official.finalistTeams) *
       ADVANCED_BRACKET_POINTS.finalist;
   }
-  if (winnerKnown && winnerResult?.correct) {
+  if (countWinnerPoints && winnerKnown && winnerResult?.correct) {
     points += ADVANCED_BRACKET_POINTS.winner;
   }
 

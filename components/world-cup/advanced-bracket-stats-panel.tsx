@@ -17,7 +17,7 @@ export type MemberAdvancedBracketRow = {
   semiFinalistResults: ForecastTeamPickResult[];
   finalistResults: ForecastTeamPickResult[];
   winnerResult: ForecastTeamPickResult | null;
-  /** Accumulated forecast points for known phases. */
+  /** Accumulated forecast points for ledger-scored phases (matches leaderboard). */
   points: number;
 };
 
