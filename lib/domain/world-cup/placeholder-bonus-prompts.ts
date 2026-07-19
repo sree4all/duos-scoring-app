@@ -89,3 +89,24 @@ export function buildPlaceholderPromptUpdate(
 
   return { promptText: render(template.promptText), optionLabelsByValue };
 }
+
+export type BonusOptionForDisplay = { value: string; label: string };
+
+/**
+ * Overlay template-rendered labels (actual team names) onto stored options so
+ * display stays correct even if DB option labels were not refreshed yet.
+ */
+export function optionsWithResolvedPlaceholderLabels(
+  options: BonusOptionForDisplay[],
+  promptKey: string | null | undefined,
+  homeTeam: string | null | undefined,
+  awayTeam: string | null | undefined,
+): BonusOptionForDisplay[] {
+  if (!promptKey?.trim()) return options;
+  const update = buildPlaceholderPromptUpdate(promptKey, homeTeam, awayTeam);
+  if (!update) return options;
+  return options.map((opt) => ({
+    value: opt.value,
+    label: update.optionLabelsByValue[opt.value] ?? opt.label,
+  }));
+}

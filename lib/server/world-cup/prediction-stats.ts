@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MemberPredictionRow } from "@/components/world-cup/prediction-stats-panel";
 import type { PredictionStatsEvent } from "@/components/world-cup/prediction-stats-panel";
+import { resolveBonusAnswerDisplay } from "@/lib/domain/world-cup/history-line-detail";
+import { optionsWithResolvedPlaceholderLabels } from "@/lib/domain/world-cup/placeholder-bonus-prompts";
 import { listRevealedScheduleEvents } from "@/lib/server/world-cup/schedule-query";
 import { MatchBonusRepository } from "@/lib/server/world-cup/match-bonus-repository";
 import { shouldHidePeerPredictions } from "@/lib/server/world-cup/prediction-visibility";
@@ -9,6 +11,13 @@ export type PredictionStatsLoadOptions = {
   memberView?: boolean;
   viewerUserId: string;
   isOwner: boolean;
+};
+
+type BonusPromptForStats = {
+  id: string;
+  promptText: string;
+  promptKey: string;
+  options: { value: string; label: string }[];
 };
 
 export async function loadPredictionStatsForContest(
@@ -24,17 +33,19 @@ export async function loadPredictionStatsForContest(
   const schedule = await listRevealedScheduleEvents(supabase, contestId, memberView);
   const matchIds = schedule.map((e) => e.matchId);
 
-  const bonusPromptsByMatchId = new Map<
-    string,
-    { id: string; promptText: string }[]
-  >();
+  const bonusPromptsByMatchId = new Map<string, BonusPromptForStats[]>();
   if (matchIds.length > 0) {
     const bonusRepo = new MatchBonusRepository(supabase);
     const promptsMap = await bonusRepo.listForMatches(matchIds);
     for (const [matchId, prompts] of promptsMap) {
       bonusPromptsByMatchId.set(
         matchId,
-        prompts.map((p) => ({ id: p.id, promptText: p.promptText })),
+        prompts.map((p) => ({
+          id: p.id,
+          promptText: p.promptText,
+          promptKey: p.promptKey,
+          options: p.options.map((o) => ({ value: o.value, label: o.label })),
+        })),
       );
     }
   }
@@ -46,7 +57,10 @@ export async function loadPredictionStatsForContest(
     kickoffTzOffset: e.kickoffTzOffset,
     homeTeam: e.homeTeam,
     awayTeam: e.awayTeam,
-    bonusPrompts: bonusPromptsByMatchId.get(e.matchId) ?? [],
+    bonusPrompts: (bonusPromptsByMatchId.get(e.matchId) ?? []).map((p) => ({
+      id: p.id,
+      promptText: p.promptText,
+    })),
     peerPredictionsHidden: shouldHidePeerPredictions(
       options.isOwner,
       e.kickoffUtc,
@@ -113,16 +127,33 @@ export async function loadPredictionStatsForContest(
       : memberIds;
 
     const bonusPrompts = bonusPromptsByMatchId.get(ev.matchId) ?? [];
+    const displayOptionsByPromptId = new Map(
+      bonusPrompts.map((prompt) => [
+        prompt.id,
+        optionsWithResolvedPlaceholderLabels(
+          prompt.options,
+          prompt.promptKey,
+          ev.homeTeam,
+          ev.awayTeam,
+        ),
+      ]),
+    );
+
     const rows: MemberPredictionRow[] = visibleMemberIds.map((uid) => ({
       displayName: displayNameByUserId.get(uid) ?? `Player ${uid.slice(0, 6)}`,
       predictedWinner: pickByMatchAndUser.get(`${ev.matchId}:${uid}`) ?? null,
       bonusAnswers:
         bonusPrompts.length > 0
           ? Object.fromEntries(
-              bonusPrompts.map((prompt) => [
-                prompt.id,
-                bonusAnswerByPromptAndUser.get(`${prompt.id}:${uid}`) ?? null,
-              ]),
+              bonusPrompts.map((prompt) => {
+                const raw =
+                  bonusAnswerByPromptAndUser.get(`${prompt.id}:${uid}`) ?? null;
+                const display = resolveBonusAnswerDisplay(
+                  raw,
+                  displayOptionsByPromptId.get(prompt.id) ?? prompt.options,
+                );
+                return [prompt.id, display];
+              }),
             )
           : undefined,
     }));

@@ -40,4 +40,26 @@ assert.equal(
 );
 assert.equal(resolveBonusAnswerDisplay("  ", []), null);
 
+// Stable option values (placeholder tokens) resolve to human-readable labels.
+assert.equal(
+  resolveBonusAnswerDisplay("finalist_sf2", [
+    { value: "finalist_sf1", label: "Spain" },
+    { value: "finalist_sf2", label: "Argentina" },
+  ]),
+  "Argentina",
+);
+assert.equal(
+  resolveBonusAnswerDisplay("finalist_sf2_wins_2_1", [
+    { value: "finalist_sf2_wins_2_1", label: "Argentina wins 2-1" },
+    { value: "level_after_90", label: "Level after 90 minutes" },
+  ]),
+  "Argentina wins 2-1",
+);
+assert.equal(
+  resolveBonusAnswerDisplay("level_after_90", [
+    { value: "level_after_90", label: "Level after 90 minutes" },
+  ]),
+  "Level after 90 minutes",
+);
+
 console.log("history-line-detail.spec.ts: ok");
